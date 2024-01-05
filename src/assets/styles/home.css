@@ -1,0 +1,50 @@
+.home-main {
+    min-width: 100vw;
+    min-height: 100vh;
+    background: url('../images/banner/banner4.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
+
+.home-main .home-main-container {
+    height: 100vh;
+}
+
+.home-main .home-banner {
+    width: 100vw;
+    height: 100vh;
+}
+
+.home-main .home-content {
+    background-color: #0909a770;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 110vw;
+}
+
+.home-inner-container {
+    padding: 10rem 0rem;
+    min-width: 48vw;
+}
+
+.home-desc {
+    min-width: 46vw;
+    min-height: 4rem;
+    color: #edeaea;
+    border-left: 4px solid yellow;
+}
+
+.home-side-container-img{
+    width: 80%;
+    height: 35rem;
+    box-shadow: #ffffff99 0px 0px 219px 33px;
+    border-radius: 20px;
+}
+
+@media screen and (max-width: 770px) {
+    .home-desc {
+        min-width: 82vw;
+    }
+}
