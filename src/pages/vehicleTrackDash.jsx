@@ -3,6 +3,7 @@ import { Col, Form, Modal, Row } from 'react-bootstrap'
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
+import { MdSettingsBackupRestore } from "react-icons/md";
 import { IoMdRefresh } from 'react-icons/io';
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
 import { getAllOfficesList } from '../hooks/officeMasterHooks';
@@ -184,7 +185,7 @@ const VehicleTrackDash = () => {
         if (selectedFilter.length > 0) {
             let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
             if (selectedFilter.includes('Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
-                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Running')) {
+                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                     tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
                 } else {
                     tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
@@ -334,12 +335,9 @@ const VehicleTrackDash = () => {
     const handleRefreshPage = () => {
         getAllTrips();
         setRefreshClicked(true);
-        // handleSubmit();
     };
 
-    useEffect(() => {
-        console.log("refresh function", form);
-        // setRefreshClicked(false);
+    const handleFilter = () => {
         const allFilteredTrip = allTrips.filter(test => {
             for (const key in form) {
                 const testValue = String(test[key]).toLowerCase();
@@ -350,6 +348,28 @@ const VehicleTrackDash = () => {
             }
             return true;
         });
+
+        setFilteredTrips(allFilteredTrip);
+    }
+
+    const handleResetFilters = () => {
+        setSelectedFilter([]);
+        handleFilter();
+    };
+
+    useEffect(() => {
+        const allFilteredTrip = allTrips.filter(test => {
+            for (const key in form) {
+                const testValue = String(test[key]).toLowerCase();
+                const formValue = form[key].toLowerCase();
+                if (testValue !== formValue && formValue.length > 0) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        setFilteredTrips(allFilteredTrip);
 
         if (selectedFilter.length > 0) {
             let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
@@ -378,7 +398,7 @@ const VehicleTrackDash = () => {
                 </div>
                 <div className='mt-2'>
                     <Form onSubmit={handleSubmit}>
-                        <Row style={{ boxShadow: "0px 0px 56px -21px #cbcbcb", borderRadius: "10px", border: "1px solid #ededed", padding: "1rem" }}>
+                        <Row className='dashoard-filter-form rounded'>
                             <Col sm={12} md={6} lg={2} className='position-relative'>
                                 <Input label="Party" name="consignorName" onChange={handleInputChangeParty} value={selectedParty} onClick={() => setIsOpenParty(true)} placeholder="Party Name" autocomplete="off" />
                                 {isOpenParty && (
@@ -477,24 +497,35 @@ const VehicleTrackDash = () => {
                                         <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: "1", boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
                                             {
                                                 allFilters.map((data, index) => (
-                                                    <span className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} ${index !== allFilters.length - 1 && 'border-bottom'} cursor-pointer`}
+                                                    <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} ${index !== allFilters.length - 1 && 'border-bottom'} cursor-pointer`}
                                                         onMouseOver={() => setHovered(true)}
                                                         onMouseOut={() => setHovered(false)}
                                                         key={index}
                                                         onClick={() => handleSelectFilter(data)}
-                                                    >{data}</span>
+                                                    >{data}</div>
                                                 ))
                                             }
                                         </div>
                                     ) : null
                                 }
-                                <div className='mx-5'>
-                                    <Tooltip title="Add" arrow>
+                                {
+                                    selectedFilter.length > 0 ? (
+                                        <div>
+                                            <Tooltip title="Reset Filters">
+                                                <Link to="#">
+                                                    <MdSettingsBackupRestore onClick={() => handleResetFilters()} className='thm-dark cursor-pointer ms-2 fs-3' />
+                                                </Link>
+                                            </Tooltip>
+                                        </div>
+                                    ) : null
+                                }
+                                {/* <div className='mx-5'>
+                                    <Tooltip title="Refresh Page">
                                         <Link>
                                             <IoMdRefresh onClick={() => handleRefreshPage()} className='fs-3 text-success cursor-pointer' />
                                         </Link>
                                     </Tooltip>
-                                </div>
+                                </div> */}
                             </Col>
                         </Row>
                     </Form>
@@ -533,7 +564,7 @@ const VehicleTrackDash = () => {
                                     <td>{handleFormatDate(data?.locationTime)}</td>
                                     <td>{data?.location}</td>
                                     <td>{data?.estimatedArrivalDate}</td>
-                                    <td className={`${getFinalStatus(data) === 'Delayed' ? 'fw-bold text-warning' : getFinalStatus(data) === "Critical Delayed" && "fw-bold text-danger"}`}>{getFinalStatus(data)}</td>
+                                    <td className={`${getFinalStatus(data) === 'Delayed' ? 'fw-bold bg-warning' : getFinalStatus(data) === "Critical Delayed" && "fw-bold text-white bg-danger"}`}>{getFinalStatus(data)}</td>
                                     <td>{data?.driverName}</td>
                                     <td>{data?.driverMobileNo}</td>
                                     <td>{data?.gpsExitVehicleNo}</td>
@@ -567,23 +598,17 @@ const VehicleTrackDash = () => {
                     <Form>
                         <Modal.Header closeButton>
                             <Modal.Title>
-                                <h5 className='text-primary'>Force Complete</h5>
+                                <h5 className='thm-dark'>Force Complete</h5>
                             </Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <div>
                                 <Row className='mb-3'>
                                     <Col sm={12} md={12} lg={4}>
-                                        <Form.Group>
-                                            <Form.Label>Vehicle No.</Form.Label>
-                                            <Form.Control placeholder='Vehicle No.' required />
-                                        </Form.Group>
+                                        <Input label="Vehicle No." type={'text'} placeholder="Vehicle No." required={true} />
                                     </Col>
                                     <Col sm={12} md={12} lg={4}>
-                                        <Form.Group>
-                                            <Form.Label>Trip No.</Form.Label>
-                                            <Form.Control placeholder='Trip No.' required />
-                                        </Form.Group>
+                                        <Input label="Trip No." type={'text'} placeholder="Trip No." required={true} />
                                     </Col>
                                 </Row>
 
@@ -606,16 +631,10 @@ const VehicleTrackDash = () => {
 
                                 <Row className='mt-3'>
                                     <Col sm={12} md={12} lg={4}>
-                                        <Form.Group>
-                                            <Form.Label>Loading Date Time</Form.Label>
-                                            <Form.Control type='datetime-local' placeholder='DD/MM/YYYY' required />
-                                        </Form.Group>
+                                        <Input label="Loading (Date / Time)" type={'datetime-local'} required={true} />
                                     </Col>
                                     <Col sm={12} md={12} lg={4}>
-                                        <Form.Group>
-                                            <Form.Label>Unloading Date Time</Form.Label>
-                                            <Form.Control type='datetime-local' placeholder='DD/MM/YYYY' required />
-                                        </Form.Group>
+                                        <Input label="Unloading (Date / Time)" type={'datetime-local'} required={true} />
                                     </Col>
                                 </Row>
                             </div>
