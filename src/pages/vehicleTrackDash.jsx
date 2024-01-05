@@ -3,12 +3,16 @@ import { Col, Form, Modal, Row } from 'react-bootstrap'
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
+import { IoMdRefresh } from 'react-icons/io';
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
 import { getAllOfficesList } from '../hooks/officeMasterHooks';
 import { ErrorToast, WarningToast } from '../components/toast/toast';
 import Input from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
+import { Link } from 'react-router-dom';
+import { Tooltip } from '@mui/material';
+import Pagination from '../components/pagination';
 
 const VehicleTrackDash = () => {
 
@@ -30,8 +34,17 @@ const VehicleTrackDash = () => {
     const [isOpenOffice, setIsOpenOffice] = useState(false);
     const [selectedVehicleNo, setSelectedVehicleNo] = useState('');
     const [isOpenVehicle, setIsOpenVehicle] = useState(false);
+    const [refreshClicked, setRefreshClicked] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
 
-    const [allSelectedFilters, setAllSelectedFilters] = useState([]);
+    const indexOfLastPost = currentPage * 20;
+    const indexOfFirstPost = indexOfLastPost - 20;
+    const currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost)
+    const howManyPages = Math.ceil(filteredTrips.length / 20);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filteredTrips]);
 
     // const allOffices = ["Office 1", 'Office 2', "Office 3", "Office 4", "Office 5", "Office 6", "Office 7"];
 
@@ -42,7 +55,7 @@ const VehicleTrackDash = () => {
 
     const allFilters = ['Trip Running', 'Trip Completed', 'Delayed', 'Early', 'On Time', 'Critical Delay'];
 
-    useEffect(() => {
+    const getAllTrips = () => {
         getRunningTrips().then((response) => {
             if (response.status === 200) {
                 setAllTrips(response?.data);
@@ -55,6 +68,10 @@ const VehicleTrackDash = () => {
             setAllTrips([]);
             setFilteredTrips([]);
         });
+    };
+
+    useEffect(() => {
+        getAllTrips();
     }, []);
 
     useEffect(() => {
@@ -167,7 +184,11 @@ const VehicleTrackDash = () => {
         if (selectedFilter.length > 0) {
             let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
             if (selectedFilter.includes('Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
-                tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Running')) {
+                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+                } else {
+                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
+                }
             } else {
                 tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
             }
@@ -226,49 +247,6 @@ const VehicleTrackDash = () => {
     //         setSelectedVehicleNo('');
     //     }
     // };
-
-    // const handleSelectFilter = (filter) => {
-    //     if (filter === 'All') {
-
-    //         setFilteredTrips(allTrips);
-    //         setSelectedFilter('');
-    //         setForm({
-    //             tripLogNo: ''
-    //         });
-    //         setSelectedParty('');
-    //         setSelectedOffice('');
-    //         setSelectedVehicleNo('');
-    //     } else {
-    //         if (filter === 'Trip Running' || filter === 'Trip Completed') {
-    //             setForm({
-    //                 ...form,
-    //                 tripStatus: filter
-    //             })
-    //         } else if (filter === 'Eearly' || filter === 'On Time') {
-    //             setForm({
-    //                 ...form,
-    //                 finalStatus: filter
-    //             })
-    //         }
-    //         else if (filter === 'Delayed') {
-
-    //             const filtered = allTrips.filter(test => {
-    //                 for (const key in form) {
-    //                     console.log("key", form[key]);
-    //                     if (test[key] !== form[key] && form[key].length > 0) {
-    //                         return false;
-    //                     }
-    //                 }
-    //                 return true;
-    //             });
-
-    //             console.log("filteredTips", filtered);
-    //         }
-
-    //         setSelectedFilter(filter)
-    //     }
-    //     setShowFilters(false);
-    // }
 
     const handleSelectFilter = (filter) => {
         if (filter === 'All') {
@@ -351,15 +329,56 @@ const VehicleTrackDash = () => {
         const formattedDate = `${day}/${month}/${year} ${formattedHours}:${formattedMinutes}:${formattedSeconds} ${amPM}`;
 
         return formattedDate;
-    }
+    };
+
+    const handleRefreshPage = () => {
+        getAllTrips();
+        setRefreshClicked(true);
+        // handleSubmit();
+    };
+
+    useEffect(() => {
+        console.log("refresh function", form);
+        // setRefreshClicked(false);
+        const allFilteredTrip = allTrips.filter(test => {
+            for (const key in form) {
+                const testValue = String(test[key]).toLowerCase();
+                const formValue = form[key].toLowerCase();
+                if (testValue !== formValue && formValue.length > 0) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        if (selectedFilter.length > 0) {
+            let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+            if (selectedFilter.includes('Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
+                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Running')) {
+                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+                } else {
+                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
+                }
+            } else {
+                tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
+            }
+            setFilteredTrips(tripsFilteredByTripStatus);
+        } else {
+            setFilteredTrips(allFilteredTrip);
+        }
+    }, [refreshClicked]);
 
     return (
         <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
             <div className='w-100'>
-                <h4 className='text-primary text-uppercase w-100 text-center my-5'>Vehicle Tracking Dashboard</h4>
+                <div className='w-100 text-center my-5'>
+                    <h4 className='px-3 dashboard-title text-uppercase d-inline text-center my-5'
+                        style={{ borderBottom: "3px solid #09215f" }}
+                    >Vehicle Tracking Dashboard</h4>
+                </div>
                 <div className='mt-2'>
                     <Form onSubmit={handleSubmit}>
-                        <Row>
+                        <Row style={{ boxShadow: "0px 0px 56px -21px #cbcbcb", borderRadius: "10px", border: "1px solid #ededed", padding: "1rem" }}>
                             <Col sm={12} md={6} lg={2} className='position-relative'>
                                 <Input label="Party" name="consignorName" onChange={handleInputChangeParty} value={selectedParty} onClick={() => setIsOpenParty(true)} placeholder="Party Name" autocomplete="off" />
                                 {isOpenParty && (
@@ -469,6 +488,13 @@ const VehicleTrackDash = () => {
                                         </div>
                                     ) : null
                                 }
+                                <div className='mx-5'>
+                                    <Tooltip title="Add" arrow>
+                                        <Link>
+                                            <IoMdRefresh onClick={() => handleRefreshPage()} className='fs-3 text-success cursor-pointer' />
+                                        </Link>
+                                    </Tooltip>
+                                </div>
                             </Col>
                         </Row>
                     </Form>
@@ -478,7 +504,7 @@ const VehicleTrackDash = () => {
 
                 <div className='table-responsive mt-5' style={{ height: "55vh" }}>
                     <table className='table table-bordered table-striped w-100 positon-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
-                        <thead className='table-head bg-primary text-white' style={{ position: "static" }}>
+                        <thead className='table-head text-white' style={{ position: "static" }}>
                             <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                 {
                                     tableColumns.map((data, index) => (
@@ -489,7 +515,7 @@ const VehicleTrackDash = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredTrips.length > 0 && filteredTrips.map((data, index) => (
+                            {currentTrips.length > 0 && currentTrips.map((data, index) => (
                                 <tr key={index}>
                                     <td>{data?.vehicleNo}</td>
                                     <td>{data?.tripLogNo}</td>
@@ -513,17 +539,26 @@ const VehicleTrackDash = () => {
                                     <td>{data?.gpsExitVehicleNo}</td>
                                     <td>{data?.exitFrom}</td>
                                     <td>{data?.tripStatus}</td>
-                                    <td className='h-100 d-flex justify-content-center align-items-center'>
+                                    <td className='h-100 py-3 d-flex justify-content-center align-items-center'>
                                         <button className={`border border-none ${data?.tripStatus === 'Trip Running' ? 'force-complete-button' : 'force-complete-button-disabled'}`}
                                             onClick={() => handleShowForceComplete(data)}>Force Complete</button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
+
                     </table>
                     {
-                        filteredTrips.length === 0 ? (
+                        currentTrips.length === 0 ? (
                             <div className='pb-3 text-secondary d-flex justify-content-center align-items-center'>No data found</div>
+                        ) : null
+                    }
+
+                    {
+                        currentTrips.length > 0 ? (
+                            <div className='my-5'>
+                                <Pagination pages={howManyPages} setCurrentPage={setCurrentPage} />
+                            </div>
                         ) : null
                     }
                 </div>

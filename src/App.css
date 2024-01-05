@@ -41,7 +41,7 @@ h1 {
     --thm-disbale: #d6d6d6;
     --thm-black: #000;
     --thm-blue: blue;
-    --thm-dark: #202942;
+    --thm-dark: #09215f;
     --thm-white: #fff;
 }
 
@@ -83,7 +83,7 @@ p {
     min-width: 200px;
 }
 
-.width-150{
+.width-150 {
     min-width: 150px;
 }
 
@@ -244,6 +244,51 @@ table tbody tr td {
     font-size: 0.8rem;
 }
 
+table thead {
+    background-color: var(--thm-dark);
+}
+
+/* Pagination */
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.pagination-container a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: (var(--thm-dark));
+    height: 2rem;
+    width: 2rem;
+    margin: auto 0.2rem;
+    text-decoration: none;
+    transition: background-color .2s;
+    border: 1px solid var(--thm-dark);
+    border-radius: 10px;
+    cursor: pointer;
+
+}
+
+.pagination-container a.active {
+    background-color: var(--thm-dark);
+    color: white;
+    border: 1px solid #7cbddb;
+}
+
+.pagination-container a.disabled {
+    opacity: 0.2;
+}
+
+.pagination-container a:hover:not(.active) {
+    background-color: rgb(238, 238, 238);
+}
+
 /* Vehicle Tracking Dashboard */
 
 .filter-options {
@@ -277,8 +322,13 @@ table tbody tr td {
 
 .dashboard-main-container {
     margin: auto 3rem;
-    height: 80vh;
+    min-height: 80vh;
+    max-height: 85vh;
     box-shadow: 1px 0px 47px -18px #c8c9ca;
+}
+
+.dashboard-title {
+    color: var(--thm-dark);
 }
 
 @media screen and (max-width: 780px) {
