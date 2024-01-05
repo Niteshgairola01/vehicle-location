@@ -69,14 +69,11 @@ const VehicleTrackDash = () => {
         }).catch(() => setVehiclesList([]));
     }, []);
 
-    // console.log("vehicles", vehiclesList.map((data) => console.log(data?.vehicleNo)));
-
     // useEffect(() => {
     //     getAllOfficesList().then((response) => {
     //         (response.status === 200) ? setofficesList(response?.data) : setofficesList([]);
     //     }).catch(() => setofficesList([]));
     // }, []);
-
 
     const handleInputChangeParty = (e) => {
         setSelectedParty(e.target.value);
@@ -156,11 +153,10 @@ const VehicleTrackDash = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const filteredTrips = allTrips.filter(test => {
+        const allFilteredTrip = allTrips.filter(test => {
             for (const key in form) {
-                const testValue = String(test[key]).toLowerCase();  // Convert test value to lowercase
-                const formValue = form[key].toLowerCase();  // Convert form value to lowercase
-
+                const testValue = String(test[key]).toLowerCase();
+                const formValue = form[key].toLowerCase();
                 if (testValue !== formValue && formValue.length > 0) {
                     return false;
                 }
@@ -168,7 +164,17 @@ const VehicleTrackDash = () => {
             return true;
         });
 
-        setFilteredTrips(filteredTrips);
+        if (selectedFilter.length > 0) {
+            let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+            if (selectedFilter.includes('Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
+                tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+            } else {
+                tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
+            }
+            setFilteredTrips(tripsFilteredByTripStatus);
+        } else {
+            setFilteredTrips(allFilteredTrip);
+        }
     };
 
     // const handleSelectFilter = (filter) => {
@@ -264,10 +270,6 @@ const VehicleTrackDash = () => {
     //     setShowFilters(false);
     // }
 
-    var newArr = [];
-    // var newTripsArr = [];
-    const [newTripsArr, setNewTrpsArr] = useState([]);
-
     const handleSelectFilter = (filter) => {
         if (filter === 'All') {
             setFilteredTrips(allTrips);
@@ -279,19 +281,14 @@ const VehicleTrackDash = () => {
             setSelectedOffice('');
             setSelectedVehicleNo('');
         } else {
-            setSelectedFilter([...selectedFilter, filter]);
-            newArr.push(filter);
-
-            const filteredData = allTrips.filter(data => newArr.includes(data?.tripStatus));
-            setNewTrpsArr(...newTripsArr, filteredData);
-            // newTripsArr.push(filteredData);
-            // console.log("filtered", newTripsArr);
-            // newArr.push(filteredData);
-            // if(newArr.includes())
+            if (selectedFilter.includes(filter)) {
+                setSelectedFilter(selectedFilter.filter(item => item !== filter));
+            } else {
+                setSelectedFilter([...selectedFilter, filter]);
+            }
         }
     }
 
-    console.log("selected filters", newTripsArr);
 
     const handleShowForceComplete = (data) => {
         const loadingDateTime = data?.loadingDateTime;
@@ -453,9 +450,7 @@ const VehicleTrackDash = () => {
                                     onMouseOut={() => setHovered(false)}
                                     onClick={() => setShowFilters(!showFilters)}
                                 >
-                                    <span className='' style={{ width: "8rem", fontSize: "0.8rem" }}>
-                                        {selectedFilter.length === 0 ? 'Filter' : selectedFilter}
-                                    </span>
+                                    <span className='' style={{ width: "8rem", fontSize: "0.8rem" }}>Filter</span>
                                     <CiFilter />
                                 </div>
                                 {
@@ -463,7 +458,7 @@ const VehicleTrackDash = () => {
                                         <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: "1", boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
                                             {
                                                 allFilters.map((data, index) => (
-                                                    <span className={` py-2 ps-3 pe-5 w-100 ${selectedFilter === data ? 'filter-options-active' : 'filter-options'} ${index !== allFilters.length - 1 && 'border-bottom'} cursor-pointer`}
+                                                    <span className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} ${index !== allFilters.length - 1 && 'border-bottom'} cursor-pointer`}
                                                         onMouseOver={() => setHovered(true)}
                                                         onMouseOut={() => setHovered(false)}
                                                         key={index}
