@@ -8,12 +8,13 @@ import { IoMdRefresh } from 'react-icons/io';
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
 import { getAllOfficesList } from '../hooks/officeMasterHooks';
 import { ErrorToast, WarningToast } from '../components/toast/toast';
-import Input from '../components/form/Input';
+import { Input, Checkbox, Radio } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
 import { Link } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
+import ForceCompleteForm from './forceCompleteForm';
 
 const VehicleTrackDash = () => {
 
@@ -388,6 +389,8 @@ const VehicleTrackDash = () => {
         }
     }, [refreshClicked]);
 
+    console.log("selected vehicle", selectedVehicle);
+
     return (
         <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
             <div className='w-100'>
@@ -594,56 +597,7 @@ const VehicleTrackDash = () => {
                     }
                 </div>
 
-                <Modal show={showForceCompleteModal} centered onHide={() => setShowForceCompleteModal(false)} size='lg'>
-                    <Form>
-                        <Modal.Header closeButton>
-                            <Modal.Title>
-                                <h5 className='thm-dark'>Force Complete</h5>
-                            </Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <div>
-                                <Row className='mb-3'>
-                                    <Col sm={12} md={12} lg={4}>
-                                        <Input label="Vehicle No." type={'text'} placeholder="Vehicle No." required={true} />
-                                    </Col>
-                                    <Col sm={12} md={12} lg={4}>
-                                        <Input label="Trip No." type={'text'} placeholder="Trip No." required={true} />
-                                    </Col>
-                                </Row>
-
-                                <hr />
-
-                                <Row className='mt-3'>
-                                    <Col sm={12} md={12} lg={4}>
-                                        <Form.Group>
-                                            <Form.Check name='date' className='d-inline cursor-pointer mt-2 me-2' checked={selectedDate === 'custom'} onChange={() => setSelectedDate('custom')} type='radio' required />
-                                            <Form.Label className='cursor-pointer' onClick={() => setSelectedDate('custom')}>Custom</Form.Label>
-                                        </Form.Group>
-                                    </Col>
-                                    <Col sm={12} md={12} lg={4}>
-                                        <Form.Group>
-                                            <Form.Check name='date' className='d-inline cursor-pointer mt-2 me-2' checked={selectedDate === 'current'} onChange={() => setSelectedDate('current')} type='radio' required />
-                                            <Form.Label className='cursor-pointer' onClick={() => setSelectedDate('current')}>Current</Form.Label>
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-
-                                <Row className='mt-3'>
-                                    <Col sm={12} md={12} lg={4}>
-                                        <Input label="Loading (Date / Time)" type={'datetime-local'} required={true} />
-                                    </Col>
-                                    <Col sm={12} md={12} lg={4}>
-                                        <Input label="Unloading (Date / Time)" type={'datetime-local'} required={true} />
-                                    </Col>
-                                </Row>
-                            </div>
-                        </Modal.Body>
-                        <Modal.Footer className='d-flex justify-content-end align-items-end'>
-                            <Button type="submit" className="px-3">Save</Button>
-                        </Modal.Footer>
-                    </Form>
-                </Modal>
+                <ForceCompleteForm show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
             </div>
         </div>
     )

@@ -6,10 +6,6 @@ import { Link } from 'react-router-dom';
 
 function CollapsibleExample() {
 
-  // const navigate = useNavigate();
-
-  console.log("navigate", window.location);
-
   return (
     <Navbar collapseOnSelect expand="lg" className="bg-white navbar">
       <div className='container-fluid navbar-main-container d-flex justify-content-between align-items-center'>

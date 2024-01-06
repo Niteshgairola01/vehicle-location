@@ -3,9 +3,6 @@ import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 
 const Pagination = ({ pages, setCurrentPage }) => {
 
-    console.log("pages", pages);
-
-    //Set number of pages
     const numberOfPages = []
     for (let i = 1; i <= pages; i++) {
         numberOfPages.push(i)
