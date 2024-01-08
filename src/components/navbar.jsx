@@ -2,12 +2,10 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { logo } from '../assets/images';
 import Button from './Button/hoveredButton';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const NavBar = () => {
   const location = useLocation();
-  // const navigate = useNavigate();
-  console.log("path", location.pathname);
 
   return (
     <Navbar collapseOnSelect expand="lg" className="bg-white navbar">

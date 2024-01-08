@@ -16,8 +16,6 @@ import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
 
-
-
 const VehicleTrackDash = () => {
 
     const [form, setForm] = useState({});
@@ -41,16 +39,17 @@ const VehicleTrackDash = () => {
     const [refreshClicked, setRefreshClicked] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const indexOfLastPost = currentPage * 20;
-    const indexOfFirstPost = indexOfLastPost - 20;
+    const itemsPerPage = 20
+    const indexOfLastPost = currentPage * itemsPerPage;
+    const indexOfFirstPost = indexOfLastPost - itemsPerPage;
     const currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost)
-    const howManyPages = Math.ceil(filteredTrips.length / 20);
+    const pageCount = Math.ceil(filteredTrips.length / itemsPerPage);
+
+    console.log("page count", pageCount);
 
     useEffect(() => {
         setCurrentPage(1);
     }, [filteredTrips]);
-
-    // const allOffices = ["Office 1", 'Office 2', "Office 3", "Office 4", "Office 5", "Office 6", "Office 7"];
 
     const tableColumns = ['Vehicle No.', 'Trip No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
         'Route (KM)', 'KM Covered', 'Difference (Km)', 'Report Unloading', 'Unloading End Date', 'GPS (Date / Time)', 'Location', 'Estimated Arrival Date',
@@ -58,61 +57,6 @@ const VehicleTrackDash = () => {
     ];
 
     const allFilters = ['Trip Running', 'Trip Completed', 'Without Trip', 'Manual Bind', 'Delayed', 'Early', 'On Time', 'Critical Delayed'];
-
-    // const filterTestData = (e) => {
-    //     e.preventDefault();
-
-    //     const allFilteredTrip = allTrips.filter(test => {
-    //         for (const key in form) {
-    //             const testValue = String(test[key]).toLowerCase();
-    //             const formValue = form[key].toLowerCase();
-    //             if (testValue !== formValue && formValue.length > 0) {
-    //                 return false;
-    //             }
-    //         }
-    //         return true;
-    //     });
-    //     const filteredData = allFilteredTrip.filter(item => {
-    //         if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-    //             if (selectedFilter.includes(item.tripStatus)) {
-    //                 return true;
-    //             }
-    //         }
-
-    //         if (selectedFilter.includes('On Time') || selectedFilter.includes('Early')) {
-    //             if (item.finalStatus.toLowerCase() === 'delayed' &&
-    //                 calculateDateDifference(item.staticETA, item.estimatedArrivalDate) < 2) {
-    //                 return true;
-    //             }
-    //         }
-
-    //         if (selectedFilter.includes('Critical Delayed')) {
-    //             if (item.finalStatus.toLowerCase() === 'delayed' &&
-    //                 calculateDateDifference(item.staticETA, item.estimatedArrivalDate) >= 2) {
-    //                 return true;
-    //             }
-    //         }
-
-    //         if (selectedFilter.includes('Without Trip')) {
-    //             if (selectedFilter.includes("Trip Running")) {
-    //                 if (((!item.tripLogNo || item.tripLogNo.trim() === '') && (item.tripStatus === 'Trip Running' || item.tripStatus === 'Trip Completed'))) {
-    //                     return true;
-    //                 }
-    //             }
-    //         }
-
-    //         return false;
-    //     });
-
-    //     console.log("filtered data", filteredData);
-    //     setFilteredTrips(filteredData);
-    // };
-
-    // const calculateDateDifference = (date1, date2) => {
-    //     const diffInMs = new Date(date2) - new Date(date1);
-    //     return diffInMs / (1000 * 60 * 60 * 24); // Convert milliseconds to days
-    // };
-
 
     const getAllTrips = () => {
         getRunningTrips().then((response) => {
@@ -247,10 +191,8 @@ const VehicleTrackDash = () => {
             if (selectedFilter.includes('Without Trip')) {
                 if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Manual Bind')) {
                     if (!selectedFilter.includes('Manual Bind')) {
-                        console.log("if block");
                         tripsFilteredByTripStatus = allFilteredTrip.filter((data) => (data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running");
                     } else if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Manual Bind')) {
-                        console.log("else block");
                         tripsFilteredByTripStatus = allFilteredTrip.filter((data) => ((data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running") && data?.exitFrom === "Manual Bind");
                     }
                 } else if (selectedFilter.includes('Trip Completed')) {
@@ -268,11 +210,15 @@ const VehicleTrackDash = () => {
                     }
                     else if (selectedFilter.includes('Delayed') || selectedFilter.includes('Critical Delayed')) {
                         if (selectedFilter.includes('Delayed') && !selectedFilter.includes('Critical Delayed')) {
-                            console.log("Delayed");
                             let testArr;
                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                testArr = allFilteredTrip.filter((data) => (data?.tripStatus === "Trip Running" || data?.tripStatus === "Trip Completed" || data?.tripStatus === 'On trip found') && data?.finalStatus === "Delyed");
-                                // testArr = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
+                                if (selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed')) {
+                                    testArr = allFilteredTrip.filter((data) => data?.tripStatus === 'Trip Running' && data?.finalStatus === 'Delayed');
+                                } else if (!selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
+                                    testArr = allFilteredTrip.filter((data) => data?.tripStatus === 'Trip Completed' && data?.finalStatus === 'Delayed');
+                                } else if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
+                                    testArr = allFilteredTrip.filter((data) => data?.tripStatus === "Trip Running" || data?.tripStatus === 'Trip Completed' && data?.finalStatus === 'Delayed');
+                                }
                             } else {
                                 testArr = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
                             }
@@ -289,8 +235,8 @@ const VehicleTrackDash = () => {
                                     }
                                 }
                             });
+
                         } else if (!selectedFilter.includes('Delayed') && selectedFilter.includes('Critical Delayed')) {
-                            console.log("Critical Delayed");
 
                             let testArr;
                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
@@ -312,8 +258,6 @@ const VehicleTrackDash = () => {
                                 }
                             });
                         } else {
-                            console.log("Both");
-
                             allFilteredTrip.filter(data => data?.finalStatus === 'Delayed')
                         }
                     }
@@ -337,92 +281,6 @@ const VehicleTrackDash = () => {
             setFilteredTrips(allFilteredTrip);
         }
     };
-
-    // console.log("filtered", filteredTrips);
-
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-    //     const allFilteredTrip = allTrips.filter(test => {
-    //         for (const key in form) {
-    //             const testValue = String(test[key]).toLowerCase();
-    //             const formValue = form[key].toLowerCase();
-    //             if (testValue !== formValue && formValue.length > 0) {
-    //                 return false;
-    //             }
-    //         }
-    //         return true;
-    //     });
-
-    //     if (selectedFilter.length > 0) {
-    //         let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-    //         if (selectedFilter.includes('Delayed') || selectedFilter.includes('Critical Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
-    //             if (selectedFilter.includes("Early" || selectedFilter("On Time"))) {
-    //                 if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-    //                     tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-    //                 } else {
-    //                     tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
-    //                 }
-    //             } else if (selectedFilter.includes('Delayed')) {
-
-    //             }
-    //         } else {
-    //             tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
-    //         }
-    //         setFilteredTrips(tripsFilteredByTripStatus);
-    //     } else {
-    //         setFilteredTrips(allFilteredTrip);
-    //     }
-    // };
-
-    // const handleSelectFilter = (filter) => {
-    //     setSelectedFilter(filter);
-    //     setShowFilters(false);
-
-    //     if (filter === 'Trip Running') {
-    //         const filteredData = allTrips.filter(data => data?.tripStatus === 'Trip Running');
-    //         setFilteredTrips(filteredData);
-    //     } else if (filter == 'Trip Completed') {
-    //         const filteredData = allTrips.filter(data => data?.tripStatus === 'Trip Completed');
-    //         setFilteredTrips(filteredData);
-    //     } else if (filter === 'Delayed') {
-    //         const filteredDdelayedData = allTrips.filter(data => data?.finalStatus === 'Delayed');
-    //         filteredDdelayedData.map((data) => {
-    //             const staticETA = parseDate(data?.staticETA);
-    //             const estimatedArrivalDate = parseDate(data?.estimatedArrivalDate);
-
-    //             if (staticETA && estimatedArrivalDate) {
-    //                 const criticalDelayedTrips = filteredDdelayedData.filter((data) => Math.floor((parseDate(data?.estimatedArrivalDate) - parseDate(data?.staticETA)) / (1000 * 60 * 60 * 24)) <= 2)
-    //                 setFilteredTrips(criticalDelayedTrips);
-    //             }
-    //         })
-    //     } else if (filter === 'Critical Delay') {
-    //         const filteredDdelayedData = allTrips.filter(data => data?.finalStatus === 'Delayed');
-    //         filteredDdelayedData.map((data) => {
-    //             const staticETA = parseDate(data?.staticETA);
-    //             const estimatedArrivalDate = parseDate(data?.estimatedArrivalDate);
-
-    //             if (staticETA && estimatedArrivalDate) {
-    //                 const criticalDelayedTrips = filteredDdelayedData.filter((data) => Math.floor((parseDate(data?.estimatedArrivalDate) - parseDate(data?.staticETA)) / (1000 * 60 * 60 * 24)) > 2)
-    //                 setFilteredTrips(criticalDelayedTrips);
-    //             }
-    //         })
-    //     } else if (filter === 'Early') {
-    //         const filteredData = allTrips.filter(data => data?.finalStatus === 'Early');
-    //         setFilteredTrips(filteredData);
-    //     } else if (filter === 'On Time') {
-    //         const filteredData = allTrips.filter(data => data?.finalStatus === 'On Time');
-    //         setFilteredTrips(filteredData);
-    //     } else if ("All") {
-    //         setFilteredTrips(allTrips);
-    //         setSelectedFilter('');
-    //         setForm({
-    //             tripLogNo: ''
-    //         });
-    //         setSelectedParty('');
-    //         setSelectedOffice('');
-    //         setSelectedVehicleNo('');
-    //     }
-    // };
 
     const handleSelectFilter = (filter) => {
         if (filter === 'All') {
@@ -779,7 +637,7 @@ const VehicleTrackDash = () => {
                     {
                         currentTrips.length > 0 ? (
                             <div className='my-5'>
-                                <Pagination pages={howManyPages} setCurrentPage={setCurrentPage} />
+                                <Pagination pages={pageCount} setCurrentPage={setCurrentPage} />
                             </div>
                         ) : null
                     }

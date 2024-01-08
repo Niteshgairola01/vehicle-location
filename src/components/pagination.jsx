@@ -4,14 +4,16 @@ import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 const Pagination = ({ pages, setCurrentPage }) => {
 
     const numberOfPages = []
+
+    // console.log("number of pages", numberOfPages);
+
     for (let i = 1; i <= pages; i++) {
         numberOfPages.push(i)
     }
 
-    // Current active button number
+
     const [currentButton, setCurrentButton] = useState(1)
 
-    // Array of buttons what we see on the page
     const [arrOfCurrButtons, setArrOfCurrButtons] = useState([])
 
     useEffect(() => {
