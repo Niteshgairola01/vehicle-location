@@ -2,9 +2,12 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { logo } from '../assets/images';
 import Button from './Button/hoveredButton';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-function CollapsibleExample() {
+const NavBar = () => {
+  const location = useLocation();
+  // const navigate = useNavigate();
+  console.log("path", location.pathname);
 
   return (
     <Navbar collapseOnSelect expand="lg" className="bg-white navbar">
@@ -14,8 +17,8 @@ function CollapsibleExample() {
             <img src={logo} alt='logo' className='nav-logo' />
           </Navbar.Brand>
           <Nav className='d-flex justify-content-end align-items-end'>
-            <Link to={window.location.pathname === '/track' ? '/' : 'track'} className='m-0 p-0'>
-              <Button className="px-4 py-1">{window.location.pathname === '/track' ? 'Logout' : 'Login'}</Button>
+            <Link to={location.pathname === '/track' ? '/' : '/track'} className='m-0 p-0'>
+              <Button className="px-4 py-1">{location.pathname === '/track' ? 'Logout' : 'Login'}</Button>
             </Link>
           </Nav>
         </div>
@@ -27,4 +30,4 @@ function CollapsibleExample() {
   );
 }
 
-export default CollapsibleExample;
+export default NavBar;

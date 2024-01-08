@@ -89,6 +89,23 @@ p {
     color: var(--thm-white);
 }
 
+.bg-thm-dark{
+    background-color: var(--thm-dark);
+}
+
+.bg-thm-white{
+    background-color: var(--thm-white);
+}
+
+.bg-thm-disabeled{
+    background-color: var(--thm-disabeled);
+}
+
+.bg-thm-secondary{
+    background-color: var(--thm-secondary);
+}
+
+
 /* Cursor */
 
 .cursor-pointer {

@@ -3,30 +3,63 @@ import { Col, Form, Modal, Row } from 'react-bootstrap'
 import { Input, Radio } from '../components/form/Input'
 import Button from '../components/Button/coloredButton'
 import { ErrorToast, SuccessToast, WarningToast } from '../components/toast/toast'
-import { forceCompleteTrip } from '../hooks/tripsHooks'
+import { deleteVehicleOnTripComplete, forceCompleteTrip } from '../hooks/tripsHooks'
 
-const ForceCompleteForm = ({ show, setShow, data }) => {
-    const [form, setForm] = useState([]);
+const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
     const [selectedDate, setSelectedDate] = useState('custom');
     const [unloadingReachDate, setUnloadingReachDate] = useState('');
     const [unloadingDate, setUnloadingDate] = useState('');
 
-    const handleChangeUnalodingReactDate = (e) => {
-        const val = e.target.value;
+    const handleForceCompleteTrip = (form) => {
+        forceCompleteTrip(form).then((response) => {
+            if (response?.data === "Data Updated Successfully!") {
+                const [reachDatePart, reachTimePart] = unloadingReachDate.split(' ');
+                const [reachDay, reachMonth, reachYear] = reachDatePart.split('/');
+                const reachDateObject = new Date(`${reachYear}-${reachMonth}-${reachDay}T${reachTimePart}Z`);
+                const formattedReachDate = reachDateObject.toISOString().slice(0, 19).replace('T', ' ');
 
-        const vehicleExitDate = new Date(data?.vehicleExitDate);
-        const newValue = new Date(val);
+                const deleteVehiclePayLoad = [data?.vehicleNo, formattedReachDate];
+                SuccessToast(response?.data);
 
-        console.log("vehicleExitDate", vehicleExitDate);
-        console.log("newValue", newValue);
-
-        console.log("less", vehicleExitDate < newValue);
-
+                (form[1].length > 0 && form[2].length > 0) ? deleteVehicleOnTripCompleteWithRetry(deleteVehiclePayLoad) : SuccessToast("Data Updated Successfully!");
+            } else {
+                ErrorToast("Unable to force complete trip");
+                setShow(false);
+            }
+        }).catch(() => ErrorToast("Something went wrong"));
     }
 
-    useEffect(() => {
-        setForm([data?.operationUniqueID])
-    }, [data]);
+    const deleteVehicleOnTripCompleteWithRetry = async (deleteVehiclePayLoad) => {
+        deleteVehicleOnTripComplete(deleteVehiclePayLoad).then((response) => {
+            if (response?.data === "Vehicle Deleted Successfully!") {
+                SuccessToast(response?.data);
+                getAllTrips();
+                setShow(false);
+            } else if (response?.data === "Please Wait! Another Program is executing now. ") {
+                setTimeout(() => deleteVehicleOnTripCompleteWithRetry(deleteVehiclePayLoad), 1000);
+                ErrorToast(response?.data);
+            }
+            //  else if (response?.data === "Vehicle Not Found in List") {
+            //     setShow(false);
+            //     getAllTrips();
+            // }
+            else {
+                const operationIdArray = data?.operationUniqueID.split('.');
+                const form = [operationIdArray[0], '', ''];
+                handleForceCompleteTrip(form);
+            }
+        }).catch((err) => {
+            if (err?.response && err?.response?.data === "Vehicle Not Found in List!") {
+                const operationIdArray = data?.operationUniqueID.split('.');
+                const form = [operationIdArray[0], '', ''];
+                handleForceCompleteTrip(form);
+                ErrorToast(err?.response?.data);
+            } else {
+                ErrorToast("Something went wrong");
+                setShow(false);
+            }
+        });
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -34,28 +67,40 @@ const ForceCompleteForm = ({ show, setShow, data }) => {
         const newValue = new Date(unloadingReachDate);
         const newUnloadingDate = new Date(unloadingDate);
 
-        const formattedNewDate = `${newValue.getFullYear()}-${String(newValue.getMonth() + 1).padStart(2, '0')}-${String(newValue.getDate()).padStart(2, '0')} ${String(newValue.getHours()).padStart(2, '0')}:${String(newValue.getMinutes()).padStart(2, '0')}:${String(newValue.getSeconds()).padStart(2, '0')}`;
-        const formattedNewUnloadingDate = `${newUnloadingDate.getFullYear()}-${String(newUnloadingDate.getMonth() + 1).padStart(2, '0')}-${String(newUnloadingDate.getDate()).padStart(2, '0')} ${String(newUnloadingDate.getHours()).padStart(2, '0')}:${String(newUnloadingDate.getMinutes()).padStart(2, '0')}:${String(newUnloadingDate.getSeconds()).padStart(2, '0')}`;
+        const unlaodingReachDateFormat = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
+        const unlaodingDateFormat = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
 
-        const form = ["1161", String(formattedNewUnloadingDate), String(formattedNewDate)]
-
-        console.log("form", form);
-
-        if (vehicleExitDate > newValue) {
-            ErrorToast("Unloading Reach Date must be greater than Vehicle Exit Date");
-        } else if (newUnloadingDate < newValue) {
-            ErrorToast("Unloading Date must be euqal or greater than Unaloding Reach Date");
-        } else if (form.length === 3) {
-            forceCompleteTrip(form).then((response) => {
-                console.log("response", response);
-            })
+        if (!unloadingReachDate.match(unlaodingReachDateFormat)) {
+            ErrorToast('Check the format of Unloading Reach Date !')
+        } else if (!unloadingDate.match(unlaodingDateFormat)) {
+            ErrorToast('Check the format of Unloading Date !')
         } else {
-            WarningToast("Fill all the required fields ! ! ! !");
+            const [reachDatePart, reachTimePart] = unloadingReachDate.split(' ');
+            const [reachDay, reachMonth, reachYear] = reachDatePart.split('/');
+            const reachDateObject = new Date(`${reachYear}-${reachMonth}-${reachDay}T${reachTimePart}Z`);
+            const formattedReachDate = reachDateObject.toISOString().slice(0, 19).replace('T', ' ');
+
+            const [unloadingDatePart, unloadingTimePart] = unloadingDate.split(' ');
+            const [unloadingDay, unloadingMonth, unloadingYear] = unloadingDatePart.split('/');
+            const unloadingDateObject = new Date(`${unloadingYear}-${unloadingMonth}-${unloadingDay}T${unloadingTimePart}Z`);
+            const formattedUnloadingDate = unloadingDateObject.toISOString().slice(0, 19).replace('T', ' ');
+
+            const operationIdArray = data?.operationUniqueID.split('.');
+
+            const form = [operationIdArray[0], formattedUnloadingDate, formattedReachDate];
+
+            if (vehicleExitDate > newValue) {
+                ErrorToast("Unloading Reach Date must be greater than Vehicle Exit Date");
+            } else if (newUnloadingDate < newValue) {
+                ErrorToast("Unloading Date must be euqal or greater than Unaloding Reach Date");
+            }
+            else if (form.length === 3) {
+                handleForceCompleteTrip(form);
+            } else {
+                WarningToast("Fill all the required fields ! ! ! !");
+            }
         }
-
     }
-
-    // console.log("form", form);
 
     return (
         <Modal show={show} centered onHide={() => setShow(false)} size='lg'>
@@ -95,7 +140,10 @@ const ForceCompleteForm = ({ show, setShow, data }) => {
 
                         <Row className='mt-3'>
                             <Col sm={12} md={12} lg={4}>
-                                <Input label="Unloading Reach Date" type={'text'} onChange={(e) => setUnloadingReachDate(e.target.value)} required={true} placeholder="DD/MM/YYYY" />
+                                <Input label="Unloading Reach Date" type={'text'}
+                                    // onChange={(e) => handleChangeUnloadingReachDate(e.target.value)}
+                                    onChange={(e) => setUnloadingReachDate(e.target.value)}
+                                    required={true} placeholder="DD/MM/YYYY" />
                             </Col>
                             <Col sm={12} md={12} lg={4}>
                                 <Input label="Unloading Date" type={'text'} onChange={(e) => setUnloadingDate(e.target.value)} required={true} placeholder="DD/MM/YYYY" />
