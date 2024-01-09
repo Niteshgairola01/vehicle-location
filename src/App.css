@@ -89,19 +89,19 @@ p {
     color: var(--thm-white);
 }
 
-.bg-thm-dark{
+.bg-thm-dark {
     background-color: var(--thm-dark);
 }
 
-.bg-thm-white{
+.bg-thm-white {
     background-color: var(--thm-white);
 }
 
-.bg-thm-disabeled{
+.bg-thm-disabeled {
     background-color: var(--thm-disabeled);
 }
 
-.bg-thm-secondary{
+.bg-thm-secondary {
     background-color: var(--thm-secondary);
 }
 

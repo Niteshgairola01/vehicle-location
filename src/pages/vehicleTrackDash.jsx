@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { Col, Form, Modal, Row } from 'react-bootstrap'
+import { Col, Form, Row } from 'react-bootstrap'
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
 import { MdSettingsBackupRestore } from "react-icons/md";
-import { IoMdRefresh } from 'react-icons/io';
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
 import { getAllOfficesList } from '../hooks/officeMasterHooks';
 import { ErrorToast, WarningToast } from '../components/toast/toast';
-import { Input, Checkbox, Radio } from '../components/form/Input';
+import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
 import { Link } from 'react-router-dom';
@@ -25,7 +24,6 @@ const VehicleTrackDash = () => {
     const [allOffices, setAllOffices] = useState([]);
     const [partiesList, setPartiesList] = useState([]);
     const [vehiclesList, setVehiclesList] = useState([]);
-    const [selectedDate, setSelectedDate] = useState('custom');
     const [showFilters, setShowFilters] = useState(false);
     const [showForceCompleteModal, setShowForceCompleteModal] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState({});
@@ -36,7 +34,7 @@ const VehicleTrackDash = () => {
     const [isOpenOffice, setIsOpenOffice] = useState(false);
     const [selectedVehicleNo, setSelectedVehicleNo] = useState('');
     const [isOpenVehicle, setIsOpenVehicle] = useState(false);
-    const [refreshClicked, setRefreshClicked] = useState(false);
+    // const [refreshClicked, setRefreshClicked] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
 
     const itemsPerPage = 20
@@ -197,6 +195,8 @@ const VehicleTrackDash = () => {
                     }
                 } else if (selectedFilter.includes('Trip Completed')) {
                     tripsFilteredByTripStatus = [];
+                } else if (selectedFilter.includes('Without Trip') && selectedFilter.length === 1) {
+                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => (data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running");
                 }
             } else {
                 tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
@@ -213,11 +213,11 @@ const VehicleTrackDash = () => {
                             let testArr;
                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                 if (selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed')) {
-                                    testArr = allFilteredTrip.filter((data) => data?.tripStatus === 'Trip Running' && data?.finalStatus === 'Delayed');
+                                    testArr = allFilteredTrip.filter((data) => (data?.tripStatus === 'Trip Running') && (data?.finalStatus === 'Delayed'));
                                 } else if (!selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
-                                    testArr = allFilteredTrip.filter((data) => data?.tripStatus === 'Trip Completed' && data?.finalStatus === 'Delayed');
+                                    testArr = allFilteredTrip.filter((data) => (data?.tripStatus === 'Trip Completed') && (data?.finalStatus === 'Delayed'));
                                 } else if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
-                                    testArr = allFilteredTrip.filter((data) => data?.tripStatus === "Trip Running" || data?.tripStatus === 'Trip Completed' && data?.finalStatus === 'Delayed');
+                                    testArr = allFilteredTrip.filter((data) => (data?.tripStatus === "Trip Running" || data?.tripStatus === 'Trip Completed') && (data?.finalStatus === 'Delayed'));
                                 }
                             } else {
                                 testArr = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
@@ -380,10 +380,10 @@ const VehicleTrackDash = () => {
 
     }
 
-    const handleRefreshPage = () => {
-        getAllTrips();
-        setRefreshClicked(true);
-    };
+    // const handleRefreshPage = () => {
+    //     getAllTrips();
+    //     setRefreshClicked(true);
+    // };
 
     const handleFilter = () => {
         const allFilteredTrip = allTrips.filter(test => {
@@ -405,36 +405,40 @@ const VehicleTrackDash = () => {
         handleFilter();
     };
 
-    useEffect(() => {
-        const allFilteredTrip = allTrips.filter(test => {
-            for (const key in form) {
-                const testValue = String(test[key]).toLowerCase();
-                const formValue = form[key].toLowerCase();
-                if (testValue !== formValue && formValue.length > 0) {
-                    return false;
-                }
-            }
-            return true;
-        });
+    // useEffect(() => {
+    //     const allFilteredTrip = allTrips.filter(test => {
+    //         for (const key in form) {
+    //             const testValue = String(test[key]).toLowerCase();
+    //             const formValue = form[key].toLowerCase();
+    //             if (testValue !== formValue && formValue.length > 0) {
+    //                 return false;
+    //             }
+    //         }
+    //         return true;
+    //     });
 
-        setFilteredTrips(allFilteredTrip);
+    //     setFilteredTrips(allFilteredTrip);
 
-        if (selectedFilter.length > 0) {
-            let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-            if (selectedFilter.includes('Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
-                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Running')) {
-                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-                } else {
-                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
-                }
-            } else {
-                tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
-            }
-            setFilteredTrips(tripsFilteredByTripStatus);
-        } else {
-            setFilteredTrips(allFilteredTrip);
-        }
-    }, [refreshClicked]);
+    //     if (selectedFilter.length > 0) {
+    //         let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+    //         if (selectedFilter.includes('Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
+    //             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Running')) {
+    //                 tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+    //             } else {
+    //                 tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
+    //             }
+    //         } else {
+    //             tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
+    //         }
+    //         setFilteredTrips(tripsFilteredByTripStatus);
+    //     } else {
+    //         setFilteredTrips(allFilteredTrip);
+    //     }
+    // }, [refreshClicked]);
+
+    document.addEventListener("keydown", function (event) {
+        console.log(event);
+    })
 
     return (
         <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
@@ -456,7 +460,7 @@ const VehicleTrackDash = () => {
                                                 partiesList.length > 0 ? (
                                                     filteredPartyOptions.length > 0 ? (
                                                         filteredPartyOptions.map((option, i) => (
-                                                            <div className='mt-2' style={{ fontSize: "0.8rem", cursor: 'pointer' }} key={i} onClick={() => handleOptionClickParty(option?.clientName)}>
+                                                            <div className={`${selectedParty === option?.clientName ? 'bg-thm-dark thm-white' : 'bg-thm-white text-dark'} mt-2`} style={{ fontSize: "0.8rem", cursor: 'pointer' }} key={i} onClick={() => handleOptionClickParty(option?.clientName)}>
                                                                 {option?.clientName}
                                                             </div>
                                                         ))
@@ -506,7 +510,7 @@ const VehicleTrackDash = () => {
                                                 vehiclesList.length > 0 ? (
                                                     filteredVehicleOptions.length > 0 ? (
                                                         filteredVehicleOptions.map((option, i) => (
-                                                            <div className='mt-2' style={{ fontSize: "0.8rem", cursor: 'pointer' }} key={i} onClick={() => handleOptionClickVehicle(option?.vehicleNo)}>
+                                                            <div className={`${selectedVehicleNo === option?.vehicleNo ? 'bg-thm-dark thm-white' : 'bg-thm-white text-dark'}`} style={{ fontSize: "0.8rem", cursor: 'pointer' }} key={i} onClick={() => handleOptionClickVehicle(option?.vehicleNo)}>
                                                                 {option?.vehicleNo}
                                                             </div>
                                                         ))
@@ -582,8 +586,11 @@ const VehicleTrackDash = () => {
                 </div>
 
                 <hr />
-
-                <div className='table-responsive mt-5' style={{ height: "55vh" }}>
+                <div className='w-100 mt-5'>
+                    <span className='thm-dark fs-6 fw-bold'>Total Trips:</span>
+                    <span className='fs-6 thm-dark ms-2'>{filteredTrips.length}</span>
+                </div>
+                <div className='table-responsive mt-3' style={{ height: "55vh" }}>
                     <table className='table table-bordered table-striped w-100 positon-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
                         <thead className='table-head text-white' style={{ position: "static" }}>
                             <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
