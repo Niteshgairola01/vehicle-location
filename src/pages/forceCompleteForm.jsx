@@ -61,20 +61,27 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
         });
     };
 
+    const [reachDateFormat, setReachDateFormat] = useState(true);
+    const [unloadingDateFormat, setUnloadingDateFormat] = useState(true);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         const vehicleExitDate = new Date(data?.vehicleExitDate);
         const newValue = new Date(unloadingReachDate);
         const newUnloadingDate = new Date(unloadingDate);
 
-        const unlaodingReachDateFormat = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
-        const unlaodingDateFormat = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
+        const unloadingReachDateFormat = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
+        const unloadingDateFormat = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
 
-        if (!unloadingReachDate.match(unlaodingReachDateFormat)) {
-            ErrorToast('Check the format of Unloading Reach Date !')
-        } else if (!unloadingDate.match(unlaodingDateFormat)) {
-            ErrorToast('Check the format of Unloading Date !')
+        if (!unloadingReachDate.match(unloadingReachDateFormat)) {
+            ErrorToast('Check the format of Unloading Reach Date !');
+            setReachDateFormat(false);
+        } else if (!unloadingDate.match(unloadingDateFormat)) {
+            ErrorToast('Check the format of Unloading Date !');
+            setUnloadingDateFormat(false);
         } else {
+            setReachDateFormat(true);
+            setUnloadingDateFormat(true);
             const [reachDatePart, reachTimePart] = unloadingReachDate.split(' ');
             const [reachDay, reachMonth, reachYear] = reachDatePart.split('/');
             const reachDateObject = new Date(`${reachYear}-${reachMonth}-${reachDay}T${reachTimePart}Z`);
@@ -143,10 +150,20 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
                                 <Input label="Unloading Reach Date" type={'text'}
                                     // onChange={(e) => handleChangeUnloadingReachDate(e.target.value)}
                                     onChange={(e) => setUnloadingReachDate(e.target.value)}
-                                    required={true} placeholder="DD/MM/YYYY" />
+                                    required={true} placeholder="DD/MM/YYYY HH:MM:SS" />
+                                {/* {
+                                    !reachDateFormat ? (
+                                        <span className='fw-bold text-danger' style={{ fontSize: "0.7rem" }}>Format must be DD:MM:YYYY HH:MM:SS</span>
+                                    ) : null
+                                } */}
                             </Col>
                             <Col sm={12} md={12} lg={4}>
-                                <Input label="Unloading Date" type={'text'} onChange={(e) => setUnloadingDate(e.target.value)} required={true} placeholder="DD/MM/YYYY" />
+                                <Input label="Unloading Date" type={'text'} onChange={(e) => setUnloadingDate(e.target.value)} required={true} placeholder="DD/MM/YYYY HH:MM:SS" />
+                                {/* {
+                                    !unloadingDateFormat ? (
+                                        <span className='fw-bold text-danger' style={{ fontSize: "0.7rem" }}>Format must be DD:MM:YYYY HH:MM:SS</span>
+                                    ) : null
+                                } */}
                             </Col>
                         </Row>
                     </div>

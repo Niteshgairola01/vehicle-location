@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 
-const Pagination = ({ pages, setCurrentPage }) => {
+const Pagination = ({ pages, currentPage, setCurrentPage }) => {
 
     const numberOfPages = []
 
@@ -44,25 +44,31 @@ const Pagination = ({ pages, setCurrentPage }) => {
         }
 
         else if (currentButton === dotsInitial) {
-            setCurrentButton(arrOfCurrButtons[arrOfCurrButtons.length - 3] + 1);
+            setCurrentPage(arrOfCurrButtons[arrOfCurrButtons.length - 3] + 1);
+            // setCurrentButton(arrOfCurrButtons[arrOfCurrButtons.length - 3] + 1);
         }
         else if (currentButton === dotsRight) {
-            setCurrentButton(arrOfCurrButtons[3] + 2);
+            setCurrentPage(arrOfCurrButtons[3] + 2);
+            // setCurrentButton(arrOfCurrButtons[3] + 2);
         }
 
         else if (currentButton === dotsLeft) {
-            setCurrentButton(arrOfCurrButtons[3] - 2);
+            setCurrentPage(arrOfCurrButtons[3] - 2);
+            // setCurrentButton(arrOfCurrButtons[3] - 2);
         }
 
         setArrOfCurrButtons(tempNumberOfPages);
-        setCurrentPage(currentButton);
+        if (currentButton !== dotsInitial && currentButton !== dotsLeft && currentButton !== dotsRight) {
+            console.log("number");
+            setCurrentPage(currentButton);
+        }
     }, [currentButton, pages]);
 
     return (
         <div className="pagination-container">
             <a
                 href="#"
-                className={`${currentButton === 1 ? 'disabled' : ''}`}
+                className={`${currentPage === 1 ? 'disabled' : ''}`}
                 onClick={() => setCurrentButton(prev => prev <= 1 ? prev : prev - 1)}
             >
                 <IoIosArrowBack />
@@ -72,7 +78,7 @@ const Pagination = ({ pages, setCurrentPage }) => {
                 return <a
                     href="#"
                     key={index}
-                    className={`${currentButton === item ? 'active' : ''}`}
+                    className={`${currentPage === item ? 'active' : ''}`}
                     onClick={() => setCurrentButton(item)}
                 >
                     {item}
@@ -81,7 +87,7 @@ const Pagination = ({ pages, setCurrentPage }) => {
 
             <a
                 href="#"
-                className={`${currentButton === numberOfPages.length ? 'disabled' : ''}`}
+                className={`${currentPage === numberOfPages.length ? 'disabled' : ''}`}
                 onClick={() => setCurrentButton(prev => prev >= numberOfPages.length ? prev : prev + 1)}
             >
                 <IoIosArrowForward />
