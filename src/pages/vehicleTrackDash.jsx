@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import Select from 'react-select';
 import { Col, Form, Row } from 'react-bootstrap'
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
@@ -49,7 +50,7 @@ const VehicleTrackDash = () => {
 
     const tableColumns = ['Vehicle No.', 'Trip No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
         'GPS (Date / Time)', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Report Unloading', 'Unloading End Date', 'Location', 'Estimated Arrival Date',
-        'Final Status', 'Driver Name', 'Driver Mobile No.', 'Exit From', 'Trip Status', 'Force Complete'
+        'Final Status', 'Hours Delay', 'Driver Name', 'Driver Mobile No.', 'Exit From', 'Trip Status', 'Force Complete'
     ];
 
     const allFilters = ['Trip Running', 'Trip Completed', 'Without Trip', 'Manual Bind', 'Delayed', 'Early', 'On Time', 'Critical Delayed'];
@@ -75,174 +76,43 @@ const VehicleTrackDash = () => {
 
     useEffect(() => {
         getAllPartiesList().then((response) => {
-            (response.status === 200) ? setPartiesList(response?.data) : setPartiesList([]);
+            if (response.status === 200) {
+                if (response?.data.length > 0) {
+                    const filteredData = response?.data.map(data => ({
+                        ...data,
+                        label: data?.clientName,
+                        value: data?.clientName
+                    }));
+
+                    setPartiesList(filteredData);
+                } else {
+                    setPartiesList([]);
+                }
+            } else {
+                setPartiesList([]);
+            }
         }).catch(() => setPartiesList([]));
     }, []);
 
     useEffect(() => {
         getAllVehiclesList().then((response) => {
-            (response.status === 200) ? setVehiclesList(response?.data) : setVehiclesList([]);
+            if (response.status === 200) {
+                if (response?.data.length > 0) {
+                    const filteredData = response?.data.map(data => ({
+                        ...data,
+                        label: data?.vehicleNo,
+                        value: data?.vehicleNo
+                    }));
+
+                    setVehiclesList(filteredData);
+                } else {
+                    setVehiclesList([]);
+                }
+            } else {
+                setVehiclesList([]);
+            }
         }).catch(() => setVehiclesList([]));
     }, []);
-
-    // useEffect(() => {
-    //     getAllOfficesList().then((response) => {
-    //         (response.status === 200) ? setofficesList(response?.data) : setofficesList([]);
-    //     }).catch(() => setofficesList([]));
-    // }, []);
-
-    const [eventKey, setEventKey] = useState(0);
-    const [selectedElement, setSelectedElement] = useState({});
-    const [selectedIndex, setSelectedIndex] = useState(-1);
-    const filteredArr = [
-        {
-            id: 1,
-            title: 'title 1'
-        },
-        {
-            id: 2,
-            title: 'title 2'
-        },
-        {
-            id: 3,
-            title: 'title 3'
-        },
-    ];
-
-    document.addEventListener("keydown", function (event) {
-        setEventKey(event.keyCode);
-    });
-
-    useEffect(() => {
-        if (eventKey === 40) {
-            filteredPartyOptions.forEach((option, index) => {
-            });
-        }
-    }, [eventKey]);
-
-    const handleInputChangeParty = (e) => {
-        setSelectedParty(e.target.value);
-
-        let key;
-        if (eventKey === 40) {
-            for (let index = 0; index < filteredPartyOptions.length; index++) {
-                key = index++;
-            }
-        }
-
-        setIsOpenParty(true);
-        setForm({
-            ...form,
-            consignorName: e.target.value
-        })
-    };
-
-    const handleOptionClickParty = (i) => {
-        setSelectedParty(i)
-        setForm({
-            ...form,
-            consignorName: i
-        })
-        setIsOpenParty(false);
-    };
-
-    const filteredPartyOptions = partiesList.filter((option) =>
-        (option?.clientName).toLowerCase().includes(selectedParty.toLowerCase())
-    );
-
-    const handleOpenParty = () => {
-        setIsOpenParty(true);
-
-        const handleKeyDown = (event) => {
-            if (event.keyCode === 40) {
-                setSelectedIndex((prevIndex) =>
-                    prevIndex < filteredPartyOptions.length - 1 ? prevIndex + 1 : prevIndex
-                );
-
-            } else if (event.keyCode === 38) {
-                setSelectedIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
-            }
-        };
-
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-
-
-    }
-
-    const handleKeyDown = (event) => {
-        if (event.keyCode === 40) {
-            setSelectedIndex((prevIndex) =>
-                prevIndex < filteredPartyOptions.length - 1 ? prevIndex + 1 : prevIndex
-            );
-        } else if (event.keyCode === 38) {
-            setSelectedIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
-        }
-    };
-
-    useEffect(() => {
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [selectedIndex]);
-
-    useEffect(() => {
-        if (selectedIndex !== -1) {
-            setSelectedElement(filteredPartyOptions[selectedIndex]);
-        } else {
-            setSelectedElement({});
-        }
-    }, [selectedIndex]);
-
-
-    const handleInputChangeOffice = (e) => {
-        setSelectedOffice(e.target.value);
-
-        setIsOpenParty(true);
-        setForm({
-            ...form,
-            office: e.target.value
-        })
-    };
-
-    const handleOptionClickOffice = (i) => {
-        setSelectedOffice(i)
-        setForm({
-            ...form,
-            office: i
-        })
-        setIsOpenOffice(false);
-    };
-
-    const filteredOfficeOptions = allOffices.filter((option) =>
-        (option).toLowerCase().includes(selectedOffice.toLowerCase())
-    );
-
-    const handleInputChangeVehicle = (e) => {
-        setSelectedVehicleNo(e.target.value);
-
-        setIsOpenVehicle(true);
-        setForm({
-            ...form,
-            vehicleNo: e.target.value
-        })
-    };
-
-    const handleOptionClickVehicle = (i) => {
-        setSelectedVehicleNo(i)
-        setForm({
-            ...form,
-            vehicleNo: i
-        })
-        setIsOpenVehicle(false);
-    };
-
-    const filteredVehicleOptions = vehiclesList.filter((option) =>
-        (option?.vehicleNo).toLowerCase().includes(selectedVehicleNo.toLowerCase())
-    );
 
     const handleChange = (e) => {
         setForm({
@@ -254,12 +124,9 @@ const VehicleTrackDash = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        let trips = [];
-
         getRunningTrips().then((response) => {
             if (response.status === 200) {
-                trips = response?.data;
-
+                const trips = response?.data;
                 const allFilteredTrip = trips.filter(test => {
                     for (const key in form) {
                         const testValue = String(test[key]).toLowerCase();
@@ -295,8 +162,7 @@ const VehicleTrackDash = () => {
                                 } else {
                                     tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
                                 }
-                            }
-                            else if (selectedFilter.includes('Delayed') || selectedFilter.includes('Critical Delayed')) {
+                            } else if (selectedFilter.includes('Delayed') || selectedFilter.includes('Critical Delayed')) {
                                 if (selectedFilter.includes('Delayed') && !selectedFilter.includes('Critical Delayed')) {
                                     let testArr;
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
@@ -311,6 +177,9 @@ const VehicleTrackDash = () => {
                                         testArr = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
                                     }
 
+
+                                    let test = [];
+
                                     testArr.map((data) => {
                                         const staticETA = data?.staticETA !== null && parseDate(data?.staticETA);
                                         const estimatedArrivalDate = data?.estimatedArrivalDate && parseDate(data?.estimatedArrivalDate);
@@ -318,20 +187,31 @@ const VehicleTrackDash = () => {
                                         if (staticETA && estimatedArrivalDate) {
                                             const timeDiffInDays = Math.floor((estimatedArrivalDate - staticETA) / (1000 * 60 * 60 * 24));
 
-                                            if (timeDiffInDays < 2 && data.finalStatus === "Delayed") {
+                                            if (timeDiffInDays <= 2 && data.finalStatus === "Delayed") {
                                                 tripsFilteredByTripStatus.push(data);
+                                                test.push(data);
                                             }
                                         }
                                     });
+
+                                    setFilteredTrips(test)
 
                                 } else if (!selectedFilter.includes('Delayed') && selectedFilter.includes('Critical Delayed')) {
 
                                     let testArr;
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                        testArr = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
+                                        if (selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed')) {
+                                            testArr = allFilteredTrip.filter((data) => ((data?.tripStatus === 'Trip Running') && (data?.finalStatus === 'Delayed')));
+                                        } else if (!selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
+                                            testArr = allFilteredTrip.filter((data) => ((data?.tripStatus === 'Trip Completed') && (data?.finalStatus === 'Delayed')));
+                                        } else if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
+                                            testArr = allFilteredTrip.filter((data) => ((data?.tripStatus === 'Trip Running' && data?.tripStatus === 'Trip Completed') && (data?.finalStatus === 'Delayed')));
+                                        }
                                     } else {
                                         testArr = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
                                     }
+
+                                    let test = [];
 
                                     testArr.map((data) => {
                                         const staticETA = data?.staticETA !== null && parseDate(data?.staticETA);
@@ -341,12 +221,33 @@ const VehicleTrackDash = () => {
                                             const timeDiffInDays = Math.floor((estimatedArrivalDate - staticETA) / (1000 * 60 * 60 * 24));
 
                                             if (timeDiffInDays > 2 && data.finalStatus === "Delayed") {
-                                                tripsFilteredByTripStatus.push(data);
+                                                test.push(data)
                                             }
                                         }
                                     });
-                                } else {
-                                    allFilteredTrip.filter(data => data?.finalStatus === 'Delayed')
+                                    setFilteredTrips(test)
+                                }
+
+                                else if (selectedFilter.includes('Delayed') && selectedFilter.includes('Critical Delayed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        if (selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed')) {
+                                            const testArr = allFilteredTrip.filter(data => data?.tripStatus === 'Trip Running' && data?.finalStatus === 'Delayed');
+                                            setFilteredTrips(testArr);
+                                        } else if (!selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
+                                            const testArr = allFilteredTrip.filter(data => data?.tripStatus === 'Trip Completed' && data?.finalStatus === 'Delayed');
+                                            setFilteredTrips(testArr);
+                                        } else if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
+                                            const testArr = allFilteredTrip.filter(data => (data?.tripStatus === 'Trip Running' || data?.tripStatus === 'Trip Completed') && data?.finalStatus === 'Delayed');
+                                            setFilteredTrips(testArr);
+                                        }
+                                    } else {
+                                        const testArr = allFilteredTrip.filter(data => data?.finalStatus === 'Delayed');
+                                        setFilteredTrips(testArr);
+                                    }
+                                }
+
+                                else {
+                                    setFilteredTrips(allFilteredTrip.filter(data => data?.finalStatus === 'Delayed'))
                                 }
                             }
                         } else {
@@ -362,7 +263,7 @@ const VehicleTrackDash = () => {
                             manualBindedTrips = tripsFilteredByTripStatus.filter((data) => data?.exitFrom === 'Manual Bind');
                         }
                         setFilteredTrips(manualBindedTrips);
-                    } else {
+                    } else if (!selectedFilter.includes("Delayed") && !selectedFilter.includes("Critical Delayed")) {
                         setFilteredTrips(tripsFilteredByTripStatus);
                     }
                 } else {
@@ -431,6 +332,15 @@ const VehicleTrackDash = () => {
 
         return data.finalStatus;
     };
+
+    const getDelayedHours = (hours) => {
+        if (hours !== null && hours.length > 0) {
+            const hoursArr = hours.split('.');
+            return hoursArr[0];
+        } else {
+            return ''
+        }
+    }
 
     const parseDate = (dateString) => {
         const dateParts = dateString.split(/[\/ :]/);
@@ -508,8 +418,6 @@ const VehicleTrackDash = () => {
         const hoursDifference = timeDifference / (1000 * 60 * 60);
 
         return hoursDifference > 4 ? true : false;
-        // setIsGreaterThan4Hours(hoursDifference > 4);
-
     }
 
     // const handleRefreshPage = () => {
@@ -537,40 +445,36 @@ const VehicleTrackDash = () => {
         handleFilter();
     };
 
-    // useEffect(() => {
-    //     const allFilteredTrip = allTrips.filter(test => {
-    //         for (const key in form) {
-    //             const testValue = String(test[key]).toLowerCase();
-    //             const formValue = form[key].toLowerCase();
-    //             if (testValue !== formValue && formValue.length > 0) {
-    //                 return false;
-    //             }
-    //         }
-    //         return true;
-    //     });
+    const handleChangeParty = (selectedValue) => {
+        setSelectedParty(selectedValue);
 
-    //     setFilteredTrips(allFilteredTrip);
+        if (selectedValue === null) {
+            setForm({
+                ...form,
+                consignorName: ''
+            });
+        } else {
+            setForm({
+                ...form,
+                consignorName: selectedValue?.clientName
+            });
+        }
+    };
 
-    //     if (selectedFilter.length > 0) {
-    //         let tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-    //         if (selectedFilter.includes('Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
-    //             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Running')) {
-    //                 tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-    //             } else {
-    //                 tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
-    //             }
-    //         } else {
-    //             tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
-    //         }
-    //         setFilteredTrips(tripsFilteredByTripStatus);
-    //     } else {
-    //         setFilteredTrips(allFilteredTrip);
-    //     }
-    // }, [refreshClicked]);
-
-    // document.addEventListener("keydown", function (event) {
-    //     console.log(event);
-    // })
+    const handleChangeVehicle = (selectedValue) => {
+        setSelectedVehicleNo(selectedValue);
+        if (selectedValue === null) {
+            setForm({
+                ...form,
+                vehicleNo: ''
+            });
+        } else {
+            setForm({
+                ...form,
+                vehicleNo: selectedValue?.value
+            });
+        }
+    };
 
     return (
         <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
@@ -584,78 +488,23 @@ const VehicleTrackDash = () => {
                     <Form onSubmit={handleSubmit}>
                         <Row className='dashoard-filter-form rounded'>
                             <Col sm={12} md={6} lg={2} className='position-relative'>
-                                <Input label="Party" name="consignorName" onChange={handleInputChangeParty} value={selectedParty} onClick={() => handleOpenParty()} placeholder="Party Name" autocomplete="off" />
-                                {isOpenParty && (
-                                    <>
-                                        <div style={{ maxHeight: "15rem", position: 'absolute', top: '4.5rem', width: '90%', zIndex: '999', border: "black", background: 'white', overflowY: "scroll" }} className="border px-3 py-2 border-2 d-flex flex-column">
-                                            {
-                                                partiesList.length > 0 ? (
-                                                    filteredPartyOptions.length > 0 ? (
-                                                        filteredPartyOptions.map((option, i) => (
-                                                            <div className={`${selectedParty === option?.clientName ? 'bg-thm-dark thm-white' : 'bg-thm-white text-dark'} mt-2`} style={{ fontSize: "0.8rem", cursor: 'pointer' }} key={i} onClick={() => handleOptionClickParty(option?.clientName)}>
-                                                                {option?.clientName}
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="mt-2">No match found</div>
-                                                    )
-                                                ) : (
-                                                    <div className="mt-2">Loading . . . . </div>
-                                                )
-                                            }
-                                        </div>
-                                    </>
-                                )}
+                                <Form.Label>Party</Form.Label>
+                                <Select
+                                    options={partiesList}
+                                    value={selectedParty}
+                                    onChange={handleChangeParty}
+                                    isClearable={true}
+                                />
                             </Col>
 
-                            {/* <Col sm={12} md={6} lg={2} className='position-relative'>
-                                <Input label="Organization Office" name="orgOffice" onChange={handleInputChangeOffice} value={selectedOffice} onClick={() => setIsOpenOffice(true)} placeholder="Organization Office" autocomplete="off" />
-                                {isOpenOffice && (
-                                    <>
-                                        <div style={{ maxHeight: "15rem", position: 'absolute', top: '4.5rem', width: '90%', zIndex: '999', border: "black", background: 'white', overflowY: "scroll" }} className="border px-3 py-2 border-2 d-flex flex-column">
-                                            {
-                                                allOffices.length > 0 ? (
-                                                    filteredOfficeOptions.length > 0 ? (
-                                                        filteredOfficeOptions.map((option, i) => (
-                                                            <div className='mt-2' style={{ fontSize: "0.8rem", cursor: 'pointer' }} key={i} onClick={() => handleOptionClickOffice(option)}>
-                                                                {option}
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="mt-2">No match found</div>
-                                                    )
-                                                ) : (
-                                                    <div className="mt-2">Loading . . . . </div>
-                                                )
-                                            }
-                                        </div>
-                                    </>
-                                )}
-                            </Col> */}
-
                             <Col sm={12} md={6} lg={2} className='position-relative'>
-                                <Input label="Vehicle" name="vehicleNo" onChange={handleInputChangeVehicle} value={selectedVehicleNo} onClick={() => setIsOpenVehicle(true)} placeholder="Vehicle No." autocomplete="off" />
-                                {isOpenVehicle && (
-                                    <>
-                                        <div style={{ maxHeight: "15rem", position: 'absolute', top: '4.5rem', width: '90%', zIndex: '999', border: "black", background: 'white', overflowY: "scroll" }} className="border px-3 py-2 border-2 d-flex flex-column">
-                                            {
-                                                vehiclesList.length > 0 ? (
-                                                    filteredVehicleOptions.length > 0 ? (
-                                                        filteredVehicleOptions.map((option, i) => (
-                                                            <div className={`${selectedVehicleNo === option?.vehicleNo ? 'bg-thm-dark thm-white' : 'bg-thm-white text-dark'}`} style={{ fontSize: "0.8rem", cursor: 'pointer' }} key={i} onClick={() => handleOptionClickVehicle(option?.vehicleNo)}>
-                                                                {option?.vehicleNo}
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="mt-2">No match found</div>
-                                                    )
-                                                ) : (
-                                                    <div className="mt-2">Loading . . . . </div>
-                                                )
-                                            }
-                                        </div>
-                                    </>
-                                )}
+                                <Form.Label>Vehicle</Form.Label>
+                                <Select
+                                    options={vehiclesList}
+                                    value={selectedVehicleNo}
+                                    onChange={handleChangeVehicle}
+                                    isClearable={true}
+                                />
                             </Col>
 
                             <Col sm={12} md={6} lg={2}>
@@ -754,6 +603,7 @@ const VehicleTrackDash = () => {
                                     <td>{data?.location}</td>
                                     <td>{data?.estimatedArrivalDate}</td>
                                     <td className={`${getFinalStatus(data) === 'Delayed' ? 'fw-bold bg-warning' : getFinalStatus(data) === "Critical Delayed" && "fw-bold text-white bg-danger"}`}>{getFinalStatus(data)}</td>
+                                    <td>{getDelayedHours(data?.delayedHours)}</td>
                                     <td>{data?.driverName}</td>
                                     <td>{data?.driverMobileNo}</td>
                                     <td>{data?.exitFrom}</td>
@@ -787,4 +637,4 @@ const VehicleTrackDash = () => {
     )
 }
 
-export default VehicleTrackDash
+export default VehicleTrackDash;

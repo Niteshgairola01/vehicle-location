@@ -107,7 +107,22 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
                 WarningToast("Fill all the required fields ! ! ! !");
             }
         }
-    }
+    };
+
+    useEffect(() => {
+        const currentDate = new Date();
+        const day = currentDate.getDate() >= 10 ? currentDate.getDate() : `0${currentDate.getDate()}`;
+        const year = currentDate.getFullYear() >= 10 ? currentDate.getFullYear() : `0${currentDate.getFullYear()}`;
+        const month = currentDate.getMonth() + 1 >= 10 ? currentDate.getMonth() + 1 : `0${currentDate.getMonth() + 1}`;
+        const hour = currentDate.getHours() >= 10 ? currentDate.getHours() : `0${currentDate.getHours()}`;
+        const minute = currentDate.getMinutes() >= 10 ? currentDate.getMinutes() : `0${currentDate.getMinutes()}`;
+        const seconds = currentDate.getSeconds() >= 10 ? currentDate.getSeconds() : `0${currentDate.getSeconds()}`;
+
+        const formattedDate = `${day}/${month}/${year} ${hour}:${minute}:${seconds}`
+        selectedDate === 'current' && setUnloadingReachDate(formattedDate);
+    }, [selectedDate]);
+
+    // console.log("unloading reach date", unloadingReachDate);
 
     return (
         <Modal show={show} centered onHide={() => setShow(false)} size='lg'>
@@ -148,9 +163,10 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
                         <Row className='mt-3'>
                             <Col sm={12} md={12} lg={4}>
                                 <Input label="Unloading Reach Date" type={'text'}
-                                    // onChange={(e) => handleChangeUnloadingReachDate(e.target.value)}
                                     onChange={(e) => setUnloadingReachDate(e.target.value)}
-                                    required={true} placeholder="DD/MM/YYYY HH:MM:SS" />
+                                    required={true} placeholder="DD/MM/YYYY HH:MM:SS"
+                                    value={unloadingReachDate}
+                                />
                                 {/* {
                                     !reachDateFormat ? (
                                         <span className='fw-bold text-danger' style={{ fontSize: "0.7rem" }}>Format must be DD:MM:YYYY HH:MM:SS</span>
