@@ -53,7 +53,7 @@ const VehicleTrackDash = () => {
         'Final Status', 'Hours Delay', 'Driver Name', 'Driver Mobile No.', 'Exit From', 'Trip Status', 'Force Complete'
     ];
 
-    const allFilters = ['Trip Running', 'Trip Completed', 'Without Trip', 'Manual Bind', 'Delayed', 'Early', 'On Time', 'Critical Delayed'];
+    const allFilters = ['Trip Running', 'Trip Completed', 'Without Trip', 'Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed'];
 
     const getAllTrips = () => {
         getRunningTrips().then((response) => {
@@ -121,6 +121,11 @@ const VehicleTrackDash = () => {
         });
     };
 
+    useEffect(() => {
+        const onTime = allTrips.filter((data) => data?.finalStatus === "On Time");
+        console.log("ontime", onTime);
+    }, [allTrips]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -155,117 +160,114 @@ const VehicleTrackDash = () => {
                         }
                     } else {
                         tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-                        if (selectedFilter.includes('Delayed') || selectedFilter.includes('Critical Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
-                            if (selectedFilter.includes("Early" || selectedFilter("On Time"))) {
+                        if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
+
+                            let finalStatusTrips = [];
+
+                            if (selectedFilter.includes("Early") || selectedFilter.includes("On Time") ) {
                                 if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+                                    const trips = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+                                    trips.map((data) => finalStatusTrips.push(data));
                                 } else {
-                                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
-                                }
-                            } else if (selectedFilter.includes('Delayed') || selectedFilter.includes('Critical Delayed')) {
-                                if (selectedFilter.includes('Delayed') && !selectedFilter.includes('Critical Delayed')) {
-                                    let testArr;
-                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                        if (selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed')) {
-                                            testArr = allFilteredTrip.filter((data) => (data?.tripStatus === 'Trip Running') && (data?.finalStatus === 'Delayed'));
-                                        } else if (!selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
-                                            testArr = allFilteredTrip.filter((data) => (data?.tripStatus === 'Trip Completed') && (data?.finalStatus === 'Delayed'));
-                                        } else if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
-                                            testArr = allFilteredTrip.filter((data) => (data?.tripStatus === "Trip Running" || data?.tripStatus === 'Trip Completed') && (data?.finalStatus === 'Delayed'));
-                                        }
-                                    } else {
-                                        testArr = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                    }
-
-
-                                    let test = [];
-
-                                    testArr.map((data) => {
-                                        const staticETA = data?.staticETA !== null && parseDate(data?.staticETA);
-                                        const estimatedArrivalDate = data?.estimatedArrivalDate && parseDate(data?.estimatedArrivalDate);
-
-                                        if (staticETA && estimatedArrivalDate) {
-                                            const timeDiffInDays = Math.floor((estimatedArrivalDate - staticETA) / (1000 * 60 * 60 * 24));
-
-                                            if (timeDiffInDays <= 2 && data.finalStatus === "Delayed") {
-                                                tripsFilteredByTripStatus.push(data);
-                                                test.push(data);
-                                            }
-                                        }
-                                    });
-
-                                    setFilteredTrips(test)
-
-                                } else if (!selectedFilter.includes('Delayed') && selectedFilter.includes('Critical Delayed')) {
-
-                                    let testArr;
-                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                        if (selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed')) {
-                                            testArr = allFilteredTrip.filter((data) => ((data?.tripStatus === 'Trip Running') && (data?.finalStatus === 'Delayed')));
-                                        } else if (!selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
-                                            testArr = allFilteredTrip.filter((data) => ((data?.tripStatus === 'Trip Completed') && (data?.finalStatus === 'Delayed')));
-                                        } else if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
-                                            testArr = allFilteredTrip.filter((data) => ((data?.tripStatus === 'Trip Running' && data?.tripStatus === 'Trip Completed') && (data?.finalStatus === 'Delayed')));
-                                        }
-                                    } else {
-                                        testArr = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                    }
-
-                                    let test = [];
-
-                                    testArr.map((data) => {
-                                        const staticETA = data?.staticETA !== null && parseDate(data?.staticETA);
-                                        const estimatedArrivalDate = data?.estimatedArrivalDate && parseDate(data?.estimatedArrivalDate);
-
-                                        if (staticETA && estimatedArrivalDate) {
-                                            const timeDiffInDays = Math.floor((estimatedArrivalDate - staticETA) / (1000 * 60 * 60 * 24));
-
-                                            if (timeDiffInDays > 2 && data.finalStatus === "Delayed") {
-                                                test.push(data)
-                                            }
-                                        }
-                                    });
-                                    setFilteredTrips(test)
-                                }
-
-                                else if (selectedFilter.includes('Delayed') && selectedFilter.includes('Critical Delayed')) {
-                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                        if (selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed')) {
-                                            const testArr = allFilteredTrip.filter(data => data?.tripStatus === 'Trip Running' && data?.finalStatus === 'Delayed');
-                                            setFilteredTrips(testArr);
-                                        } else if (!selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
-                                            const testArr = allFilteredTrip.filter(data => data?.tripStatus === 'Trip Completed' && data?.finalStatus === 'Delayed');
-                                            setFilteredTrips(testArr);
-                                        } else if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Trip Completed')) {
-                                            const testArr = allFilteredTrip.filter(data => (data?.tripStatus === 'Trip Running' || data?.tripStatus === 'Trip Completed') && data?.finalStatus === 'Delayed');
-                                            setFilteredTrips(testArr);
-                                        }
-                                    } else {
-                                        const testArr = allFilteredTrip.filter(data => data?.finalStatus === 'Delayed');
-                                        setFilteredTrips(testArr);
-                                    }
-                                }
-
-                                else {
-                                    setFilteredTrips(allFilteredTrip.filter(data => data?.finalStatus === 'Delayed'))
+                                    const trips = allTrips.filter((data) => selectedFilter.includes(data?.finalStatus));
+                                    trips.map((data) => finalStatusTrips.push(data));
                                 }
                             }
+
+                            if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
+
+                                if (selectedFilter.includes('Mild Delayed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                        delayedArr1.map(data => {
+                                            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                                const delayedHours = parseInt(data?.delayedHours);
+                                                if (delayedHours >= 1 && delayedHours <= 18) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        })
+                                    } else {
+                                        const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
+                                        delayedArr1.map(data => {
+                                            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                                const delayedHours = parseInt(data?.delayedHours);
+                                                if (delayedHours >= 1 && delayedHours <= 18) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        })
+                                    }
+                                }
+
+                                if (selectedFilter.includes('Moderate Delayed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                        delayedArr1.map(data => {
+                                            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                                const delayedHours = parseInt(data?.delayedHours);
+                                                if (delayedHours >= 19 && delayedHours <= 35) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        })
+                                    } else {
+                                        const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
+                                        delayedArr1.map(data => {
+                                            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                                const delayedHours = parseInt(data?.delayedHours);
+                                                if (delayedHours >= 19 && delayedHours <= 35) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        })
+                                    }
+                                }
+
+                                if (selectedFilter.includes('Critical Delayed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                        delayedArr1.map(data => {
+                                            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                                const delayedHours = parseInt(data?.delayedHours);
+                                                if (delayedHours >= 36) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        })
+                                    } else {
+                                        const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
+                                        delayedArr1.map(data => {
+                                            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                                const delayedHours = parseInt(data?.delayedHours);
+                                                if (delayedHours >= 36) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+
+                            tripsFilteredByTripStatus = finalStatusTrips;
                         } else {
                             tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
                         }
                     }
 
-                    if (selectedFilter.includes("Manual Bind")) {
-                        let manualBindedTrips = [];
-                        if (selectedFilter.length === 1) {
-                            manualBindedTrips = allFilteredTrip.filter((data) => data?.exitFrom === 'Manual Bind');
-                        } else {
-                            manualBindedTrips = tripsFilteredByTripStatus.filter((data) => data?.exitFrom === 'Manual Bind');
-                        }
-                        setFilteredTrips(manualBindedTrips);
-                    } else if (!selectedFilter.includes("Delayed") && !selectedFilter.includes("Critical Delayed")) {
-                        setFilteredTrips(tripsFilteredByTripStatus);
-                    }
+                    setFilteredTrips(tripsFilteredByTripStatus);
+
+                    // if (selectedFilter.includes("Manual Bind")) {
+                    //     let manualBindedTrips = [];
+                    //     if (selectedFilter.length === 1) {
+                    //         manualBindedTrips = allFilteredTrip.filter((data) => data?.exitFrom === 'Manual Bind');
+                    //     } else {
+                    //         manualBindedTrips = tripsFilteredByTripStatus.filter((data) => data?.exitFrom === 'Manual Bind');
+                    //     }
+                    //     setFilteredTrips(manualBindedTrips);
+                    // } else if (!selectedFilter.includes("Mild Delayed") && !selectedFilter.includes("Moderate Delayed") && !selectedFilter.includes("Critical Delayed")) {
+                    //     setFilteredTrips(tripsFilteredByTripStatus);
+                    // }
                 } else {
                     setFilteredTrips(allFilteredTrip);
                 }
@@ -307,8 +309,6 @@ const VehicleTrackDash = () => {
         }
     };
 
-
-
     const handleShowOptions = () => {
         !hovered && setShowFilters(false);
         isOpenParty && setIsOpenParty(false);
@@ -320,17 +320,19 @@ const VehicleTrackDash = () => {
         if (data.finalStatus === 'Early' || data.finalStatus === '') {
             return data.finalStatus;
         } else if (data.finalStatus === 'Delayed') {
-            const staticETA = parseDate(data?.staticETA);
-            const estimatedArrivalDate = parseDate(data?.estimatedArrivalDate);
-
-            if (staticETA && estimatedArrivalDate) {
-                const timeDiffInDays = Math.floor((estimatedArrivalDate - staticETA) / (1000 * 60 * 60 * 24));
-
-                return timeDiffInDays > 2 ? 'Critical Delayed' : 'Delayed';
+            if (data?.delayedHours !== null && (data?.delayedHours != undefined || data?.delayedHours.length > 0)) {
+                const delayedHours = parseInt(data.delayedHours);
+                if (delayedHours >= 1 && delayedHours <= 18) {
+                    return 'Mild Delayed'
+                } else if (delayedHours >= 19 && delayedHours <= 35) {
+                    return 'Moderate Delayed'
+                } else if (delayedHours >= 36) {
+                    return 'Critical Delayed'
+                }
+            } else {
+                return '';
             }
         }
-
-        return data.finalStatus;
     };
 
     const getDelayedHours = (hours) => {
@@ -585,7 +587,7 @@ const VehicleTrackDash = () => {
                         </thead>
                         <tbody>
                             {currentTrips.length > 0 && currentTrips.map((data, index) => (
-                                <tr className={`${getFinalStatus(data) === 'Delayed' ? 'text-dark bg-warning' : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} key={index}>
+                                <tr className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-white' : getFinalStatus(data) === "Moderate Delayed" ? "text-white bg-secondary" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} key={index}>
                                     <td>{data?.vehicleNo}</td>
                                     <td>{data?.tripLogNo}</td>
                                     <td>{handleFormateISTDate(data?.loadingDate)}</td>
@@ -596,13 +598,13 @@ const VehicleTrackDash = () => {
                                     <td>{handleSplitStaticEta(data?.staticETA)}</td>
                                     <td className={`${handleGPSDate(data?.locationTime) && 'bg-danger text-white'}`}>{handleFormatDate(data?.locationTime)}</td>
                                     <td>{data?.routeKM}</td>
-                                    <td>{Math.floor(data?.runningKMs) > 0 ? Math.floor(data?.runningKMs) : ''}</td>
-                                    <td>{Math.floor(data?.kmDifference) > 0 ? Math.floor(data?.kmDifference) : ''}</td>
+                                    <td>{Math.floor(data?.runningKMs)}</td>
+                                    <td>{Math.floor(data?.kmDifference)}</td>
                                     <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingDate) : ''}</td>
                                     <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingReachDate) : ''}</td>
                                     <td>{data?.location}</td>
                                     <td>{data?.estimatedArrivalDate}</td>
-                                    <td className={`${getFinalStatus(data) === 'Delayed' ? 'fw-bold bg-warning' : getFinalStatus(data) === "Critical Delayed" && "fw-bold text-white bg-danger"}`}>{getFinalStatus(data)}</td>
+                                    <td className={`${data?.finalStatus === 'Delayed' && 'fw-bold'}`}>{getFinalStatus(data)}</td>
                                     <td>{getDelayedHours(data?.delayedHours)}</td>
                                     <td>{data?.driverName}</td>
                                     <td>{data?.driverMobileNo}</td>

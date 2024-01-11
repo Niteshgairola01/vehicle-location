@@ -9,6 +9,7 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
     const [selectedDate, setSelectedDate] = useState('custom');
     const [unloadingReachDate, setUnloadingReachDate] = useState('');
     const [unloadingDate, setUnloadingDate] = useState('');
+    const [remark, setRemark] = useState('');
 
     const handleForceCompleteTrip = (form) => {
         forceCompleteTrip(form).then((response) => {
@@ -25,6 +26,10 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
             } else {
                 ErrorToast("Unable to force complete trip");
                 setShow(false);
+
+                setUnloadingDate('');
+                setUnloadingReachDate('');
+                setRemark('');
             }
         }).catch(() => ErrorToast("Something went wrong"));
     }
@@ -35,6 +40,9 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
                 SuccessToast(response?.data);
                 getAllTrips();
                 setShow(false);
+                setUnloadingDate('');
+                setUnloadingReachDate('');
+                setRemark('');
             } else if (response?.data === "Please Wait! Another Program is executing now. ") {
                 setTimeout(() => deleteVehicleOnTripCompleteWithRetry(deleteVehiclePayLoad), 1000);
                 ErrorToast(response?.data);
@@ -94,14 +102,16 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
 
             const operationIdArray = data?.operationUniqueID.split('.');
 
-            const form = [operationIdArray[0], formattedUnloadingDate, formattedReachDate];
+            const form = [operationIdArray[0], formattedUnloadingDate, formattedReachDate, remark];
+
+            // console.log("form", form);
 
             if (vehicleExitDate > newValue) {
                 ErrorToast("Unloading Reach Date must be greater than Vehicle Exit Date");
             } else if (newUnloadingDate < newValue) {
                 ErrorToast("Unloading Date must be euqal or greater than Unaloding Reach Date");
             }
-            else if (form.length === 3) {
+            else if (form.length === 4) {
                 handleForceCompleteTrip(form);
             } else {
                 WarningToast("Fill all the required fields ! ! ! !");
@@ -123,6 +133,10 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
     }, [selectedDate]);
 
     // console.log("unloading reach date", unloadingReachDate);
+
+    // const handleChangeRemark = (e) => {
+
+    // }
 
     return (
         <Modal show={show} centered onHide={() => setShow(false)} size='lg'>
@@ -180,6 +194,13 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
                                         <span className='fw-bold text-danger' style={{ fontSize: "0.7rem" }}>Format must be DD:MM:YYYY HH:MM:SS</span>
                                     ) : null
                                 } */}
+                            </Col>
+                        </Row>
+
+                        <Row className='mt-3'>
+                            <Col sm={12}>
+                                <Form.Label>Remark<span className='text-secondary ms-1 fs-6'>(optional)</span></Form.Label>
+                                <Form.Control as="textarea" className='inputfield' onChange={(e) => setRemark(e.target.value)} cols={12} rows={3} placeholder='Add Remark' />
                             </Col>
                         </Row>
                     </div>
