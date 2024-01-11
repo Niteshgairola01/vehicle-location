@@ -69,9 +69,6 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
         });
     };
 
-    const [reachDateFormat, setReachDateFormat] = useState(true);
-    const [unloadingDateFormat, setUnloadingDateFormat] = useState(true);
-
     const handleSubmit = (e) => {
         e.preventDefault();
         const vehicleExitDate = new Date(data?.vehicleExitDate);
@@ -83,13 +80,9 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
 
         if (!unloadingReachDate.match(unloadingReachDateFormat)) {
             ErrorToast('Check the format of Unloading Reach Date !');
-            setReachDateFormat(false);
         } else if (!unloadingDate.match(unloadingDateFormat)) {
             ErrorToast('Check the format of Unloading Date !');
-            setUnloadingDateFormat(false);
         } else {
-            setReachDateFormat(true);
-            setUnloadingDateFormat(true);
             const [reachDatePart, reachTimePart] = unloadingReachDate.split(' ');
             const [reachDay, reachMonth, reachYear] = reachDatePart.split('/');
             const reachDateObject = new Date(`${reachYear}-${reachMonth}-${reachDay}T${reachTimePart}Z`);
@@ -103,8 +96,6 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
             const operationIdArray = data?.operationUniqueID.split('.');
 
             const form = [operationIdArray[0], formattedUnloadingDate, formattedReachDate, remark];
-
-            // console.log("form", form);
 
             if (vehicleExitDate > newValue) {
                 ErrorToast("Unloading Reach Date must be greater than Vehicle Exit Date");
@@ -131,12 +122,6 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
         const formattedDate = `${day}/${month}/${year} ${hour}:${minute}:${seconds}`
         selectedDate === 'current' && setUnloadingReachDate(formattedDate);
     }, [selectedDate]);
-
-    // console.log("unloading reach date", unloadingReachDate);
-
-    // const handleChangeRemark = (e) => {
-
-    // }
 
     return (
         <Modal show={show} centered onHide={() => setShow(false)} size='lg'>

@@ -318,7 +318,7 @@ table thead {
     font-size: 15px;
 }
 
-.pagination-container a {
+.pagination-container span {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -334,17 +334,17 @@ table thead {
 
 }
 
-.pagination-container a.active {
+.pagination-container span.active {
     background-color: var(--thm-dark);
     color: white;
     border: 1px solid #7cbddb;
 }
 
-.pagination-container a.disabled {
+.pagination-container span.disabled {
     opacity: 0.2;
 }
 
-.pagination-container a:hover:not(.active) {
+.pagination-container span:hover:not(.active) {
     background-color: rgb(238, 238, 238);
 }
 

@@ -59,39 +59,35 @@ const Pagination = ({ pages, currentPage, setCurrentPage }) => {
 
         setArrOfCurrButtons(tempNumberOfPages);
         if (currentButton !== dotsInitial && currentButton !== dotsLeft && currentButton !== dotsRight) {
-            console.log("number");
             setCurrentPage(currentButton);
         }
     }, [currentButton, pages]);
 
     return (
         <div className="pagination-container">
-            <a
-                href="#"
+            <span
                 className={`${currentPage === 1 ? 'disabled' : ''}`}
                 onClick={() => setCurrentButton(prev => prev <= 1 ? prev : prev - 1)}
             >
                 <IoIosArrowBack />
-            </a>
+            </span>
 
             {arrOfCurrButtons.map(((item, index) => {
-                return <a
-                    href="#"
+                return <span
                     key={index}
                     className={`${currentPage === item ? 'active' : ''}`}
                     onClick={() => setCurrentButton(item)}
                 >
                     {item}
-                </a>
+                </span>
             }))}
 
-            <a
-                href="#"
+            <span
                 className={`${currentPage === numberOfPages.length ? 'disabled' : ''}`}
                 onClick={() => setCurrentButton(prev => prev >= numberOfPages.length ? prev : prev + 1)}
             >
                 <IoIosArrowForward />
-            </a>
+            </span>
         </div>
     );
 }
