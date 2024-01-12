@@ -104,7 +104,7 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
             }
         }
     };
-
+    
     useEffect(() => {
         const currentDate = new Date();
         const day = currentDate.getDate() >= 10 ? currentDate.getDate() : `0${currentDate.getDate()}`;

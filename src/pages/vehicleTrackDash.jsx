@@ -59,8 +59,14 @@ const VehicleTrackDash = () => {
     const getAllTrips = () => {
         getRunningTrips().then((response) => {
             if (response.status === 200) {
-                setAllTrips(response?.data);
-                setFilteredTrips(response?.data);
+
+                const allData = response?.data;
+                const sortedDetails = vehiclesList.map((vehicle) =>
+                    allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
+                );
+
+                setAllTrips(sortedDetails);
+                setFilteredTrips(sortedDetails);
             } else {
                 setAllTrips([]);
                 setFilteredTrips([]);
@@ -73,7 +79,7 @@ const VehicleTrackDash = () => {
 
     useEffect(() => {
         getAllTrips();
-    }, []);
+    }, [vehiclesList]);
 
     useEffect(() => {
         getAllPartiesList().then((response) => {
@@ -125,8 +131,13 @@ const VehicleTrackDash = () => {
     const handleFilterTrips = () => {
         getRunningTrips().then((response) => {
             if (response.status === 200) {
-                const trips = response?.data;
-                const allFilteredTrip = trips.filter(test => {
+
+                const allData = response?.data;
+                const sortedDetails = vehiclesList.map((vehicle) =>
+                    allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
+                );
+
+                const allFilteredTrip = sortedDetails.filter(test => {
                     for (const key in form) {
                         const testValue = String(test[key]).toLowerCase();
                         const formValue = form[key].toLowerCase();
@@ -561,7 +572,7 @@ const VehicleTrackDash = () => {
                     <span className='fs-6 thm-dark ms-2'>{filteredTrips.length}</span>
                 </div>
                 <div className='table-responsive mt-3' style={{ height: "50vh" }}>
-                    <table className='table table-bordered table-striped w-100 positon-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
+                    <table className='table table-bordered w-100 positon-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
                         <thead className='table-head text-white' style={{ position: "static" }}>
                             <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                 {
