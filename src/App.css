@@ -42,11 +42,11 @@ h1 {
     --thm-black: #000;
     --thm-blue: blue;
     --thm-dark: #09215f;
+    --thm-gray: #d7d7d7;
     --thm-white: #fff;
     --thm-secondary: #eaeaea
 }
 
-/* h1, */
 h2,
 h3,
 h4,
@@ -83,6 +83,14 @@ p {
 
 .thm-secondary {
     color: var(--thm-secondary);
+}
+
+.thm-gray {
+    color: var(--thm-gray)
+}
+
+.bg-thm-gray {
+    background-color: var(--thm-gray);
 }
 
 .thm-white {

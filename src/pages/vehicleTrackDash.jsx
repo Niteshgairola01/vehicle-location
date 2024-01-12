@@ -6,7 +6,6 @@ import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
-import { getAllOfficesList } from '../hooks/officeMasterHooks';
 import { ErrorToast, WarningToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
@@ -22,7 +21,6 @@ const VehicleTrackDash = () => {
     const [allTrips, setAllTrips] = useState([]);
     const [filteredTrips, setFilteredTrips] = useState([]);
     const [selectedFilter, setSelectedFilter] = useState('');
-    const [allOffices, setAllOffices] = useState([]);
     const [partiesList, setPartiesList] = useState([]);
     const [vehiclesList, setVehiclesList] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
@@ -31,7 +29,6 @@ const VehicleTrackDash = () => {
     const [hovered, setHovered] = useState(false);
     const [selectedParty, setSelectedParty] = useState('');
     const [isOpenParty, setIsOpenParty] = useState(false);
-    const [selectedOffice, setSelectedOffice] = useState('');
     const [isOpenOffice, setIsOpenOffice] = useState(false);
     const [selectedVehicleNo, setSelectedVehicleNo] = useState('');
     const [isOpenVehicle, setIsOpenVehicle] = useState(false);
@@ -44,11 +41,15 @@ const VehicleTrackDash = () => {
     const currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost)
     const pageCount = Math.ceil(filteredTrips.length / itemsPerPage);
 
+    // const calculateSerialNumber = (index) => {
+    //     return ;
+    // };
+
     useEffect(() => {
         setCurrentPage(1);
     }, [filteredTrips]);
 
-    const tableColumns = ['Vehicle No.', 'Trip No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
+    const tableColumns = ['Trip Count', 'Vehicle No.', 'Trip No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
         'GPS (Date / Time)', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Report Unloading', 'Unloading End Date', 'Location', 'Estimated Arrival Date',
         'Final Status', 'Delayed Hours', 'Driver Name', 'Driver Mobile No.', 'Exit From', 'Trip Status', 'Force Complete'
     ];
@@ -121,9 +122,7 @@ const VehicleTrackDash = () => {
         });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
+    const handleFilterTrips = () => {
         getRunningTrips().then((response) => {
             if (response.status === 200) {
                 const trips = response?.data;
@@ -145,6 +144,8 @@ const VehicleTrackDash = () => {
                         if (selectedFilter.includes('Trip Running')) {
                             if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Manual Bind')) {
                                 tripsFilteredByTripStatus = allFilteredTrip.filter((data) => ((data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running") && data?.exitFrom === "Manual Bind");
+                            } else if (selectedFilter.includes('Trip Running')) {
+                                tripsFilteredByTripStatus = allFilteredTrip.filter((data) => ((data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running"));
                             }
                         } else if (selectedFilter.includes('Trip Completed')) {
                             tripsFilteredByTripStatus = [];
@@ -172,7 +173,7 @@ const VehicleTrackDash = () => {
                                 if (selectedFilter.includes('Mild Delayed')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                         const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                        delayedArr1.map(data => {
+                                        delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
                                                 if (delayedHours >= 1 && delayedHours <= 18) {
@@ -182,7 +183,7 @@ const VehicleTrackDash = () => {
                                         })
                                     } else {
                                         const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
-                                        delayedArr1.map(data => {
+                                        delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
                                                 if (delayedHours >= 1 && delayedHours <= 18) {
@@ -196,7 +197,7 @@ const VehicleTrackDash = () => {
                                 if (selectedFilter.includes('Moderate Delayed')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                         const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                        delayedArr1.map(data => {
+                                        delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
                                                 if (delayedHours >= 19 && delayedHours <= 35) {
@@ -206,7 +207,7 @@ const VehicleTrackDash = () => {
                                         })
                                     } else {
                                         const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
-                                        delayedArr1.map(data => {
+                                        delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
                                                 if (delayedHours >= 19 && delayedHours <= 35) {
@@ -220,7 +221,7 @@ const VehicleTrackDash = () => {
                                 if (selectedFilter.includes('Critical Delayed')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                         const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                        delayedArr1.map(data => {
+                                        delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
                                                 if (delayedHours >= 36) {
@@ -230,7 +231,7 @@ const VehicleTrackDash = () => {
                                         })
                                     } else {
                                         const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
-                                        delayedArr1.map(data => {
+                                        delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
                                                 if (delayedHours >= 36) {
@@ -266,6 +267,11 @@ const VehicleTrackDash = () => {
         }).catch(() => setFilteredTrips([]));
     };
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        handleFilterTrips();
+    };
+
     const handleSelectFilter = (filter) => {
         if (filter === 'All') {
             getAllTrips();
@@ -274,7 +280,6 @@ const VehicleTrackDash = () => {
                 tripLogNo: ''
             });
             setSelectedParty('');
-            setSelectedOffice('');
             setSelectedVehicleNo('');
         } else {
             if (selectedFilter.includes(filter)) {
@@ -291,8 +296,8 @@ const VehicleTrackDash = () => {
             setShowForceCompleteModal(true);
         } else if (data?.tripStatus.length === 0 || data?.operationUniqueID.length === 0) {
             ErrorToast("Not Trip found");
-        } else {
-            WarningToast("Not allowed");
+        } else if (data?.tripStatus === 'Trip Completed') {
+            ErrorToast("Trip already completed");
         }
     };
 
@@ -307,7 +312,7 @@ const VehicleTrackDash = () => {
         if (data.finalStatus === 'Early' || data.finalStatus === '') {
             return data.finalStatus;
         } else if (data.finalStatus === 'Delayed') {
-            if (data?.delayedHours !== null && (data?.delayedHours != undefined || data?.delayedHours.length > 0)) {
+            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data.delayedHours);
                 if (delayedHours >= 1 && delayedHours <= 18) {
                     return 'Mild Delayed'
@@ -329,11 +334,6 @@ const VehicleTrackDash = () => {
         } else {
             return ''
         }
-    }
-
-    const parseDate = (dateString) => {
-        const dateParts = dateString.split(/[\/ :]/);
-        return new Date(Date.UTC(dateParts[2], dateParts[1] - 1, dateParts[0], dateParts[3], dateParts[4], dateParts[5]));
     };
 
     const handleFormateISTDate = (givenDate) => {
@@ -560,7 +560,7 @@ const VehicleTrackDash = () => {
                     <span className='thm-dark fs-6 fw-bold'>Total Trips:</span>
                     <span className='fs-6 thm-dark ms-2'>{filteredTrips.length}</span>
                 </div>
-                <div className='table-responsive mt-3' style={{ height: "55vh" }}>
+                <div className='table-responsive mt-3' style={{ height: "50vh" }}>
                     <table className='table table-bordered table-striped w-100 positon-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
                         <thead className='table-head text-white' style={{ position: "static" }}>
                             <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
@@ -574,7 +574,9 @@ const VehicleTrackDash = () => {
                         </thead>
                         <tbody>
                             {currentTrips.length > 0 && currentTrips.map((data, index) => (
-                                <tr className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-white' : getFinalStatus(data) === "Moderate Delayed" ? "text-white bg-secondary" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} key={index}>
+                                <tr className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-warning' : getFinalStatus(data) === "Moderate Delayed" ? "text-dark bg-thm-gray" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} key={index}>
+
+                                    <td className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                                     <td>{data?.vehicleNo}</td>
                                     <td>{data?.tripLogNo}</td>
                                     <td>{handleFormateISTDate(data?.loadingDate)}</td>
@@ -590,7 +592,7 @@ const VehicleTrackDash = () => {
                                     <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingDate) : ''}</td>
                                     <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingReachDate) : ''}</td>
                                     <td>{data?.location}</td>
-                                    <td>{data?.estimatedArrivalDate}</td>
+                                    <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
                                     <td className={`${data?.finalStatus === 'Delayed' && 'fw-bold'}`}>{getFinalStatus(data)}</td>
                                     <td>{getDelayedHours(data?.delayedHours)}</td>
                                     <td>{data?.driverName}</td>
@@ -620,7 +622,7 @@ const VehicleTrackDash = () => {
                     }
                 </div>
 
-                <ForceCompleteForm getAllTrips={getAllTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
+                <ForceCompleteForm getAllTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
             </div>
         </div>
     )

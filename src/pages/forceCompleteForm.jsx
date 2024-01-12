@@ -46,12 +46,7 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
             } else if (response?.data === "Please Wait! Another Program is executing now. ") {
                 setTimeout(() => deleteVehicleOnTripCompleteWithRetry(deleteVehiclePayLoad), 1000);
                 ErrorToast(response?.data);
-            }
-            //  else if (response?.data === "Vehicle Not Found in List") {
-            //     setShow(false);
-            //     getAllTrips();
-            // }
-            else {
+            } else {
                 const operationIdArray = data?.operationUniqueID.split('.');
                 const form = [operationIdArray[0], '', ''];
                 handleForceCompleteTrip(form);
