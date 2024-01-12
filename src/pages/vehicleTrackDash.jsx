@@ -6,7 +6,7 @@ import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
-import { ErrorToast, WarningToast } from '../components/toast/toast';
+import { ErrorToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
+import { IoMdRefresh } from 'react-icons/io';
 
 const VehicleTrackDash = () => {
 
@@ -40,10 +41,6 @@ const VehicleTrackDash = () => {
     const indexOfFirstPost = indexOfLastPost - itemsPerPage;
     const currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost)
     const pageCount = Math.ceil(filteredTrips.length / itemsPerPage);
-
-    // const calculateSerialNumber = (index) => {
-    //     return ;
-    // };
 
     useEffect(() => {
         setCurrentPage(1);
@@ -476,166 +473,193 @@ const VehicleTrackDash = () => {
         }
     };
 
+    const selectStyles = {
+        control: (provided) => ({
+            ...provided,
+            fontSize: '0.9rem',
+        }),
+        option: (provided) => ({
+            ...provided,
+            fontSize: '0.9rem',
+        }),
+    };
+
+    const selectformFields = [
+        {
+            label: "Party",
+            options: partiesList,
+            value: selectedParty,
+            onChange: handleChangeParty
+        },
+        {
+            label: "Vehicle",
+            options: vehiclesList,
+            value: selectedVehicleNo,
+            onChange: handleChangeVehicle
+        },
+    ];
+
     return (
-        <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
-            <div className='w-100'>
-                <div className='w-100 text-center my-5'>
-                    <h4 className='px-3 dashboard-title text-uppercase d-inline text-center my-5'
-                        style={{ borderBottom: "3px solid #09215f" }}
-                    >Vehicle Tracking Dashboard</h4>
-                </div>
-                <div className='mt-2'>
-                    <Form onSubmit={handleSubmit}>
-                        <Row className='dashoard-filter-form rounded'>
-                            <Col sm={12} md={6} lg={2} className='position-relative'>
-                                <Form.Label>Party</Form.Label>
-                                <Select
-                                    options={partiesList}
-                                    value={selectedParty}
-                                    onChange={handleChangeParty}
-                                    isClearable={true}
-                                />
-                            </Col>
-
-                            <Col sm={12} md={6} lg={2} className='position-relative'>
-                                <Form.Label>Vehicle</Form.Label>
-                                <Select
-                                    options={vehiclesList}
-                                    value={selectedVehicleNo}
-                                    onChange={handleChangeVehicle}
-                                    isClearable={true}
-                                />
-                            </Col>
-
-                            <Col sm={12} md={6} lg={2}>
-                                <Input label="Trip No." type='text' name='tripLogNo' value={form.tripLogNo} onChange={handleChange} placeholder='Trip No.' autocomplete="off" />
-                            </Col>
-
-                            <Col sm={12} md={6} lg={2} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
-                                <Button type="submit" className=" px-3">Show</Button>
-                                <HoveredButton type="button" className="px-3 ms-2" onClick={() => handleSelectFilter('All')}>Show All</HoveredButton>
-                            </Col>
-
-                            <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
-                                <div className={`${selectedFilter.length > 0 && 'bg-thm-dark'} border border-secondary rounded p-2 cursor-pointer d-flex justify-content-between align-items-center`}
-                                    onMouseOver={() => setHovered(true)}
-                                    onMouseOut={() => setHovered(false)}
-                                    onClick={() => setShowFilters(!showFilters)}
-                                >
-                                    <span className={`${selectedFilter.length > 0 && 'bg-thm-dark thm-white'}`} style={{ width: "8rem", fontSize: "0.8rem" }}>
-                                        {selectedFilter.length > 0 ? 'Filters Applied' : 'Filter'}
-                                    </span>
-                                    <CiFilter className={`${selectedFilter.length > 0 && 'thm-white'}`} />
-                                </div>
+        <>
+            <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
+                <div className='w-100'>
+                    <div className='w-100 text-center my-5'>
+                        <h4 className='px-3 dashboard-title text-uppercase d-inline text-center my-5'
+                            style={{ borderBottom: "3px solid #09215f" }}
+                        >Vehicle Tracking Dashboard</h4>
+                    </div>
+                    <div className='mt-2'>
+                        <Form onSubmit={handleSubmit}>
+                            <Row className='dashoard-filter-form rounded'>
                                 {
-                                    showFilters ? (
-                                        <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: "1", boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
-                                            {
-                                                allFilters.map((data, index) => (
-                                                    <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} ${index !== allFilters.length - 1 && 'border-bottom'} cursor-pointer`}
-                                                        onMouseOver={() => setHovered(true)}
-                                                        onMouseOut={() => setHovered(false)}
-                                                        key={index}
-                                                        onClick={() => handleSelectFilter(data)}
-                                                    >{data}</div>
-                                                ))
-                                            }
-                                        </div>
-                                    ) : null
-                                }
-                                {
-                                    selectedFilter.length > 0 ? (
-                                        <div>
-                                            <Tooltip title="Reset Filters">
-                                                <Link to="#">
-                                                    <MdSettingsBackupRestore onClick={() => handleResetFilters()} className='thm-dark cursor-pointer ms-2 fs-3' />
-                                                </Link>
-                                            </Tooltip>
-                                        </div>
-                                    ) : null
-                                }
-                                {/* <div className='mx-5'>
-                                    <Tooltip title="Refresh Page">
-                                        <Link>
-                                            <IoMdRefresh onClick={() => handleRefreshPage()} className='fs-3 text-success cursor-pointer' />
-                                        </Link>
-                                    </Tooltip>
-                                </div> */}
-                            </Col>
-                        </Row>
-                    </Form>
-                </div>
-
-                <hr />
-                <div className='w-100 mt-5'>
-                    <span className='thm-dark fs-6 fw-bold'>Total Trips:</span>
-                    <span className='fs-6 thm-dark ms-2'>{filteredTrips.length}</span>
-                </div>
-                <div className='table-responsive mt-3' style={{ height: "50vh" }}>
-                    <table className='table table-bordered w-100 positon-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
-                        <thead className='table-head text-white' style={{ position: "static" }}>
-                            <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
-                                {
-                                    tableColumns.map((data, index) => (
-                                        <th className={`text-nowrap ${(data === 'Trip Status' || data === 'Final Status') && 'width-150'} ${(data === 'Driver Name' || data === 'Static ETA') && 'width-200'} ${(data === 'Location' || data === 'Consignor Name') && 'width-300'}`} key={index}
-                                            style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px" }}>{data}</th>
+                                    selectformFields.map((data, index) => (
+                                        <Col sm={12} md={6} lg={2} className='position-relative' key={index}>
+                                            <Form.Label>{data?.label}</Form.Label>
+                                            <Select
+                                                options={data?.options}
+                                                value={data?.value}
+                                                onChange={data?.onChange}
+                                                isClearable={true}
+                                                styles={selectStyles}
+                                            />
+                                        </Col>
                                     ))
                                 }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentTrips.length > 0 && currentTrips.map((data, index) => (
-                                <tr className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-warning' : getFinalStatus(data) === "Moderate Delayed" ? "text-dark bg-thm-gray" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} key={index}>
 
-                                    <td className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                                    <td>{data?.vehicleNo}</td>
-                                    <td>{data?.tripLogNo}</td>
-                                    <td>{handleFormateISTDate(data?.loadingDate)}</td>
-                                    <td>{handleFormatDate(data?.vehicleExitDate)}</td>
-                                    <td>{data?.consignorName}</td>
-                                    <td>{data?.origin}</td>
-                                    <td>{data?.destination}</td>
-                                    <td>{handleSplitStaticEta(data?.staticETA)}</td>
-                                    <td className={`${handleGPSDate(data?.locationTime) && 'bg-danger text-white'}`}>{handleFormatDate(data?.locationTime)}</td>
-                                    <td>{data?.routeKM}</td>
-                                    <td>{Math.floor(data?.runningKMs)}</td>
-                                    <td>{Math.floor(data?.kmDifference)}</td>
-                                    <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingDate) : ''}</td>
-                                    <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingReachDate) : ''}</td>
-                                    <td>{data?.location}</td>
-                                    <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
-                                    <td className={`${data?.finalStatus === 'Delayed' && 'fw-bold'}`}>{getFinalStatus(data)}</td>
-                                    <td>{getDelayedHours(data?.delayedHours)}</td>
-                                    <td>{data?.driverName}</td>
-                                    <td>{data?.driverMobileNo}</td>
-                                    <td>{data?.exitFrom}</td>
-                                    <td>{data?.tripStatus}</td>
-                                    <td className='h-100 py-3 d-flex justify-content-center align-items-center'>
-                                        <button className={`border border-none ${((data?.tripStatus === 'Trip Running') && (data?.operationUniqueID.length > 0)) ? 'force-complete-button' : 'force-complete-button-disabled'}`}
-                                            onClick={() => handleShowForceComplete(data)}>Force Complete</button>
-                                    </td>
+                                <Col sm={12} md={6} lg={2}>
+                                    <Input label="Trip No." type='text' name='tripLogNo' value={form.tripLogNo} onChange={handleChange} placeholder='Trip No.' autocomplete="off" />
+                                </Col>
+
+                                <Col sm={12} md={6} lg={2} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
+                                    <Button type="submit" className=" px-3">Show</Button>
+                                    <HoveredButton type="button" className="px-3 ms-2" onClick={() => handleSelectFilter('All')}>Show All</HoveredButton>
+                                </Col>
+
+                                <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
+                                    <div className={`${selectedFilter.length > 0 && 'bg-thm-dark'} border border-secondary rounded p-2 cursor-pointer d-flex justify-content-between align-items-center`}
+                                        onMouseOver={() => setHovered(true)}
+                                        onMouseOut={() => setHovered(false)}
+                                        onClick={() => setShowFilters(!showFilters)}
+                                    >
+                                        <span className={`${selectedFilter.length > 0 && 'bg-thm-dark thm-white'}`} style={{ width: "8rem", fontSize: "0.8rem" }}>
+                                            {selectedFilter.length > 0 ? 'Filters Applied' : 'Filter'}
+                                        </span>
+                                        <CiFilter className={`${selectedFilter.length > 0 && 'thm-white'}`} />
+                                    </div>
+                                    {
+                                        showFilters ? (
+                                            <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: "1", boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
+                                                {
+                                                    allFilters.map((data, index) => (
+                                                        <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} ${index !== allFilters.length - 1 && 'border-bottom'} cursor-pointer`}
+                                                            onMouseOver={() => setHovered(true)}
+                                                            onMouseOut={() => setHovered(false)}
+                                                            key={index}
+                                                            onClick={() => handleSelectFilter(data)}
+                                                        >{data}</div>
+                                                    ))
+                                                }
+                                            </div>
+                                        ) : null
+                                    }
+                                    {
+                                        selectedFilter.length > 0 ? (
+                                            <div>
+                                                <Tooltip title="Reset Filters">
+                                                    <Link to="#">
+                                                        <MdSettingsBackupRestore onClick={() => handleResetFilters()} className='thm-dark cursor-pointer ms-2 fs-3' />
+                                                    </Link>
+                                                </Tooltip>
+                                            </div>
+                                        ) : null
+                                    }
+                                </Col>
+                            </Row>
+                        </Form>
+                    </div>
+
+                    <hr />
+
+                    <div className='w-100 mt-5 d-flex justify-content-between align-items-center'>
+                        <div className=''>
+                            <span className='thm-dark fs-6 fw-bold'>Total Trips:</span>
+                            <span className='fs-6 thm-dark ms-2'>{filteredTrips.length}</span>
+                        </div>
+                        <div className='me-5'>
+                            <Tooltip title="Refresh Data">
+                                <Link>
+                                    <IoMdRefresh
+                                        onClick={() => handleFilterTrips()}
+                                        className='fs-2 refresh-button bg-thm-dark thm-white rounded p-1 cursor-pointer' />
+                                </Link>
+                            </Tooltip>
+                        </div>
+                    </div>
+                    <div className='table-responsive mt-3' style={{ height: "50vh" }}>
+                        <table className='table table-bordered w-100 positon-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
+                            <thead className='table-head text-white' style={{ position: "static" }}>
+                                <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
+                                    {
+                                        tableColumns.map((data, index) => (
+                                            <th className={`text-nowrap ${(data === 'Trip Status' || data === 'Final Status') && 'width-150'} ${(data === 'Driver Name' || data === 'Static ETA') && 'width-200'} ${(data === 'Location' || data === 'Consignor Name') && 'width-300'}`} key={index}
+                                                style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px" }}>{data}</th>
+                                        ))
+                                    }
                                 </tr>
-                            ))}
-                        </tbody>
+                            </thead>
+                            <tbody>
+                                {currentTrips.length > 0 && currentTrips.map((data, index) => (
+                                    <tr className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-warning' : getFinalStatus(data) === "Moderate Delayed" ? "text-dark bg-thm-gray" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} key={index}>
+                                        <td className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                                        <td>{data?.vehicleNo}</td>
+                                        <td>{data?.tripLogNo}</td>
+                                        <td>{handleFormateISTDate(data?.loadingDate)}</td>
+                                        <td>{handleFormatDate(data?.vehicleExitDate)}</td>
+                                        <td>{data?.consignorName}</td>
+                                        <td>{data?.origin}</td>
+                                        <td>{data?.destination}</td>
+                                        <td>{handleSplitStaticEta(data?.staticETA)}</td>
+                                        <td className={`${handleGPSDate(data?.locationTime) && 'bg-danger text-white'}`}>{handleFormatDate(data?.locationTime)}</td>
+                                        <td>{data?.routeKM}</td>
+                                        <td>{Math.floor(data?.runningKMs)}</td>
+                                        <td>{Math.floor(data?.kmDifference)}</td>
+                                        <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingDate) : ''}</td>
+                                        <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingReachDate) : ''}</td>
+                                        <td>{data?.location}</td>
+                                        <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
+                                        <td className={`${data?.finalStatus === 'Delayed' && 'fw-bold'}`}>{getFinalStatus(data)}</td>
+                                        <td>{getDelayedHours(data?.delayedHours)}</td>
+                                        <td>{data?.driverName}</td>
+                                        <td>{data?.driverMobileNo}</td>
+                                        <td>{data?.exitFrom}</td>
+                                        <td>{data?.tripStatus}</td>
+                                        <td className='h-100 py-3 d-flex justify-content-center align-items-center'>
+                                            <button className={`border border-none ${((data?.tripStatus === 'Trip Running') && (data?.operationUniqueID.length > 0)) ? 'force-complete-button' : 'force-complete-button-disabled'}`}
+                                                onClick={() => handleShowForceComplete(data)}>Force Complete</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
 
-                    </table>
-                    {
-                        currentTrips.length === 0 ? (
-                            <div className='pb-3 text-secondary d-flex justify-content-center align-items-center'>No data found</div>
-                        ) : null
-                    }
-                    {
-                        currentTrips.length > 0 ? (
-                            <div className='my-5'>
-                                <Pagination pages={pageCount} currentPage={currentPage} setCurrentPage={setCurrentPage} />
-                            </div>
-                        ) : null
-                    }
+                        </table>
+                        {
+                            currentTrips.length === 0 ? (
+                                <div className='pb-3 text-secondary d-flex justify-content-center align-items-center'>No data found</div>
+                            ) : null
+                        }
+                        {
+                            currentTrips.length > 0 ? (
+                                <div className='my-5'>
+                                    <Pagination pages={pageCount} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                                </div>
+                            ) : null
+                        }
+                    </div>
+
+                    <ForceCompleteForm getAllTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
                 </div>
-
-                <ForceCompleteForm getAllTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
             </div>
-        </div>
+        </>
     )
 }
 

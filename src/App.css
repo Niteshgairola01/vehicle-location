@@ -6,6 +6,7 @@
 body {
     font-family: sans-serif;
     overflow-x: hidden;
+    font-size: 16px;
 }
 
 /* Scroll bar Track */
@@ -298,6 +299,18 @@ p {
     transform: translateX(0);
 }
 
+.refresh-button {
+    background-color: var(--thm-white);
+    color: var(--thm-dark);
+    border: 2px solid var(--thm-dark);
+    transition: all 0.2s ease-in-out;
+}
+
+.refresh-button:hover {
+    background-color: var(--thm-dark);
+    color: var(--thm-white);
+}
+
 /* Input */
 
 .inputfield:focus {
@@ -397,7 +410,7 @@ table thead {
 .dashboard-main-container {
     margin: auto 3rem;
     min-height: 80vh;
-    max-height: 85vh;
+    max-height: 100%;
     box-shadow: 1px 0px 47px -18px #c8c9ca;
 }
 
