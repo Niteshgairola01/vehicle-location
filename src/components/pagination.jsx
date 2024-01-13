@@ -69,11 +69,6 @@ const Pagination = ({ pages, currentPage, setCurrentPage }) => {
         }
     }, [currentButton, pages]);
 
-    // console.log("current ");
-    // const handleCurrentButton = (button) => {
-    //     ;
-    // };
-
     return (
         <div className="pagination-container">
             <span

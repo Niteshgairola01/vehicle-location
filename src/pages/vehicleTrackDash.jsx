@@ -4,6 +4,7 @@ import { Col, Form, Row } from 'react-bootstrap'
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
+import { IoMdRefresh } from 'react-icons/io';
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
 import { ErrorToast } from '../components/toast/toast';
@@ -14,7 +15,8 @@ import { Link } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
-import { IoMdRefresh } from 'react-icons/io';
+import Loader from '../components/loader/loader';
+import VehicleLocation from './vehicleLocation';
 
 const VehicleTrackDash = () => {
 
@@ -31,19 +33,23 @@ const VehicleTrackDash = () => {
     const [selectedParty, setSelectedParty] = useState('');
     const [isOpenParty, setIsOpenParty] = useState(false);
     const [isOpenOffice, setIsOpenOffice] = useState(false);
+    const [showLoader, setShowLoader] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('No data found');
     const [selectedVehicleNo, setSelectedVehicleNo] = useState('');
     const [isOpenVehicle, setIsOpenVehicle] = useState(false);
-    // const [refreshClicked, setRefreshClicked] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [vehicleData, setVehicleData] = useState({});
+    const [showLocation, setShowLocation] = useState(false);
 
     const itemsPerPage = 20
     const indexOfLastPost = currentPage * itemsPerPage;
     const indexOfFirstPost = indexOfLastPost - itemsPerPage;
-    const currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost)
+    let currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost);
     const pageCount = Math.ceil(filteredTrips.length / itemsPerPage);
 
     useEffect(() => {
-        setCurrentPage(1);
+        currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost);
+        currentPage > pageCount && setCurrentPage(1);
     }, [filteredTrips]);
 
     const tableColumns = ['Trip Count', 'Vehicle No.', 'Trip No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
@@ -54,9 +60,10 @@ const VehicleTrackDash = () => {
     const allFilters = ['Trip Running', 'Trip Completed', 'Trip not Assgined', 'Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'Manual Bind'];
 
     const getAllTrips = () => {
+        setShowLoader(true)
         getRunningTrips().then((response) => {
             if (response.status === 200) {
-
+                setShowLoader(false);
                 const allData = response?.data;
                 const sortedDetails = vehiclesList.map((vehicle) =>
                     allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
@@ -65,10 +72,13 @@ const VehicleTrackDash = () => {
                 setAllTrips(sortedDetails);
                 setFilteredTrips(sortedDetails);
             } else {
+                setShowLoader(false);
                 setAllTrips([]);
                 setFilteredTrips([]);
             }
-        }).catch(() => {
+        }).catch((err) => {
+            err?.mesage && setErrorMessage(err?.message);
+            setShowLoader(false);
             setAllTrips([]);
             setFilteredTrips([]);
         });
@@ -126,9 +136,13 @@ const VehicleTrackDash = () => {
     };
 
     const handleFilterTrips = () => {
+        if (!showFilters) {
+            setShowLoader(true);
+        }
+
         getRunningTrips().then((response) => {
             if (response.status === 200) {
-
+                setShowLoader(false);
                 const allData = response?.data;
                 const sortedDetails = vehiclesList.map((vehicle) =>
                     allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
@@ -266,13 +280,22 @@ const VehicleTrackDash = () => {
                     }
 
                     setFilteredTrips(tripsFilteredByTripStatus);
-                } else {
+                }
+                //  else if (allFilteredTrip.length > 0) {
+                //     setFilteredTrips(allFilteredTrip);
+                // }
+                else {
                     setFilteredTrips(allFilteredTrip);
                 }
             } else {
+                setShowLoader(false);
                 setFilteredTrips([]);
             }
-        }).catch(() => setFilteredTrips([]));
+        }).catch((err) => {
+            err?.message && setErrorMessage(err?.message);
+            setShowLoader(false);
+            setFilteredTrips([])
+        });
     };
 
     const handleSubmit = (e) => {
@@ -289,7 +312,9 @@ const VehicleTrackDash = () => {
             });
             setSelectedParty('');
             setSelectedVehicleNo('');
-        } else {
+        }
+
+        else {
             if (selectedFilter.includes(filter)) {
                 setSelectedFilter(selectedFilter.filter(item => item !== filter));
             } else {
@@ -297,6 +322,11 @@ const VehicleTrackDash = () => {
             }
         }
     };
+
+    useEffect(() => {
+        console.log("api hit");
+        handleFilterTrips();
+    }, [selectedFilter]);
 
     const handleShowForceComplete = (data) => {
         if (data?.tripStatus === 'Trip Running' && data?.operationUniqueID.length > 0) {
@@ -317,11 +347,11 @@ const VehicleTrackDash = () => {
     };
 
     const getFinalStatus = (data) => {
-        if (data.finalStatus === 'Early' || data.finalStatus === '') {
-            return data.finalStatus;
-        } else if (data.finalStatus === 'Delayed') {
+        if (data?.finalStatus === 'Early' || data?.finalStatus === 'On Time' || data?.finalStatus === '') {
+            return data?.finalStatus;
+        } else if (data?.finalStatus === 'Delayed') {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                const delayedHours = parseInt(data.delayedHours);
+                const delayedHours = parseInt(data?.delayedHours);
                 if (delayedHours >= 1 && delayedHours <= 18) {
                     return 'Mild Delayed'
                 } else if (delayedHours >= 19 && delayedHours <= 35) {
@@ -382,17 +412,23 @@ const VehicleTrackDash = () => {
     };
 
     const handleFormatDate = (date) => {
-        const originalDate = new Date(date);
+        if (date === null) {
+            return '';
+        } else if (date !== null && date?.length === 0) {
+            return '';
+        } else {
+            const originalDate = new Date(date);
 
-        const day = originalDate.getDate() >= 10 ? originalDate.getDate() : `0${originalDate.getDate()}`;
-        const month = originalDate.getMonth() + 1 >= 10 ? originalDate.getMonth() + 1 : `0${originalDate.getMonth() + 1}`;
-        const year = originalDate.getFullYear() >= 10 ? originalDate.getFullYear() : `0${originalDate.getFullYear()}`;
-        const hours = originalDate.getHours() >= 10 ? originalDate.getHours() : `0${originalDate.getHours()}`;
-        const minutes = originalDate.getMinutes() >= 10 ? originalDate.getMinutes() : `0${originalDate.getMinutes()}`;
-        const seconds = originalDate.getSeconds() >= 10 ? originalDate.getSeconds() : `0${originalDate.getSeconds()}`;
+            const day = originalDate.getDate() >= 10 ? originalDate.getDate() : `0${originalDate.getDate()}`;
+            const month = originalDate.getMonth() + 1 >= 10 ? originalDate.getMonth() + 1 : `0${originalDate.getMonth() + 1}`;
+            const year = originalDate.getFullYear() >= 10 ? originalDate.getFullYear() : `0${originalDate.getFullYear()}`;
+            const hours = originalDate.getHours() >= 10 ? originalDate.getHours() : `0${originalDate.getHours()}`;
+            const minutes = originalDate.getMinutes() >= 10 ? originalDate.getMinutes() : `0${originalDate.getMinutes()}`;
+            const seconds = originalDate.getSeconds() >= 10 ? originalDate.getSeconds() : `0${originalDate.getSeconds()}`;
 
-        const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-        return formattedDate;
+            const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            return formattedDate;
+        }
     };
 
     const handleSplitStaticEta = (staticETA) => {
@@ -405,22 +441,22 @@ const VehicleTrackDash = () => {
     };
 
     const handleGPSDate = (date) => {
-        const currentDate = new Date();
+        if (date === null) {
+            return false
+        } else if (date?.length === 0) {
+            return false
+        } else {
+            const currentDate = new Date();
+            const givenDateString = date;
+            const givenDate = new Date(givenDateString);
+            const timeDifference = currentDate - givenDate;
 
-        const givenDateString = date;
+            const hoursDifference = timeDifference / (1000 * 60 * 60);
 
-        const givenDate = new Date(givenDateString);
-        const timeDifference = currentDate - givenDate;
+            return hoursDifference > 4 ? true : false;
+        }
 
-        const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-        return hoursDifference > 4 ? true : false;
     }
-
-    // const handleRefreshPage = () => {
-    //     getAllTrips();
-    //     setRefreshClicked(true);
-    // };
 
     const handleFilter = () => {
         const allFilteredTrip = allTrips.filter(test => {
@@ -499,8 +535,14 @@ const VehicleTrackDash = () => {
         },
     ];
 
+    const handleShowLocation = (data) => {
+        setVehicleData(data);
+        setShowLocation(true)
+    }
+
     return (
-        <>
+        <div className='m-0 p-0 position-relative'>
+            <Loader show={showLoader} />
             <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
                     <div className='w-100 text-center my-5'>
@@ -532,7 +574,9 @@ const VehicleTrackDash = () => {
 
                                 <Col sm={12} md={6} lg={2} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
                                     <Button type="submit" className=" px-3">Show</Button>
-                                    <HoveredButton type="button" className="px-3 ms-2" onClick={() => handleSelectFilter('All')}>Show All</HoveredButton>
+                                    <HoveredButton type="button" className="px-3 ms-2"
+                                        onClick={() => handleSelectFilter('All')}
+                                    >Show All</HoveredButton>
                                 </Col>
 
                                 <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
@@ -625,7 +669,7 @@ const VehicleTrackDash = () => {
                                         <td>{Math.floor(data?.kmDifference)}</td>
                                         <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingDate) : ''}</td>
                                         <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingReachDate) : ''}</td>
-                                        <td>{data?.location}</td>
+                                        <td className='cursor-pointer' onClick={() => handleShowLocation(data)}>{data?.location}</td>
                                         <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
                                         <td className={`${data?.finalStatus === 'Delayed' && 'fw-bold'}`}>{getFinalStatus(data)}</td>
                                         <td>{getDelayedHours(data?.delayedHours)}</td>
@@ -643,8 +687,8 @@ const VehicleTrackDash = () => {
 
                         </table>
                         {
-                            currentTrips.length === 0 ? (
-                                <div className='pb-3 text-secondary d-flex justify-content-center align-items-center'>No data found</div>
+                            (currentTrips.length === 0 && !showLoader) ? (
+                                <div className='pb-3 text-secondary d-flex justify-content-center align-items-center'>{errorMessage}</div>
                             ) : null
                         }
                         {
@@ -657,9 +701,10 @@ const VehicleTrackDash = () => {
                     </div>
 
                     <ForceCompleteForm getAllTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
+                    <VehicleLocation show={showLocation} setShow={setShowLocation} vehicleData={vehicleData} />
                 </div>
             </div>
-        </>
+        </div>
     )
 }
 

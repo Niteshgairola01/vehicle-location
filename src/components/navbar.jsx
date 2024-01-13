@@ -8,7 +8,7 @@ const NavBar = () => {
   const location = useLocation();
 
   return (
-    <Navbar collapseOnSelect expand="lg" className="bg-white navbar">
+    <Navbar collapseOnSelect expand="lg" className="bg-white navbar mb-0">
       <div className='container-fluid navbar-main-container d-flex justify-content-between align-items-center'>
         <div className='d-flex justify-content-between align-items-center navbar-inner-container'>
           <Navbar.Brand className='w-5'>

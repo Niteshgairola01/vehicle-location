@@ -4,12 +4,12 @@ import AllRoutes from '.';
 
 const Default = () => {
     return (
-        <>
+        <div className='m-0 p-0'>
             <Navbar />
-            <div className=''>
+            <div className='m-0 p-0'>
                 <AllRoutes />
             </div>
-        </>
+        </div>
     )
 }
 
