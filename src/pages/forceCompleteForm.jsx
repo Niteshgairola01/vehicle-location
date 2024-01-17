@@ -5,7 +5,7 @@ import Button from '../components/Button/coloredButton'
 import { ErrorToast, SuccessToast, WarningToast } from '../components/toast/toast'
 import { deleteVehicleOnTripComplete, forceCompleteTrip } from '../hooks/tripsHooks'
 
-const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
+const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
     const [selectedDate, setSelectedDate] = useState('custom');
     const [unloadingReachDate, setUnloadingReachDate] = useState('');
     const [unloadingDate, setUnloadingDate] = useState('');
@@ -38,11 +38,13 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
         deleteVehicleOnTripComplete(deleteVehiclePayLoad).then((response) => {
             if (response?.data === "Vehicle Deleted Successfully!") {
                 SuccessToast(response?.data);
-                getAllTrips();
-                setShow(false);
+                handleFilterTrips();
                 setUnloadingDate('');
                 setUnloadingReachDate('');
                 setRemark('');
+                setTimeout(() => {
+                    setShow(false);
+                }, 1500);
             } else if (response?.data === "Please Wait! Another Program is executing now. ") {
                 setTimeout(() => deleteVehicleOnTripCompleteWithRetry(deleteVehiclePayLoad), 1000);
                 ErrorToast(response?.data);
@@ -67,9 +69,6 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const vehicleExitDate = new Date(data?.vehicleExitDate);
-        const newValue = new Date(unloadingReachDate);
-        const newUnloadingDate = new Date(unloadingDate);
-
         const unloadingReachDateFormat = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
         const unloadingDateFormat = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
 
@@ -92,19 +91,30 @@ const ForceCompleteForm = ({ getAllTrips, show, setShow, data }) => {
 
             const form = [operationIdArray[0], formattedUnloadingDate, formattedReachDate, remark];
 
-            if (vehicleExitDate > newValue) {
+            const reachDateParts = unloadingReachDate.split(/[\s/:-]+/);
+            const customReachDate = new Date(`${reachDateParts[2]}-${reachDateParts[1]}-${reachDateParts[0]}T${reachDateParts[3]}:${reachDateParts[4]}:${reachDateParts[5]}`);
+
+            const unloadingDateParts = unloadingDate.split(/[\s/:-]+/);
+            const customUnloadingDate = new Date(`${unloadingDateParts[2]}-${unloadingDateParts[1]}-${unloadingDateParts[0]}T${unloadingDateParts[3]}:${unloadingDateParts[4]}:${unloadingDateParts[5]}`)
+
+            if (vehicleExitDate > customReachDate) {
                 ErrorToast("Unloading Reach Date must be greater than Vehicle Exit Date");
-            } else if (newUnloadingDate < newValue) {
+            } else if (customReachDate > customUnloadingDate) {
                 ErrorToast("Unloading Date must be euqal or greater than Unaloding Reach Date");
             }
             else if (form.length === 4) {
-                handleForceCompleteTrip(form);
+                ErrorToast("");
+
+                setTimeout(() => {
+                    setShow(false);
+                }, 1500);
+                // handleForceCompleteTrip(form);
             } else {
                 WarningToast("Fill all the required fields ! ! ! !");
             }
         }
     };
-    
+
     useEffect(() => {
         const currentDate = new Date();
         const day = currentDate.getDate() >= 10 ? currentDate.getDate() : `0${currentDate.getDate()}`;

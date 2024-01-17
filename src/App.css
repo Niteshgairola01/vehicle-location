@@ -63,7 +63,7 @@ h6,
 }
 
 p {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
 }
 
 /* custom Classes */
@@ -164,6 +164,13 @@ p {
     font-weight: 900;
 }
 
+/* Card */
+
+.card-container {
+    border-radius: 5px;
+    box-shadow: 1px 0px 47px -18px #c8c9ca;
+}
+
 /* Nav bar */
 
 .navbar {
@@ -179,6 +186,22 @@ p {
 
 .navbar-inner-container {
     width: 100%;
+}
+
+.menuItems {
+    min-width: 8rem;
+    color: var(--thm-base);
+    border-bottom: 2px solid transparent;
+}
+
+.menuItems:hover {
+    color: var(--thm-dark);
+}
+
+.active-menuItem {
+    min-width: 8rem;
+    color: var(--thm-dark);
+    border-bottom: 2px solid var(--thm-dark);
 }
 
 .nav-logo {
@@ -235,13 +258,13 @@ p {
             rgba(255, 255, 255, 0.986),
             rgba(255, 255, 255, 0) 70%);
     top: 0;
-    left: -100px;
+    left: -260px;
     opacity: 0.6;
 }
 
 @keyframes shine {
     0% {
-        left: -100px;
+        left: -260px;
     }
 
     60% {
@@ -541,6 +564,16 @@ table thead {
     border: 1px solid var(--thm-dark);
     box-shadow: 0px 0px 56px -21px #cbcbcb;
     padding: 1rem;
+}
+
+.vehicle-details-popup {
+    min-width: 20rem;
+    position: absolute;
+    right: 0;
+    left: 90%;
+    top: 0%;
+    box-shadow: 0px 0px 12px -4px #6f6f6f;
+    z-index: 1;
 }
 
 @media screen and (max-width: 780px) {

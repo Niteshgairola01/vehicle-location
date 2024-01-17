@@ -1,39 +1,44 @@
-import React from 'react'
-import { Modal } from 'react-bootstrap'
-import { GoogleMap, LoadScript, Marker, MarkerF } from '@react-google-maps/api';
+import React, { useEffect, useState } from 'react'
+import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
+import { useLocation } from 'react-router-dom';
+import { truck } from '../assets/images';
 
-const VehicleLocation = ({ show, setShow, vehicleData }) => {
+const VehicleLocation = () => {
+
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
+
+    const location = useLocation();
+    const form = location.state;
 
     const mapContainerStyle = {
         width: '100%',
-        height: '600px',
+        height: '100%',
     };
 
     const center = {
-        lat: parseFloat(vehicleData?.lattitude),
-        lng: parseFloat(vehicleData?.longitude),
+        lat: parseFloat(form?.lattitude),
+        lng: parseFloat(form?.longitude),
     };
 
-    return (
+    // useEffect(() => {
+    //     console.log("test");
+    // }, [lo])
 
-        <Modal show={show} centered onHide={() => setShow(false)} size='xl' style={{minHeight: '80vh'}}>
-            <Modal.Header closeButton>
-                <Modal.Title>
-                    <h5 className='thm-dark'>vehicle Location</h5>
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body style={{ height: "60vh" }}>
-                <LoadScript googleMapsApiKey="AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y">
-                    <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        center={center}
-                        zoom={11}
-                    >
-                        <MarkerF position={center} />
-                    </GoogleMap>
-                </LoadScript>
-            </Modal.Body>
-        </Modal>
+    return (
+        <div style={{ height: "92vh", width: "100vw" }}>
+            <LoadScript googleMapsApiKey={key}>
+                <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={center}
+                    zoom={11}
+                >
+                    <MarkerF
+                        // icon={{ url: truck, scale: new window.google.maps.Size(30, 30) }} 
+                        position={center} />
+                </GoogleMap>
+            </LoadScript>
+        </div>
     )
 }
 

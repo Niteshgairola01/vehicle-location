@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Select from 'react-select';
 import { Col, Form, Row } from 'react-bootstrap'
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
+import { FaRoute } from "react-icons/fa";
 import { IoMdRefresh } from 'react-icons/io';
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
@@ -16,14 +17,14 @@ import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
 import Loader from '../components/loader/loader';
-import VehicleLocation from './vehicleLocation';
+import DashHead from '../components/dashboardHead';
 
 const VehicleTrackDash = () => {
 
     const [form, setForm] = useState({});
     const [allTrips, setAllTrips] = useState([]);
     const [filteredTrips, setFilteredTrips] = useState([]);
-    const [selectedFilter, setSelectedFilter] = useState('');
+    const [selectedFilter, setSelectedFilter] = useState([]);
     const [partiesList, setPartiesList] = useState([]);
     const [vehiclesList, setVehiclesList] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
@@ -40,7 +41,8 @@ const VehicleTrackDash = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [vehicleData, setVehicleData] = useState({});
     const [showLocation, setShowLocation] = useState(false);
-
+    const [showLocationOption, setShowLocationOption] = useState(false);
+    const [currentVehicle, setCurrentVehicle] = useState('')
     const itemsPerPage = 20
     const indexOfLastPost = currentPage * itemsPerPage;
     const indexOfFirstPost = indexOfLastPost - itemsPerPage;
@@ -280,11 +282,7 @@ const VehicleTrackDash = () => {
                     }
 
                     setFilteredTrips(tripsFilteredByTripStatus);
-                }
-                //  else if (allFilteredTrip.length > 0) {
-                //     setFilteredTrips(allFilteredTrip);
-                // }
-                else {
+                } else {
                     setFilteredTrips(allFilteredTrip);
                 }
             } else {
@@ -297,6 +295,20 @@ const VehicleTrackDash = () => {
             setFilteredTrips([])
         });
     };
+
+    const intervalRef = useRef(null);
+
+    useEffect(() => {
+        const intervalFunction = () => {
+            handleFilterTrips();
+        };
+
+        intervalFunction();
+
+        intervalRef.current = setInterval(intervalFunction, 10 * 60 * 1000);
+
+        return () => clearInterval(intervalRef.current);
+    }, [selectedFilter]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -324,7 +336,6 @@ const VehicleTrackDash = () => {
     };
 
     useEffect(() => {
-        console.log("api hit");
         handleFilterTrips();
     }, [selectedFilter]);
 
@@ -341,6 +352,7 @@ const VehicleTrackDash = () => {
 
     const handleShowOptions = () => {
         !hovered && setShowFilters(false);
+        !hovered && setShowLocationOption(false);
         isOpenParty && setIsOpenParty(false);
         isOpenOffice && setIsOpenOffice(false);
         isOpenVehicle && setIsOpenVehicle(false);
@@ -390,7 +402,6 @@ const VehicleTrackDash = () => {
                 hour: 'numeric',
                 minute: 'numeric',
                 second: 'numeric',
-                hour12: false,
             });
 
             const dateArr = dateTimeFormatted.split(', ');
@@ -404,7 +415,6 @@ const VehicleTrackDash = () => {
             const hours = originalDate.getHours() >= 10 ? originalDate.getHours() : `0${originalDate.getHours()}`;
             const minutes = originalDate.getMinutes() >= 10 ? originalDate.getMinutes() : `0${originalDate.getMinutes()}`;
             const seconds = originalDate.getSeconds() >= 10 ? originalDate.getSeconds() : `0${originalDate.getSeconds()}`;
-
             const finalFormattedDate = `${finalDay}/${finalMonth}/${finalYear} ${hours}:${minutes}:${seconds}`;
 
             return finalFormattedDate;
@@ -537,19 +547,31 @@ const VehicleTrackDash = () => {
 
     const handleShowLocation = (data) => {
         setVehicleData(data);
-        setShowLocation(true)
-    }
+        setCurrentVehicle(data?.vehicleNo)
+        setShowLocationOption(true);
+    };
+
+    const locationOptionsBtns = [
+        {
+            title: 'History',
+            icon: <FaRoute />,
+            path: "#",
+            handleClick: '#'
+        },
+        {
+            title: 'Track',
+            icon: <FaRoute />,
+            path: "/location",
+            handleClick: () => setShowLocation(true)
+        },
+    ]
 
     return (
         <div className='m-0 p-0 position-relative'>
             <Loader show={showLoader} />
             <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
-                    <div className='w-100 text-center my-5'>
-                        <h4 className='px-3 dashboard-title text-uppercase d-inline text-center my-5'
-                            style={{ borderBottom: "3px solid #09215f" }}
-                        >Vehicle Tracking Dashboard</h4>
-                    </div>
+                    <DashHead title="Vehicle Tracking Dashboard" />
                     <div className='mt-2'>
                         <Form onSubmit={handleSubmit}>
                             <Row className='dashoard-filter-form rounded'>
@@ -663,13 +685,42 @@ const VehicleTrackDash = () => {
                                         <td>{data?.origin}</td>
                                         <td>{data?.destination}</td>
                                         <td>{handleSplitStaticEta(data?.staticETA)}</td>
-                                        <td className={`${handleGPSDate(data?.locationTime) && 'bg-danger text-white'}`}>{handleFormatDate(data?.locationTime)}</td>
+                                        <td className={`${handleGPSDate(data?.locationTime) && 'bg-danger text-white'}`}>{handleFormatDate(data?.locationTime)}
+                                        </td>
                                         <td>{data?.routeKM}</td>
                                         <td>{Math.floor(data?.runningKMs)}</td>
                                         <td>{Math.floor(data?.kmDifference)}</td>
                                         <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingDate) : ''}</td>
                                         <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingReachDate) : ''}</td>
-                                        <td className='cursor-pointer' onClick={() => handleShowLocation(data)}>{data?.location}</td>
+                                        <td className='cursor-pointer position-relative'
+                                            onMouseOver={() => setHovered(true)}
+                                            onMouseOut={() => setHovered(false)}
+                                            onClick={() => handleShowLocation(data)}>{data?.location}
+                                            {
+                                                (showLocationOption && data?.vehicleNo === currentVehicle) ? (
+                                                    <div className='position-absolute bg-white p-3 rounded vehicle-details-popup'>
+                                                        <h5 className='thm-dark d-inline'>{data?.vehicleNo}</h5>
+                                                        <span className='ms-2 thm-dark'>2 Mins</span>
+                                                        <p className='thm-dark mt-2 mb-0'>{data?.location}</p>
+                                                        <p className='' style={{ fontSize: "0.8rem" }}>{handleFormatDate(data?.locationTime)}</p>
+                                                        <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
+                                                            {
+                                                                locationOptionsBtns.map((location, i) => (
+                                                                    <Link to={location?.path} state={data}>
+                                                                        <div className='cursor-pointer thm-dark text-decoration-none mx-2' key={i}
+                                                                            onClick={() => i === 1 && setShowLocation(true)}
+                                                                        >
+                                                                            {location?.icon}
+                                                                            <span className='fw-bold fs-6 mx-2 thm-dark'>{location.title}</span>
+                                                                        </div>
+                                                                    </Link>
+                                                                ))
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                ) : null
+                                            }
+                                        </td>
                                         <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
                                         <td className={`${data?.finalStatus === 'Delayed' && 'fw-bold'}`}>{getFinalStatus(data)}</td>
                                         <td>{getDelayedHours(data?.delayedHours)}</td>
@@ -700,8 +751,8 @@ const VehicleTrackDash = () => {
                         }
                     </div>
 
-                    <ForceCompleteForm getAllTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
-                    <VehicleLocation show={showLocation} setShow={setShowLocation} vehicleData={vehicleData} />
+                    <ForceCompleteForm handleFilterTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
+                    {/* <VehicleLocation show={showLocation} setShow={setShowLocation} vehicleData={vehicleData} /> */}
                 </div>
             </div>
         </div>
