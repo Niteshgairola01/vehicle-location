@@ -1,7 +1,7 @@
 import React from 'react'
 import { Form } from 'react-bootstrap'
 
-export const Input = ({ label, value, name, type, className, onChange, onClick, placeholder, required, autocomplete, disabled }) => {
+export const Input = ({ label, value, name, type, className, onChange, onClick, placeholder, required, autocomplete, disabled}) => {
     return (
         <Form.Group>
             <Form.Label className='thm-dark'>{label}</Form.Label>

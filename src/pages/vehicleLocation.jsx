@@ -21,6 +21,11 @@ const VehicleLocation = () => {
         lng: parseFloat(form?.longitude),
     };
 
+    const image = {
+        url: truck,
+        size: (20, 32)
+    }
+
     // useEffect(() => {
     //     console.log("test");
     // }, [lo])
@@ -34,7 +39,7 @@ const VehicleLocation = () => {
                     zoom={11}
                 >
                     <MarkerF
-                        // icon={{ url: truck, scale: new window.google.maps.Size(30, 30) }} 
+                        // icon={image}
                         position={center} />
                 </GoogleMap>
             </LoadScript>

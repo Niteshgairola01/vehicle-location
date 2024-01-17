@@ -4,7 +4,7 @@ import { APIBase } from "../backend"
 export const getPolygonCategories = async () => {
     const url = `${APIBase}:8375/getPolygonCategories`;
     const config = {
-        methode: 'GET',
+        method: 'GET',
         url: url,
         header: {
             "Content-Type": "application/json"
@@ -18,8 +18,24 @@ export const getPolygonCategories = async () => {
 export const getAllPolygonAreas = async () => {
     const url = `${APIBase}:8375/getAllPolygonAreas`;
     const config = {
-        methode: 'GET',
+        method: 'GET',
         url: url,
+        header: {
+            "Content-Type": "application/json"
+        }
+    };
+
+    const response = await axios(config);
+    return response;
+};
+
+export const createNewPolygonArea = async (form) => {
+    console.log("form", form);
+    const url = `${APIBase}:8375/storePolygonAreas`;
+    const config = {
+        method: 'POST',
+        url: url,
+        data: [form],
         header: {
             "Content-Type": "application/json"
         }

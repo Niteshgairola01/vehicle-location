@@ -25,16 +25,20 @@ const NavBar = () => {
           <Navbar.Brand className='w-5'>
             <img src={logo} alt='logo' className='nav-logo' />
           </Navbar.Brand>
-          <Nav className='w-75 d-flex justify-content-between align-items-center'>
-            <div className='d-flex justify-content-start align-items-center'>
-              {
-                menuItems.map((data, index) => (
-                  <Link to={data?.path} key={index} className={`${location.pathname === data?.path ? 'active-menuItem' : 'menuItems'} me-3 text-center text-decoration-none cursor-pointer`}>{data?.title}</Link>
-                ))
-              }
-            </div>
-            <Link to={location.pathname === '/track' ? '/' : '/track'} className='m-0 p-0'>
-              <Button className="px-4 py-1">{location.pathname === '/track' ? 'Logout' : 'Login'}</Button>
+          <Nav className={`w-75 d-flex justify-content-${location.pathname === '/' ? 'end' : 'between'} align-items-center`}>
+            {
+              location.pathname !== "/" && (
+                <div className='d-flex justify-content-start align-items-center'>
+                  {
+                    menuItems.map((data, index) => (
+                      <Link to={data?.path} key={index} className={`${location.pathname === data?.path ? 'active-menuItem' : 'menuItems'} me-3 text-center text-decoration-none cursor-pointer`}>{data?.title}</Link>
+                    ))
+                  }
+                </div>
+              )
+            }
+            <Link to={location.pathname === '/' ? '/track' : '/'} className='m-0 p-0'>
+              <Button className="px-4 py-1">{location.pathname === '/' ? 'Login' : 'Logout'}</Button>
             </Link>
           </Nav>
         </div>

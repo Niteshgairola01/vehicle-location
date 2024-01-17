@@ -7,7 +7,7 @@ import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google
 import Button from '../../components/Button/hoveredButton';
 import { CiEdit } from "react-icons/ci";
 import { Link } from 'react-router-dom';
-import { getAllPolygonAreas, getPolygonCategories } from '../../hooks/ploygonHooks';
+import { getAllPolygonAreas, getPolygonCategories } from '../../hooks/polygonHooks';
 
 
 const PolygonList = ({ setCurrentPage }) => {
@@ -58,19 +58,13 @@ const PolygonList = ({ setCurrentPage }) => {
         setCategoryPolygons(filteredAreas);
     }, [selectedCategory]);
 
-    // const allCatogories = ['Reach Point', 'Parking', 'Plan', 'Dealer'];
-    const allPolygons = ['Polygon 1', 'Polygon 2', 'Polygon 3', 'Polygon 4', 'Polygon 5', 'Polygon 6', 'Polygon 7',
-        'Polygon 8', 'Polygon 9', 'Polygon 10', 'Polygon 11', 'Polygon 12', 'Polygon 13', 'Polygon 14', 'Polygon 15',
-        'Polygon 16', 'Polygon 17', 'Polygon 18', 'Polygon 19', 'Polygon 20'
-    ];
-
     const mapContainerStyle = {
         width: '100%',
         height: '100%',
     };
 
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
 
     const handleSelectCategory = (category) => {
         setSelectedCategory(category);
@@ -98,7 +92,7 @@ const PolygonList = ({ setCurrentPage }) => {
                 <Button className="px-3" onClick={() => setCurrentPage('Create')}>Create New</Button>
             </div>
             <Row className=''>
-                <Col sm={3} className='pe-5'>
+                <Col sm={4} className='pe-5'>
                     <Card>
                         <h6 className='thm-dark'>Polygon Categories</h6>
                         <hr />
@@ -119,14 +113,15 @@ const PolygonList = ({ setCurrentPage }) => {
                         <div className='mt-2 polygons-list'>
                             {
                                 categoryPolygons.map((data, index) => (
-                                    <div className={`p-0 cursor-pointer ${selectedPolygon?.geoName === data?.geoName ? 'active-category' : 'category'} d-flex justify-content-between align-items-center`} key={index}>
-                                        <p className="m-0 p-0 py-2 ps-2 pe-5"
-                                            onClick={() => handleSelectPolygon(data)}
-                                        // onClick={() => setSelectedPolygon(data)}
-                                        >{data?.geoName ? data?.geoName : data?.placeName}</p>
+                                    <div className={`p-0 cursor-pointer ${selectedPolygon === data ? 'active-category' : 'category'} d-flex justify-content-between align-items-center`} key={index}>
+                                        <p className="m-0 p-0 py-2 ps-2 pe-5" onClick={() => handleSelectPolygon(data)}>
+                                            {data?.geoName === null || data?.geoName === '' ? '' : `${data?.geoName}, `}{data?.placeName}
+                                        </p>
                                         <Tooltip title="Edit" key="edit">
                                             <Link to="#" className='text-decoration-none'>
-                                                <CiEdit className={`me-2 fs-5 ${selectedPolygon === data ? 'thm-white' : 'thm-dark'}`} />
+                                                <CiEdit className={`me-2 fs-5 ${selectedPolygon === data ? 'thm-white' : 'thm-dark'}`}
+                                                    onClick={() => setCurrentPage('Create')}
+                                                />
                                             </Link>
                                         </Tooltip>
                                     </div>
@@ -145,7 +140,7 @@ const PolygonList = ({ setCurrentPage }) => {
                 {/* <Col sm={3} className='pe-5'>
 
                         </Col> */}
-                <Col sm={9} className='' style={{ height: "65vh" }}>
+                <Col sm={8} className='' style={{ height: "65vh" }}>
                     <LoadScript googleMapsApiKey={key}>
                         <GoogleMap
                             mapContainerStyle={mapContainerStyle}
