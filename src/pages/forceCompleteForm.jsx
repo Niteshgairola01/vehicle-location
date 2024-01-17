@@ -103,8 +103,6 @@ const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
                 ErrorToast("Unloading Date must be euqal or greater than Unaloding Reach Date");
             }
             else if (form.length === 4) {
-                ErrorToast("");
-
                 setTimeout(() => {
                     setShow(false);
                 }, 1500);
