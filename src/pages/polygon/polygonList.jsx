@@ -3,7 +3,7 @@ import '../../assets/styles/polygon.css';
 import { Col, Row } from 'react-bootstrap';
 import { Tooltip } from '@mui/material';
 import Card from '../../components/Card/card';
-import { GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
+import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton';
 import { CiEdit } from "react-icons/ci";
 import { Link } from 'react-router-dom';
@@ -17,12 +17,12 @@ const PolygonList = ({ setCurrentPage }) => {
     const [categoryPolygons, setCategoryPolygons] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('Dealer');
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
+    const [selectedPolygon, setSelectedPolygon] = useState({});
 
-    const [selectedPolygon, setSelectedPolygon] = useState('Polygon 1');
+    // const [selectedPolygon, setSelectedPolygon] = useState('Polygon 1');
 
     useEffect(() => {
         getPolygonCategories().then((response) => {
-            // console.log("response", response);
             (response.status === 200) ? setAllCategories(response?.data) : setAllCategories([]);
         }).catch(() => setAllCategories([]))
     }, []);
@@ -30,19 +30,21 @@ const PolygonList = ({ setCurrentPage }) => {
     useEffect(() => {
         getAllPolygonAreas().then((response) => {
             if (response.status === 200) {
-                // console.log("response", response);
-                setAllPolygonAreas(response?.data);
                 const filteredAreas = response?.data.filter(data => data?.geofenceType === 'Dealer');
-                console.log("test", filteredAreas[0].coordinates[0].split(','));
-                const coordinates = filteredAreas[0].coordinates[0];
-                const coordArr = coordinates.split(',');
-                // console.log("coordArr", response?.data[0]?.coordinates);
-                setSelectedCoordinates({
-                    lat: parseFloat(coordArr[0]),
-                    long: parseFloat(coordArr[1])
-                });
 
                 setCategoryPolygons(filteredAreas);
+                filteredAreas?.length > 0 ? setSelectedPolygon(filteredAreas[0]) : setSelectedPolygon({});
+                setAllPolygonAreas(response?.data);
+
+                const formattedCoordinates = filteredAreas[0].coordinates.map(coord => {
+                    const [lat, long] = coord.split(', ');
+                    return {
+                        lat: parseFloat(lat),
+                        lng: parseFloat(long)
+                    };
+                });
+
+                setSelectedCoordinates(formattedCoordinates);
             }
             else {
                 setAllPolygonAreas([]);
@@ -50,14 +52,11 @@ const PolygonList = ({ setCurrentPage }) => {
         }).catch(() => setAllPolygonAreas([]))
     }, []);
 
-    console.log("selected coords", selectedCoordinates);
 
     useEffect(() => {
         const filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === selectedCategory);
         setCategoryPolygons(filteredAreas);
     }, [selectedCategory]);
-
-    console.log("polygons", categoryPolygons);
 
     // const allCatogories = ['Reach Point', 'Parking', 'Plan', 'Dealer'];
     const allPolygons = ['Polygon 1', 'Polygon 2', 'Polygon 3', 'Polygon 4', 'Polygon 5', 'Polygon 6', 'Polygon 7',
@@ -73,21 +72,24 @@ const PolygonList = ({ setCurrentPage }) => {
     // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     const key = "ABC";
 
-    const coordinates = [
-        { lat: 37.7749, lng: -122.4194 },
-        { lat: 37.7833, lng: -122.4167 },
-        { lat: 37.7819, lng: -122.4301 },
-        { lat: 37.7705, lng: -122.4311 },
-    ];
-
-    const defaultCenter = {
-        lat: coordinates[0].lat,
-        lng: coordinates[0].lng,
-    };
-
-    const handleSelectPolygonAres = (area) => {
-
+    const handleSelectCategory = (category) => {
+        setSelectedCategory(category);
+        const polygonAreas = allPolygonAreas.filter(data => data?.geoName === category);
+        setCategoryPolygons(polygonAreas);
     }
+
+    const handleSelectPolygon = (polygon) => {
+        setSelectedPolygon(polygon);
+        const formattedCoordinates = polygon.coordinates.map(coord => {
+            const [lat, long] = coord.split(', ');
+            return {
+                lat: parseFloat(lat),
+                lng: parseFloat(long)
+            };
+        });
+
+        setSelectedCoordinates(formattedCoordinates);
+    };
 
     return (
         <div className='m-0 p-0 position-relative'>
@@ -104,7 +106,7 @@ const PolygonList = ({ setCurrentPage }) => {
                             {
                                 allCategories.map((data, index) => (
                                     <p className={`cursor-pointer ${selectedCategory === data ? 'active-category' : 'category'}`} key={index}
-                                        onClick={() => setSelectedCategory(data)}
+                                        onClick={() => handleSelectCategory(data)}
                                     >{data}</p>
                                 ))
                             }
@@ -117,10 +119,11 @@ const PolygonList = ({ setCurrentPage }) => {
                         <div className='mt-2 polygons-list'>
                             {
                                 categoryPolygons.map((data, index) => (
-                                    <div className={`p-0 cursor-pointer ${selectedPolygon === data?.geofenceType ? 'active-category' : 'category'} d-flex justify-content-between align-items-center`} key={index}>
+                                    <div className={`p-0 cursor-pointer ${selectedPolygon?.geoName === data?.geoName ? 'active-category' : 'category'} d-flex justify-content-between align-items-center`} key={index}>
                                         <p className="m-0 p-0 py-2 ps-2 pe-5"
+                                            onClick={() => handleSelectPolygon(data)}
                                         // onClick={() => setSelectedPolygon(data)}
-                                        >{data?.geoName}</p>
+                                        >{data?.geoName ? data?.geoName : data?.placeName}</p>
                                         <Tooltip title="Edit" key="edit">
                                             <Link to="#" className='text-decoration-none'>
                                                 <CiEdit className={`me-2 fs-5 ${selectedPolygon === data ? 'thm-white' : 'thm-dark'}`} />
@@ -129,28 +132,54 @@ const PolygonList = ({ setCurrentPage }) => {
                                     </div>
                                 ))
                             }
+                            {
+                                categoryPolygons.length === 0 ? (
+                                    <div className='w-100 text-center text-secondary'>
+                                        No polygon areas found
+                                    </div>
+                                ) : null
+                            }
                         </div>
                     </Card>
                 </Col>
                 {/* <Col sm={3} className='pe-5'>
 
                         </Col> */}
-                <Col sm={9} className=''>
+                <Col sm={9} className='' style={{ height: "65vh" }}>
                     <LoadScript googleMapsApiKey={key}>
                         <GoogleMap
                             mapContainerStyle={mapContainerStyle}
-                            center={selectedCoordinates}
+                            center={selectedCoordinates[0]}
                             zoom={12}
                         >
-                            <PolygonF
-                                paths={selectedCoordinates}
-                                options={{
-                                    fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
-                                    strokeColor: 'red',
-                                    strokeOpacity: 0.8,
-                                    strokeWeight: 2,
-                                }}
-                            />
+                            {
+                                selectedCoordinates.length === 1 ? (
+                                    <>
+                                        <CircleF
+                                            center={selectedCoordinates[0]}
+                                            radius={500} // 500 meters radius (adjust as needed)
+                                            options={{
+                                                fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
+                                                strokeColor: 'red',
+                                                strokeOpacity: 0.8,
+                                                strokeWeight: 2,
+                                            }}
+                                        />
+
+                                        <MarkerF position={selectedCoordinates[0]} />
+                                    </>
+                                ) : (
+                                    <PolygonF
+                                        paths={selectedCoordinates}
+                                        options={{
+                                            fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
+                                            strokeColor: 'red',
+                                            strokeOpacity: 0.8,
+                                            strokeWeight: 2,
+                                        }}
+                                    />
+                                )
+                            }
                         </GoogleMap>
                     </LoadScript>
                 </Col>
