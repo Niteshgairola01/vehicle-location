@@ -108,7 +108,7 @@ const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
                 setTimeout(() => {
                     setShow(false);
                 }, 1500);
-                // handleForceCompleteTrip(form);
+                handleForceCompleteTrip(form);
             } else {
                 WarningToast("Fill all the required fields ! ! ! !");
             }
