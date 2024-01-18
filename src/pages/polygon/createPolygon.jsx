@@ -2,45 +2,158 @@ import React, { useEffect, useState } from 'react'
 import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton'
 import ColoredButton from '../../components/Button/coloredButton'
-import { Col, Form, Row } from 'react-bootstrap'
+import { Col, Form, Modal, Row } from 'react-bootstrap'
 import Card from '../../components/Card/card'
 import Select from 'react-select';
 import { Input } from '../../components/form/Input';
 import { ErrorToast, SuccessToast } from '../../components/toast/toast';
-import { createNewPolygonArea } from '../../hooks/polygonHooks';
+import { createNewPolygonArea, updatePolygonArea } from '../../hooks/polygonHooks';
 import { RxCross1 } from "react-icons/rx";
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const CreatePolygon = ({ setCurrentPage }) => {
+const CreatePolygon = () => {
 
     const [form, setForm] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
     const [finalCoords, setFinalCoords] = useState([]);
     const [shape, setShape] = useState('');
+
+    const [placeName, setPlaceName] = useState('');
+    const [geoName, setGeoName] = useState('');
+    const [polygonCategory, setPolygonCategory] = useState('');
+
     const [searchCoords, setSearchCoords] = useState([]);
     const [searchLatLong, setSearchLatLong] = useState({});
+    // const history = useLocation();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const editData = location?.state;
+    const edit = location.pathname == '/editPolygon' ? true : false;
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
+
+    useEffect(() => {
+        if (editData === null) {
+            setSelectedCategory('');
+            setSelectedCoordinates([]);
+            setFinalCoords([]);
+            setShape('');
+            setPlaceName('');
+            setGeoName('');
+            setPolygonCategory('');
+        } else {
+            setSelectedCategory({
+                label: editData?.geofenceType,
+                value: editData?.geofenceType,
+            });
+            // setSelectedCoordinates(editData?.coordinates);
+            let initialCoords = [];
+            let previousCoords = [];
+
+            editData?.coordinates.map(data => {
+
+                const singleCoords = data?.split(', ');
+
+                initialCoords.push({
+                    lat: parseFloat(singleCoords[0]),
+                    lng: parseFloat(singleCoords[1])
+                });
+            });
+
+            setFinalCoords(initialCoords);
+
+            setSelectedCoordinates(initialCoords);
+
+            if (editData?.coordinates.length === 1) {
+                setShape({
+                    label: 'Circle',
+                    value: 'Circle',
+                });
+                editData?.coordinates.map(data => {
+                    const singleCoords = data?.split(', ');
+                    previousCoords.push({
+                        lat: parseFloat(singleCoords[0]),
+                        lng: parseFloat(singleCoords[1])
+                    });
+                });
+            } else if (editData?.coordinates.length > 1) {
+                setShape({
+                    label: 'Polygon',
+                    value: 'Polygon'
+                });
+                editData?.coordinates.map(data => {
+                    const singleCoords = data?.split(', ');
+                    previousCoords.push({
+                        lat: parseFloat(singleCoords[0]),
+                        lng: parseFloat(singleCoords[1])
+                    });
+                });
+
+                const firstCoord = previousCoords[1].split(', ');
+                previousCoords.push({
+                    lat: parseFloat(firstCoord[0]),
+                    lat: parseFloat(firstCoord[2]),
+                })
+            };
+
+
+            // editData?.coordinates.length > 1 ? setShape({
+            //     label: 'Polygon', value: 'Polygon'
+            // }) : setShape({ label: 'Circle', value: 'Circle' });
+
+            setPlaceName(editData?.placeName);
+            setGeoName(editData?.geoName);
+            setPolygonCategory(editData?.geofenceType);
+
+            // setForm({
+            //     ...form,
+            //     geoName: editData?.geoName,
+            //     placeName: editData?.placeName,
+            //     geofenceType: editData?.geofenceType
+            // })
+        }
+    }, [editData]);
+
+    console.log("shape", shape);
 
     // useEffect(() => {
-    //     const handleUndo = (event) => {
-    //         if (event.ctrlKey && event.key === 'z') {
-    //             const previousCoords = selectedCoordinates;
-    //             previousCoords.pop();
-    //             console.log("prev coords", previousCoords);
-    //             setSelectedCoordinates(previousCoords);
+    //     setForm({
+    //         ...form,
+    //         geoName,
+    //         placeName,
+    //         geofenceType: selectedCategory?.value
+    //     })
+    // }, [geoName, placeName, selectedCategory]);
 
-    //             // console.log("undo");
-    //         }
-    //     };
+    console.log("selected", selectedCoordinates);
+    console.log("final", finalCoords);
 
-    //     window.addEventListener('keydown', handleUndo);
+    const getPolygonPath = () => {
+        return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
+    };
 
-    //     return () => {
-    //         window.removeEventListener('keydown', handleUndo);
-    //     }
-    // });
+    useEffect(() => {
+        const handleUndo = (event) => {
+            if (event.ctrlKey && event.key === 'z') {
+                const previousCoords = selectedCoordinates;
+                previousCoords.pop();
+                console.log("prev coords", previousCoords);
+                setSelectedCoordinates(previousCoords);
+            }
+        };
+
+        window.addEventListener('keydown', handleUndo);
+
+        return () => {
+            window.removeEventListener('keydown', handleUndo);
+        }
+    });
+
+    useEffect(() => {
+        getPolygonPath();
+    }, [selectedCoordinates]);
 
 
 
@@ -87,17 +200,19 @@ const CreatePolygon = ({ setCurrentPage }) => {
 
     const handleSelectCtegory = (category) => {
         setSelectedCategory(category);
+        setPolygonCategory(category?.value)
 
-        setForm({
-            ...form,
-            geoName: '',
-            geofenceType: category?.value
-        });
+        // setForm({
+        //     ...form,
+        //     geoName: '',
+        //     geofenceType: category?.value
+        // });
     };
 
     const handleSelectPolygonType = (type) => {
         setShape(type);
         setSelectedCoordinates([]);
+        setFinalCoords([]);
     };
 
     const handleChange = (e) => {
@@ -117,10 +232,20 @@ const CreatePolygon = ({ setCurrentPage }) => {
             };
 
             setSelectedCoordinates((prevPlaces) => [...prevPlaces, clickedPlace]);
+
+            // if (finalCoords.length <= 1) {
+            //     setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace]);
+            // } else {
+            //     let testArr = finalCoords;
+            //     testArr.push(clickedPlace);
+            // }
+
             finalCoords.length <= 1 ? setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace])
                 : setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace, finalCoords[0]]);
         }
     };
+
+    console.log("final coords", finalCoords);
 
     useEffect(() => {
         let coordinates = [];
@@ -130,14 +255,13 @@ const CreatePolygon = ({ setCurrentPage }) => {
 
         setForm({
             ...form,
+            geoName: geoName,
+            placeName: placeName,
+            geofenceType: selectedCategory?.value,
             coordinates: coordinates
         });
 
-    }, [finalCoords]);
-
-    const getPolygonPath = () => {
-        return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
-    };
+    }, [finalCoords, geoName, placeName, selectedCategory]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -147,14 +271,24 @@ const CreatePolygon = ({ setCurrentPage }) => {
             if (shape === 'Polygon' && selectedCategory.length < 3) {
                 ErrorToast("Polygon is not closed")
             } else {
-                createNewPolygonArea(form).then((response) => {
-                    if (response?.status === 200) {
-                        SuccessToast("New polygon area created");
-                        setCurrentPage("List")
-                    } else {
-                        ErrorToast("")
-                    }
-                }).catch((err) => ErrorToast(err?.message))
+                console.log("form", form);
+                if (!edit) {
+                    // createNewPolygonArea(form).then((response) => {
+                    //     if (response?.status === 200) {
+                    //         SuccessToast("New polygon area created");
+                    //     } else {
+                    //         ErrorToast("")
+                    //     }
+                    // }).catch((err) => ErrorToast(err?.message))
+                } else {
+                    // updatePolygonArea(form).then((response) => {
+                    //     if (response?.status === 200) {
+                    //         SuccessToast("Polygon area updated");
+                    //     } else {
+                    //         ErrorToast("")
+                    //     }
+                    // }).catch((err) => ErrorToast(err?.message))
+                }
             }
         }
 
@@ -175,11 +309,8 @@ const CreatePolygon = ({ setCurrentPage }) => {
 
     const handleChangeSearchCoords = (e) => {
         const targetValue = e.target.value;
-        const coordinates = targetValue.split(', ');
         setSearchCoords(targetValue.split(', '));
     }
-
-    console.log("search coords", searchCoords);
 
     const handleMapCenter = () => {
         if (searchLatLong?.lat && selectedCoordinates.length === 0) {
@@ -190,159 +321,174 @@ const CreatePolygon = ({ setCurrentPage }) => {
         }
     }
 
+    console.log("selected ", selectedCoordinates);
+
     return (
-        <div>
-            <div className='my-3 d-flex justify-content-end align-items-end'>
-                <Button className="px-3" onClick={() => setCurrentPage('List')}>Back</Button>
-            </div>
-            <Row>
-                <Col sm={12} md={12} lg={4} className='pe-3'>
-                    <Card>
-                        <h6 className='thm-dark'>Create New Polygon</h6>
-                        <hr />
-                        <Form onSubmit={handleSubmit}>
-                            <Row>
-                                <Col sm={6} style={{ zIndex: 2 }}>
-                                    <Form.Label className='thm-dark'>Category</Form.Label>
-                                    <Select
-                                        options={allCategories}
-                                        value={selectedCategory}
-                                        onChange={handleSelectCtegory}
-                                        isClearable={true}
-                                        styles={selectStyles}
-                                    />
-                                </Col>
+        <Modal show={true} fullscreen centered onHide={() => {
+            setForm({})
+            navigate('/polygon');
+        }} size='xl'
+            className='w-100 p-5'>
+            <Modal.Header closeButton>
+                <Modal.Title className='thm-dark w-100 text-center'>{!edit ? 'Create Polygon' : 'Edit Polygon'}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <div className='px-5'>
+                    <div>
+                        <Row>
+                            <Col sm={12} md={12} lg={4} className='pe-3'>
+                                <Card>
+                                    <h6 className='thm-dark'>{!edit ? "Create New Polygon" : 'Edit Polygon'}</h6>
+                                    <hr />
+                                    <Form onSubmit={handleSubmit}>
+                                        <Row>
+                                            <Col sm={6} style={{ zIndex: 2 }}>
+                                                <Form.Label className='thm-dark'>Category</Form.Label>
+                                                <Select
+                                                    options={allCategories}
+                                                    value={selectedCategory}
+                                                    onChange={handleSelectCtegory}
+                                                    isClearable={true}
+                                                    styles={selectStyles}
+                                                />
+                                            </Col>
 
-                                <Col sm={6} className='position-relative '>
-                                    <Form.Label className='thm-dark'>Polygon Type</Form.Label>
-                                    <Select
-                                        options={polygonTypes}
-                                        value={shape}
-                                        onChange={handleSelectPolygonType}
-                                        isClearable={true}
-                                        styles={selectStyles}
-                                    />
-                                </Col>
-                            </Row>
+                                            <Col sm={6} className='position-relative '>
+                                                <Form.Label className='thm-dark'>Polygon Type</Form.Label>
+                                                <Select
+                                                    options={polygonTypes}
+                                                    value={shape}
+                                                    onChange={handleSelectPolygonType}
+                                                    isClearable={true}
+                                                    styles={selectStyles}
+                                                />
+                                            </Col>
+                                        </Row>
 
-                            <Col sm={12} className='mt-3'>
-                                <Input className="py-2" label="Place" type="text" name="placeName" onChange={handleChange} placeholder="Place Name" />
-                            </Col>
+                                        <Col sm={12} className='mt-3'>
+                                            <Input className="py-2" label="Place" type="text" name="placeName" value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Place Name" />
+                                        </Col>
 
-                            {
-                                (selectedCategory?.value === "Dealer" || selectedCategory?.value === "Plant") ? (
-                                    <div>
                                         {
-                                            selectedCategory?.value === 'Dealer' ? (
-                                                <Col sm={12} className='mt-3'>
-                                                    <Input className="py-2" label="Dealer" type="text" value={form?.geoName} name="geoName" onChange={handleChange} placeholder="Delaer" />
-                                                </Col>
-                                            ) : (
-                                                <Col sm={12} className='mt-3'>
-                                                    <Input className="py-2" label="Plant" type="text" value={form?.geoName} name="geoName" onChange={handleChange} placeholder="Plant" />
-                                                </Col>
-                                            )
+                                            (selectedCategory?.value === "Dealer" || selectedCategory?.value === "Plant") ? (
+                                                <div>
+                                                    {
+                                                        selectedCategory?.value === 'Dealer' ? (
+                                                            <Col sm={12} className='mt-3'>
+                                                                <Input className="py-2" label="Dealer" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Delaer" />
+                                                            </Col>
+                                                        ) : (
+                                                            <Col sm={12} className='mt-3'>
+                                                                <Input className="py-2" label="Plant" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Plant" />
+                                                            </Col>
+                                                        )
+                                                    }
+                                                </div>
+                                            ) : null
                                         }
-                                    </div>
-                                ) : null
-                            }
 
-                            <div className='mt-5 d-flex justify-content-center align-items-center'>
-                                <ColoredButton className="px-5 w-75 py-1" type="submit">Create</ColoredButton>
-                            </div>
-                        </Form>
-                    </Card>
+                                        <div className='mt-5 d-flex justify-content-center align-items-center'>
+                                            <ColoredButton className="px-5 w-75 py-1" type="submit">{!edit ? 'Create' : 'Update'}</ColoredButton>
+                                        </div>
+                                    </Form>
+                                </Card>
 
-                    <Card>
-                        <Col sm={12} md={12} lg={6} className='pt-3'>
-                            <div className='p-3 rounded border border-dark'>
-                                <p className='thm-dark'>Selected Coordinates</p>
-                                <hr />
-                                <div>
-                                    {
-                                        selectedCoordinates.map((data, index) => (
-                                            <div className='thm-dark d-flex justify-content-between align-items-center' key={index} style={{ width: "80%" }}>
-                                                <span>{data?.lat.toFixed(6)}</span>
-                                                <span>{data?.lng.toFixed(6)}</span>
+                                <Card>
+                                    <Col sm={12} md={12} lg={6} className='pt-3'>
+                                        <div className='p-3 rounded border border-dark'>
+                                            <p className='thm-dark'>Selected Coordinates</p>
+                                            <hr />
+                                            <div>
+                                                {
+                                                    selectedCoordinates.length === 0 ? (
+                                                        <div className='thm-dark d-flex justify-content-between align-items-center' style={{ width: "80%" }}>
+                                                            <p className='m-0 p-0 text-secondary'>Selected Coordinates</p>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            {
+                                                                selectedCoordinates.map((data, index) => (
+                                                                    <div className='thm-dark d-flex justify-content-between align-items-center' key={index} style={{ width: "80%" }}>
+                                                                        <span>{data?.lat.toFixed(6)}</span>
+                                                                        <span>{data?.lng.toFixed(6)}</span>
+                                                                    </div>
+                                                                ))
+                                                            }
+
+                                                        </>
+                                                    )
+                                                }
                                             </div>
-                                        ))
-                                    }
+                                        </div>
+                                    </Col>
+                                </Card>
+                            </Col>
+                            <Col sm={12} md={12} lg={8} className='position-relative' style={{ height: "75vh" }}>
+                                <div className='d-flex justify-conten-end align-items-start flex-row position-absolute' style={{ top: 10, right: 20, zIndex: 1, }}>
                                     {
-                                        selectedCoordinates.length === 0 ? (
-                                            <div className='thm-dark d-flex justify-content-between align-items-center' style={{ width: "80%" }}>
-                                                {/* <span>Select Coordinaes</span> */}
-                                                <p className='m-0 p-0 text-secondary'>Selected Coordinates</p>
+                                        selectedCoordinates.length > 0 ? (
+                                            <div className='me-3 bg-white p-2 rounded cursor-pointer d-flex justify-content-between align-items-start'
+                                                onClick={() => setSelectedCoordinates([])}
+                                                style={{ width: '200px', }}
+                                            >
+                                                <p className='m-0 p-0'>Clear Coordinates</p>
+                                                <RxCross1 />
                                             </div>
                                         ) : null
                                     }
-                                </div>
-                            </div>
-                        </Col>
-                    </Card>
-                </Col>
-                <Col sm={12} md={12} lg={8} className='position-relative' style={{ height: "65vh" }}>
-                    <div className='d-flex justify-conten-end align-items-start flex-row position-absolute' style={{ top: 10, right: 20, zIndex: 1, }}>
-                        {
-                            selectedCoordinates.length > 0 ? (
-                                <div className='me-3 bg-white p-2 rounded cursor-pointer d-flex justify-content-between align-items-start'
-                                    onClick={() => setSelectedCoordinates([])}
-                                    style={{ width: '200px', }}
-                                >
-                                    <p className='m-0 p-0'>Clear Coordinates</p>
-                                    <RxCross1 />
-                                </div>
-                            ) : null
-                        }
 
-                        <div className='bg-white px-3 py-2 thm-dark rounded'>
-                            <Form onSubmit={handleSearchByCoords}>
-                                <Input label="Search By Coordinates" type="search" onChange={handleChangeSearchCoords} placeholder="Ex: 20.876787, 70.984886" />
-                            </Form>
-                        </div>
+                                    <div className='bg-white px-3 py-2 thm-dark rounded'>
+                                        <Form onSubmit={handleSearchByCoords}>
+                                            <Input label="Search By Coordinates" type="search" onChange={handleChangeSearchCoords} placeholder="Ex: 20.876787, 70.984886" />
+                                        </Form>
+                                    </div>
+                                </div>
+                                <LoadScript googleMapsApiKey={key}>
+                                    <GoogleMap
+                                        mapContainerStyle={mapContainerStyle}
+                                        center={handleMapCenter()}
+                                        zoom={11}
+                                        onClick={handleMapClick}
+                                    >
+                                        {
+                                            shape.value === 'Polygon' ? (
+                                                <PolygonF
+                                                    path={selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }))}
+                                                    options={{
+                                                        fillColor: 'rgba(255, 0, 0, 0.2)',
+                                                        strokeColor: 'red',
+                                                        strokeOpacity: 0.8,
+                                                        strokeWeight: 2,
+                                                    }}
+                                                />
+                                            ) : shape.value === 'Circle' ? (
+                                                <>
+                                                    <CircleF options={{
+                                                        center: selectedCoordinates[0],
+                                                        radius: 500,
+                                                        fillColor: 'rgba(255, 0, 0, 0.2)',
+                                                        strokeColor: 'red',
+                                                        strokeOpacity: 0.8,
+                                                        strokeWeight: 2,
+                                                    }} />
+                                                </>
+                                            ) : null
+                                        }
+                                        {
+                                            selectedCoordinates.length > 0 ? (
+                                                <MarkerF position={selectedCoordinates[0]} />
+                                            ) : (selectedCoordinates.length === 0 && searchLatLong?.lat) ? (
+                                                <MarkerF position={handleMapCenter()} />
+                                            ) : null
+                                        }
+                                    </GoogleMap>
+                                </LoadScript>
+                            </Col>
+                        </Row>
                     </div>
-                    <LoadScript googleMapsApiKey={key}>
-                        <GoogleMap
-                            mapContainerStyle={mapContainerStyle}
-                            center={handleMapCenter()}
-                            zoom={11}
-                            onClick={handleMapClick}
-                        >
-                            {
-                                shape.value === 'Polygon' ? (
-                                    <PolygonF
-                                        path={getPolygonPath()}
-                                        options={{
-                                            fillColor: 'rgba(255, 0, 0, 0.2)',
-                                            strokeColor: 'red',
-                                            strokeOpacity: 0.8,
-                                            strokeWeight: 2,
-                                        }}
-                                    />
-                                ) : shape.value === 'Circle' ? (
-                                    <>
-                                        <CircleF options={{
-                                            center: selectedCoordinates[0],
-                                            radius: 500,
-                                            fillColor: 'rgba(255, 0, 0, 0.2)',
-                                            strokeColor: 'red',
-                                            strokeOpacity: 0.8,
-                                            strokeWeight: 2,
-                                        }} />
-                                    </>
-                                ) : null
-                            }
-                            {
-                                selectedCoordinates.length > 0 ? (
-                                    <MarkerF position={selectedCoordinates[0]} />
-                                ) : (selectedCoordinates.length === 0 && searchLatLong?.lat) ? (
-                                    <MarkerF position={handleMapCenter()} />
-                                ) : null
-                            }
-                        </GoogleMap>
-                    </LoadScript>
-                </Col>
-            </Row>
-        </div>
+                </div>
+            </Modal.Body>
+        </Modal>
     )
 }
 

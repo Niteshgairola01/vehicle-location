@@ -114,6 +114,11 @@ p {
     background-color: var(--thm-secondary);
 }
 
+/* Bootstrap Modal */
+
+.modal-fullscreen {
+    width: 100% !important;
+}
 
 /* Cursor */
 

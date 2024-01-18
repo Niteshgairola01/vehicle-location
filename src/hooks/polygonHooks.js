@@ -30,10 +30,24 @@ export const getAllPolygonAreas = async () => {
 };
 
 export const createNewPolygonArea = async (form) => {
-    console.log("form", form);
     const url = `${APIBase}:8375/storePolygonAreas`;
     const config = {
         method: 'POST',
+        url: url,
+        data: [form],
+        header: {
+            "Content-Type": "application/json"
+        }
+    };
+
+    const response = await axios(config);
+    return response;
+};
+
+export const updatePolygonArea = async (form) => {
+    const url = `${APIBase}:8375/editPolygonArea`;
+    const config = {
+        method: 'PUT',
         url: url,
         data: [form],
         header: {

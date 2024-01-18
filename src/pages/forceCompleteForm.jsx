@@ -103,9 +103,9 @@ const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
                 ErrorToast("Unloading Date must be euqal or greater than Unaloding Reach Date");
             }
             else if (form.length === 4) {
-                setTimeout(() => {
-                    setShow(false);
-                }, 1500);
+                // setTimeout(() => {
+                //     setShow(false);
+                // }, 1500);
                 handleForceCompleteTrip(form);
             } else {
                 WarningToast("Fill all the required fields ! ! ! !");
@@ -127,7 +127,10 @@ const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
     }, [selectedDate]);
 
     return (
-        <Modal show={show} centered onHide={() => setShow(false)} size='lg'>
+        <Modal show={show} centered onHide={() => {
+            setShow(false);
+            setUnloadingReachDate('')
+        }} size='lg'>
             <Form onSubmit={handleSubmit}>
                 <Modal.Header closeButton>
                     <Modal.Title>

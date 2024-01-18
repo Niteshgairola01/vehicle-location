@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Select from 'react-select';
-import { Col, Form, Row } from 'react-bootstrap'
+import { Col, Form, Modal, Row } from 'react-bootstrap'
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
@@ -8,7 +8,7 @@ import { FaRoute } from "react-icons/fa";
 import { IoMdRefresh } from 'react-icons/io';
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
-import { ErrorToast } from '../components/toast/toast';
+import { ErrorToast, SuccessToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
@@ -18,8 +18,15 @@ import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
 import Loader from '../components/loader/loader';
 import DashHead from '../components/dashboardHead';
+import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
+import { RxCross1 } from 'react-icons/rx';
 
 const VehicleTrackDash = () => {
+
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
+
+    const [showMap, setShowMap] = useState(false);
 
     const [form, setForm] = useState({});
     const [allTrips, setAllTrips] = useState([]);
@@ -42,12 +49,22 @@ const VehicleTrackDash = () => {
     const [vehicleData, setVehicleData] = useState({});
     const [showLocation, setShowLocation] = useState(false);
     const [showLocationOption, setShowLocationOption] = useState(false);
-    const [currentVehicle, setCurrentVehicle] = useState('')
+    const [currentVehicle, setCurrentVehicle] = useState('');
     const itemsPerPage = 20
     const indexOfLastPost = currentPage * itemsPerPage;
     const indexOfFirstPost = indexOfLastPost - itemsPerPage;
     let currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost);
     const pageCount = Math.ceil(filteredTrips.length / itemsPerPage);
+
+    const mapContainerStyle = {
+        width: '100%',
+        height: '95%',
+    };
+
+    const center = {
+        lat: parseFloat(selectedVehicle?.lattitude),
+        lng: parseFloat(selectedVehicle?.longitude),
+    };
 
     useEffect(() => {
         currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost);
@@ -137,12 +154,12 @@ const VehicleTrackDash = () => {
         });
     };
 
-    const handleFilterTrips = () => {
+    const handleFilterTrips = async () => {
         if (!showFilters) {
             setShowLoader(true);
         }
 
-        getRunningTrips().then((response) => {
+        await getRunningTrips().then((response) => {
             if (response.status === 200) {
                 setShowLoader(false);
                 const allData = response?.data;
@@ -160,6 +177,8 @@ const VehicleTrackDash = () => {
                     }
                     return true;
                 });
+
+                console.log("all filtered trips", allFilteredTrip);
 
                 if (selectedFilter.length > 0) {
                     let tripsFilteredByTripStatus = [];
@@ -184,10 +203,10 @@ const VehicleTrackDash = () => {
 
                             if (selectedFilter.includes("Early") || selectedFilter.includes("On Time")) {
                                 if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                    const trips = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+                                    const trips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
                                     trips.map((data) => finalStatusTrips.push(data));
                                 } else {
-                                    const trips = allTrips.filter((data) => selectedFilter.includes(data?.finalStatus));
+                                    const trips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
                                     trips.map((data) => finalStatusTrips.push(data));
                                 }
                             }
@@ -196,7 +215,7 @@ const VehicleTrackDash = () => {
 
                                 if (selectedFilter.includes('Mild Delayed')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                        const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                        const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                         delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
@@ -206,7 +225,7 @@ const VehicleTrackDash = () => {
                                             }
                                         })
                                     } else {
-                                        const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
+                                        const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
                                         delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
@@ -220,7 +239,7 @@ const VehicleTrackDash = () => {
 
                                 if (selectedFilter.includes('Moderate Delayed')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                        const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                        const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                         delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
@@ -230,7 +249,7 @@ const VehicleTrackDash = () => {
                                             }
                                         })
                                     } else {
-                                        const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
+                                        const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
                                         delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
@@ -244,7 +263,7 @@ const VehicleTrackDash = () => {
 
                                 if (selectedFilter.includes('Critical Delayed')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                        const delayedArr1 = allTrips.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                        const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                         delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
@@ -254,7 +273,7 @@ const VehicleTrackDash = () => {
                                             }
                                         })
                                     } else {
-                                        const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'Delayed');
+                                        const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
                                         delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
@@ -271,11 +290,11 @@ const VehicleTrackDash = () => {
                         } else {
                             tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
                         }
-                    }
+                    };
 
                     if (selectedFilter.includes('Manual Bind')) {
                         if (selectedFilter.length === 1) {
-                            tripsFilteredByTripStatus = allTrips.filter(data => data?.exitFrom === 'Manual Bind')
+                            tripsFilteredByTripStatus = allFilteredTrip.filter(data => data?.exitFrom === 'Manual Bind')
                         } else {
                             tripsFilteredByTripStatus = tripsFilteredByTripStatus.filter(data => data?.exitFrom === 'Manual Bind')
                         }
@@ -324,9 +343,7 @@ const VehicleTrackDash = () => {
             });
             setSelectedParty('');
             setSelectedVehicleNo('');
-        }
-
-        else {
+        } else {
             if (selectedFilter.includes(filter)) {
                 setSelectedFilter(selectedFilter.filter(item => item !== filter));
             } else {
@@ -556,22 +573,57 @@ const VehicleTrackDash = () => {
             title: 'History',
             icon: <FaRoute />,
             path: "#",
-            handleClick: '#'
+            handleClick: '#',
+            color: 'text-secondary',
+            cursor: 'cursor-not-allowed',
         },
         {
             title: 'Track',
             icon: <FaRoute />,
             path: "/location",
-            handleClick: () => setShowLocation(true)
+            handleClick: (data) => {
+                setShowLocation(true);
+                setSelectedVehicle(data);
+            },
+            color: 'thm-dark',
+            cursor: 'cursor-pointer'
         },
-    ]
+    ];
+
+    console.log("filtered", filteredTrips);
 
     return (
         <div className='m-0 p-0 position-relative'>
+            {/* {
+                showMap ? (
+                    <div className='bg-white mx-5 pb-3' style={{ width: "93vw", height: "100%", position: "absolute", zIndex: 2, left: 0, top: 0 }}>
+                        <div className='py-2 pt-3 px-3 w-100 d-flex justify-content-between align-items-center'>
+                            <h5 className='w-100 text-center'>Vehicle Location</h5>
+                            <RxCross1 className='cursor-pointer' onClick={() => {
+                                setSelectedVehicle({});
+                                setShowLocationOption(false);
+                                setShowMap(false);
+                            }} />
+                        </div>
+                        <LoadScript googleMapsApiKey={key}>
+                            <GoogleMap
+                                mapContainerStyle={mapContainerStyle}
+                                center={center}
+                                zoom={11}
+                            >
+                                <MarkerF
+                                    // icon={image}
+                                    position={center} />
+                            </GoogleMap>
+                        </LoadScript>
+                    </div>
+                ) : null
+            } */}
             <Loader show={showLoader} />
             <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
                     <DashHead title="Vehicle Tracking Dashboard" />
+
                     <div className='mt-2'>
                         <Form onSubmit={handleSubmit}>
                             <Row className='dashoard-filter-form rounded'>
@@ -595,7 +647,7 @@ const VehicleTrackDash = () => {
                                 </Col>
 
                                 <Col sm={12} md={6} lg={2} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
-                                    <Button type="submit" className=" px-3">Show</Button>
+                                    <Button type="button" className="px-3" onClick={() => handleFilterTrips()}>Show</Button>
                                     <HoveredButton type="button" className="px-3 ms-2"
                                         onClick={() => handleSelectFilter('All')}
                                     >Show All</HoveredButton>
@@ -690,8 +742,8 @@ const VehicleTrackDash = () => {
                                         <td>{data?.routeKM}</td>
                                         <td>{Math.floor(data?.runningKMs)}</td>
                                         <td>{Math.floor(data?.kmDifference)}</td>
-                                        <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingDate) : ''}</td>
-                                        <td>{data?.tripStatus !== 'Trip Running' ? handleFormatDate(data?.unloadingReachDate) : ''}</td>
+                                        <td>{data?.unloadingReachDate === "" || data?.unloadingReachDate === null ? '' : handleFormatDate(data?.unloadingReachDate)}</td>
+                                        <td>{data?.unloadingData === "" || data?.unloadingData === null ? '' : handleFormatDate(data?.unloadingDate)}</td>
                                         <td className='cursor-pointer position-relative'
                                             onMouseOver={() => setHovered(true)}
                                             onMouseOut={() => setHovered(false)}
@@ -706,12 +758,18 @@ const VehicleTrackDash = () => {
                                                         <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
                                                             {
                                                                 locationOptionsBtns.map((location, i) => (
-                                                                    <Link to={location?.path} state={data}>
-                                                                        <div className='cursor-pointer thm-dark text-decoration-none mx-2' key={i}
-                                                                            onClick={() => i === 1 && setShowLocation(true)}
+                                                                    <Link to={"#"} state={data} className='text-decoration-none'>
+                                                                        <div className={`${location?.color} ${location?.cursor} mx-2`} key={i}
+                                                                            onClick={() => {
+                                                                                setShowLocation(true);
+                                                                                setSelectedVehicle(data);
+                                                                                // setTimeout(() => {
+                                                                                setShowMap(true);
+                                                                                // }, 1000)
+                                                                            }}
                                                                         >
                                                                             {location?.icon}
-                                                                            <span className='fw-bold fs-6 mx-2 thm-dark'>{location.title}</span>
+                                                                            <span className='fw-bold fs-6 mx-2'>{location.title}</span>
                                                                         </div>
                                                                     </Link>
                                                                 ))
@@ -752,6 +810,33 @@ const VehicleTrackDash = () => {
                     </div>
 
                     <ForceCompleteForm handleFilterTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
+
+                    <Modal show={showLocation} fullscreen onHide={() => {
+                        setShowLocation(false);
+                        setSelectedVehicle(null);
+                        setShowMap(false);
+                    }} className='p-5'>
+                        <Modal.Header closeButton>
+                            <Modal.Title className='w-100 text-center thm-dark'>Vehicle Location</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            {
+                                showMap ? (
+                                    <LoadScript googleMapsApiKey={key}>
+                                        <GoogleMap
+                                            mapContainerStyle={mapContainerStyle}
+                                            center={center}
+                                            zoom={11}
+                                        >
+                                            <MarkerF
+                                                // icon={image}
+                                                position={center} />
+                                        </GoogleMap>
+                                    </LoadScript>
+                                ) : null
+                            }
+                        </Modal.Body>
+                    </Modal>
                     {/* <VehicleLocation show={showLocation} setShow={setShowLocation} vehicleData={vehicleData} /> */}
                 </div>
             </div>
