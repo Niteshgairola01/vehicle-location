@@ -273,21 +273,21 @@ const CreatePolygon = () => {
             } else {
                 console.log("form", form);
                 if (!edit) {
-                    // createNewPolygonArea(form).then((response) => {
-                    //     if (response?.status === 200) {
-                    //         SuccessToast("New polygon area created");
-                    //     } else {
-                    //         ErrorToast("")
-                    //     }
-                    // }).catch((err) => ErrorToast(err?.message))
+                    createNewPolygonArea(form).then((response) => {
+                        if (response?.status === 200) {
+                            SuccessToast("New polygon area created");
+                        } else {
+                            ErrorToast("")
+                        }
+                    }).catch((err) => ErrorToast(err?.message))
                 } else {
-                    // updatePolygonArea(form).then((response) => {
-                    //     if (response?.status === 200) {
-                    //         SuccessToast("Polygon area updated");
-                    //     } else {
-                    //         ErrorToast("")
-                    //     }
-                    // }).catch((err) => ErrorToast(err?.message))
+                    updatePolygonArea(form).then((response) => {
+                        if (response?.status === 200) {
+                            SuccessToast("Polygon area updated");
+                        } else {
+                            ErrorToast("")
+                        }
+                    }).catch((err) => ErrorToast(err?.message))
                 }
             }
         }
