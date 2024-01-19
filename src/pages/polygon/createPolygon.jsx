@@ -116,8 +116,6 @@ const CreatePolygon = () => {
         }
     }, [editData]);
 
-    console.log("shape", shape);
-
     // useEffect(() => {
     //     setForm({
     //         ...form,
@@ -126,9 +124,6 @@ const CreatePolygon = () => {
     //         geofenceType: selectedCategory?.value
     //     })
     // }, [geoName, placeName, selectedCategory]);
-
-    console.log("selected", selectedCoordinates);
-    console.log("final", finalCoords);
 
     const getPolygonPath = () => {
         return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
@@ -139,7 +134,6 @@ const CreatePolygon = () => {
             if (event.ctrlKey && event.key === 'z') {
                 const previousCoords = selectedCoordinates;
                 previousCoords.pop();
-                console.log("prev coords", previousCoords);
                 setSelectedCoordinates(previousCoords);
             }
         };
@@ -154,8 +148,6 @@ const CreatePolygon = () => {
     useEffect(() => {
         getPolygonPath();
     }, [selectedCoordinates]);
-
-
 
     const polygonTypes = [
         {
@@ -239,19 +231,22 @@ const CreatePolygon = () => {
             //     let testArr = finalCoords;
             //     testArr.push(clickedPlace);
             // }
+            setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace]);
 
-            finalCoords.length <= 1 ? setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace])
-                : setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace, finalCoords[0]]);
+            // finalCoords.length <= 1 ? setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace])
+            //     : setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace, finalCoords[0]]);
         }
     };
 
-    console.log("final coords", finalCoords);
+    const [coords, setCoords] = useState([]);
 
     useEffect(() => {
         let coordinates = [];
         finalCoords.map((data) => {
             coordinates.push(`${data?.lat.toFixed(6)}, ${data?.lng.toFixed(6)}`)
         });
+
+        setCoords(coordinates)
 
         setForm({
             ...form,
@@ -265,13 +260,23 @@ const CreatePolygon = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (selectedCategory.length === 0) {
+        if (selectedCoordinates.length === 0) {
             ErrorToast("Select Coordinates")
         } else {
-            if (shape === 'Polygon' && selectedCategory.length < 3) {
+            if (shape === 'Polygon' && selectedCoordinates.length < 3) {
                 ErrorToast("Polygon is not closed")
             } else {
-                console.log("form", form);
+
+                let testcoords = coords;
+                selectedCoordinates.length > 1 && testcoords.push(coords[0]);
+
+                const form = {
+                    geoName: geoName,
+                    placeName: placeName,
+                    geofenceType: selectedCategory?.value,
+                    coordinates: testcoords
+                }
+
                 if (!edit) {
                     createNewPolygonArea(form).then((response) => {
                         if (response?.status === 200) {
@@ -314,14 +319,11 @@ const CreatePolygon = () => {
 
     const handleMapCenter = () => {
         if (searchLatLong?.lat && selectedCoordinates.length === 0) {
-            console.log("data", searchLatLong);
             return searchLatLong;
         } else {
             return selectedCoordinates.length > 0 ? selectedCoordinates[0] : { lat: 26.858192, lng: 75.669163 }
         }
     }
-
-    console.log("selected ", selectedCoordinates);
 
     return (
         <Modal show={true} fullscreen centered onHide={() => {
