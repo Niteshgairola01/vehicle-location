@@ -20,6 +20,7 @@ import Loader from '../components/loader/loader';
 import DashHead from '../components/dashboardHead';
 import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import { RxCross1 } from 'react-icons/rx';
+import { FaSort } from "react-icons/fa";
 
 const VehicleTrackDash = () => {
 
@@ -75,6 +76,108 @@ const VehicleTrackDash = () => {
         'GPS (Date / Time)', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Report Unloading', 'Unloading End Date', 'Location', 'Estimated Arrival Date',
         'Final Status', 'Delayed Hours', 'Driver Name', 'Driver Mobile No.', 'Exit From', 'Trip Status', 'Force Complete'
     ];
+
+    const tableColumn = [
+        {
+            label: 'Trip Count',
+            value: ''
+        },
+        {
+            label: 'Vehicle No.',
+            value: 'vehicleNo'
+        },
+        {
+            label: 'Trip No.',
+            value: 'tripLogNo'
+        },
+        {
+            label: 'Loading (Date / Time)',
+            value: 'loadingDate'
+        },
+        {
+            label: 'Vehicle Exit (Date / Time)',
+            value: 'vehicleExitDate'
+        },
+
+        {
+            label: 'Consignor Name',
+            value: 'consignorName'
+        },
+
+        {
+            label: 'Origin',
+            value: 'origin'
+        },
+        {
+            label: 'Destination',
+            value: 'destination'
+        },
+        {
+            label: 'Static ETA',
+            value: 'staticETA'
+        },
+        {
+            label: 'GPS (Date / Time)',
+            value: 'locationTime'
+        },
+        {
+            label: 'Route (KM)',
+            value: 'routeKM'
+        },
+        {
+            label: 'KM Covered',
+            value: 'runningKMs'
+        },
+        {
+            label: 'Difference (Km)',
+            value: 'kmDifference'
+        },
+        {
+            label: 'Report Unloading',
+            value: 'unloadingReachDate'
+        },
+        {
+            label: 'Unloading End Date',
+            value: 'unloadingData'
+        },
+        {
+            label: 'Location',
+            value: 'location'
+        },
+        {
+            label: 'Estimated Arrival Date',
+            value: 'estimatedArrivalDate'
+        },
+        {
+            label: 'Final Status',
+            value: 'finalStatus'
+        },
+        {
+            label: 'Delayed Hours',
+            value: 'delayedHours'
+        },
+        {
+            label: 'Driver Name',
+            value: 'driverName'
+        },
+        {
+            label: 'Driver Mobile No.',
+            value: 'driverMobileNo'
+        },
+
+        {
+            label: 'Exit From',
+            value: 'exitFrom'
+        },
+        {
+            label: 'Trip Status',
+            value: 'tripStatus'
+        },
+        {
+            label: 'Force Complete',
+            value: ''
+        }
+    ]
 
     const allFilters = ['Trip Running', 'Trip Completed', 'Trip not Assgined', 'Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'Manual Bind'];
 
@@ -147,6 +250,10 @@ const VehicleTrackDash = () => {
         }).catch(() => setVehiclesList([]));
     }, []);
 
+    useEffect(() => {
+        handleFilterTrips();
+    }, [selectedParty, selectedVehicleNo]);
+
     const handleChange = (e) => {
         setForm({
             ...form,
@@ -154,12 +261,12 @@ const VehicleTrackDash = () => {
         });
     };
 
-    const handleFilterTrips = async () => {
+    const handleFilterTrips = () => {
         if (!showFilters) {
             setShowLoader(true);
         }
 
-        await getRunningTrips().then((response) => {
+        getRunningTrips().then((response) => {
             if (response.status === 200) {
                 setShowLoader(false);
                 const allData = response?.data;
@@ -177,8 +284,6 @@ const VehicleTrackDash = () => {
                     }
                     return true;
                 });
-
-                console.log("all filtered trips", allFilteredTrip);
 
                 if (selectedFilter.length > 0) {
                     let tripsFilteredByTripStatus = [];
@@ -590,7 +695,45 @@ const VehicleTrackDash = () => {
         },
     ];
 
-    console.log("filtered", filteredTrips);
+    const [sortOrder, setSortOrder] = useState('asc');
+
+    const handleSortData = (columnName) => {
+
+        const order = sortOrder === 'asc' ? 'desc' : 'asc';
+
+        const sorted = [...filteredTrips].sort((a, b) => {
+            const valueA = a[columnName];
+            const valueB = b[columnName];
+
+            if (columnName !== 'vehicleNo') {
+                if (valueA === null || valueA === undefined || valueA === '') return 1;
+                if (valueB === null || valueB === undefined || valueB === '') return -1;
+            }
+
+            const dateValueA = Date.parse(valueA);
+            const dateValueB = Date.parse(valueB);
+
+            if (!isNaN(dateValueA) && !isNaN(dateValueB)) {
+                return order === 'asc' ? dateValueA - dateValueB : dateValueB - dateValueA;
+            }
+
+            const numericValueA = parseFloat(valueA);
+            const numericValueB = parseFloat(valueB);
+
+            if (!isNaN(numericValueA) && !isNaN(numericValueB)) {
+                return order === 'asc' ? numericValueA - numericValueB : numericValueB - numericValueA;
+            }
+
+            const stringA = String(valueA);
+            const stringB = String(valueB);
+
+            return order === 'asc' ? stringA.localeCompare(stringB) : stringB.localeCompare(stringA);
+        });
+
+        setSortOrder(order);
+
+        setFilteredTrips(sorted);
+    };
 
     return (
         <div className='m-0 p-0 position-relative'>
@@ -714,13 +857,20 @@ const VehicleTrackDash = () => {
                         </div>
                     </div>
                     <div className='table-responsive mt-3' style={{ height: "50vh" }}>
-                        <table className='table table-bordered w-100 positon-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
-                            <thead className='table-head text-white' style={{ position: "static" }}>
+                        <table className='table table-bordered w-100 position-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
+                            <thead className='table-head text-white' style={{ position: "sticky", top: 0 }}>
                                 <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                     {
-                                        tableColumns.map((data, index) => (
-                                            <th className={`text-nowrap ${(data === 'Trip Status' || data === 'Final Status') && 'width-150'} ${(data === 'Driver Name' || data === 'Static ETA') && 'width-200'} ${(data === 'Location' || data === 'Consignor Name') && 'width-300'}`} key={index}
-                                                style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px" }}>{data}</th>
+                                        tableColumn.map((data, index) => (
+                                            <th className={` text-nowrap ${(data?.label === 'Trip Status' || data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location' || data?.label === 'Consignor Name') && 'width-300'}`} key={index}
+                                                style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumn.length - 1 && "0px 10px 0px 0px" }}>
+                                                <div className='d-flex justify-content-between align-items-center cursor-pointer'
+                                                    onClick={() => handleSortData(data?.value)}
+                                                >
+                                                    <span className='pe-3'>{data?.label}</span>
+                                                    <FaSort />
+                                                </div>
+                                            </th>
                                         ))
                                     }
                                 </tr>
