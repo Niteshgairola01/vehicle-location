@@ -25,7 +25,9 @@ const CreatePolygon = () => {
 
     const [searchCoords, setSearchCoords] = useState([]);
     const [searchLatLong, setSearchLatLong] = useState({});
-    // const history = useLocation();
+
+    const [showModal, setShowModal] = useState(true);
+
     const navigate = useNavigate();
     const location = useLocation();
     const editData = location?.state;
@@ -48,7 +50,6 @@ const CreatePolygon = () => {
                 label: editData?.geofenceType,
                 value: editData?.geofenceType,
             });
-            // setSelectedCoordinates(editData?.coordinates);
             let initialCoords = [];
             let previousCoords = [];
 
@@ -98,32 +99,11 @@ const CreatePolygon = () => {
                 })
             };
 
-
-            // editData?.coordinates.length > 1 ? setShape({
-            //     label: 'Polygon', value: 'Polygon'
-            // }) : setShape({ label: 'Circle', value: 'Circle' });
-
             setPlaceName(editData?.placeName);
             setGeoName(editData?.geoName);
             setPolygonCategory(editData?.geofenceType);
-
-            // setForm({
-            //     ...form,
-            //     geoName: editData?.geoName,
-            //     placeName: editData?.placeName,
-            //     geofenceType: editData?.geofenceType
-            // })
         }
     }, [editData]);
-
-    // useEffect(() => {
-    //     setForm({
-    //         ...form,
-    //         geoName,
-    //         placeName,
-    //         geofenceType: selectedCategory?.value
-    //     })
-    // }, [geoName, placeName, selectedCategory]);
 
     const getPolygonPath = () => {
         return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
@@ -139,7 +119,7 @@ const CreatePolygon = () => {
         };
 
         window.addEventListener('keydown', handleUndo);
-
+        
         return () => {
             window.removeEventListener('keydown', handleUndo);
         }
@@ -193,25 +173,12 @@ const CreatePolygon = () => {
     const handleSelectCtegory = (category) => {
         setSelectedCategory(category);
         setPolygonCategory(category?.value)
-
-        // setForm({
-        //     ...form,
-        //     geoName: '',
-        //     geofenceType: category?.value
-        // });
     };
 
     const handleSelectPolygonType = (type) => {
         setShape(type);
         setSelectedCoordinates([]);
         setFinalCoords([]);
-    };
-
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        })
     };
 
     const handleMapClick = (event) => {
@@ -224,17 +191,7 @@ const CreatePolygon = () => {
             };
 
             setSelectedCoordinates((prevPlaces) => [...prevPlaces, clickedPlace]);
-
-            // if (finalCoords.length <= 1) {
-            //     setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace]);
-            // } else {
-            //     let testArr = finalCoords;
-            //     testArr.push(clickedPlace);
-            // }
             setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace]);
-
-            // finalCoords.length <= 1 ? setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace])
-            //     : setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace, finalCoords[0]]);
         }
     };
 
@@ -281,6 +238,7 @@ const CreatePolygon = () => {
                     createNewPolygonArea(form).then((response) => {
                         if (response?.status === 200) {
                             SuccessToast("New polygon area created");
+                            setShowModal(false);
                         } else {
                             ErrorToast("")
                         }
@@ -289,6 +247,7 @@ const CreatePolygon = () => {
                     updatePolygonArea(form).then((response) => {
                         if (response?.status === 200) {
                             SuccessToast("Polygon area updated");
+                            setShowModal(false)
                         } else {
                             ErrorToast("")
                         }
@@ -325,9 +284,12 @@ const CreatePolygon = () => {
         }
     }
 
+    console.log("selected coords", selectedCoordinates);
+
     return (
-        <Modal show={true} fullscreen centered onHide={() => {
-            setForm({})
+        <Modal show={showModal} fullscreen centered onHide={() => {
+            setForm({});
+            setShowModal(false);
             navigate('/polygon');
         }} size='xl'
             className='w-100 p-5'>
@@ -451,6 +413,7 @@ const CreatePolygon = () => {
                                         center={handleMapCenter()}
                                         zoom={11}
                                         onClick={handleMapClick}
+                                        options={{ gestureHandling: 'greedy' }}
                                     >
                                         {
                                             shape.value === 'Polygon' ? (

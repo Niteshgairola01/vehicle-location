@@ -42,9 +42,7 @@ const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
                 setUnloadingDate('');
                 setUnloadingReachDate('');
                 setRemark('');
-                setTimeout(() => {
-                    setShow(false);
-                }, 1500);
+                setShow(false);
             } else if (response?.data === "Please Wait! Another Program is executing now. ") {
                 setTimeout(() => deleteVehicleOnTripCompleteWithRetry(deleteVehiclePayLoad), 1000);
                 ErrorToast(response?.data);

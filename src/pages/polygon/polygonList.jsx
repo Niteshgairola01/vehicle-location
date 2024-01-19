@@ -162,6 +162,7 @@ const PolygonList = () => {
                                         mapContainerStyle={mapContainerStyle}
                                         center={selectedCoordinates[0]}
                                         zoom={12}
+                                        options={{ gestureHandling: 'greedy' }}
                                     >
                                         {
                                             selectedCoordinates.length === 1 ? (

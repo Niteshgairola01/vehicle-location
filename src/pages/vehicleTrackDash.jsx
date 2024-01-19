@@ -21,6 +21,11 @@ import DashHead from '../components/dashboardHead';
 import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import { RxCross1 } from 'react-icons/rx';
 import { FaSort } from "react-icons/fa";
+import { truck, warning } from '../assets/images';
+import { GoAlertFill } from "react-icons/go";
+import { PiSealWarningFill } from "react-icons/pi";
+import { MdNearbyError } from "react-icons/md";
+import { BiSolidHide } from "react-icons/bi";
 
 const VehicleTrackDash = () => {
 
@@ -72,12 +77,11 @@ const VehicleTrackDash = () => {
         currentPage > pageCount && setCurrentPage(1);
     }, [filteredTrips]);
 
-    const tableColumns = ['Trip Count', 'Vehicle No.', 'Trip No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
-        'GPS (Date / Time)', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Report Unloading', 'Unloading End Date', 'Location', 'Estimated Arrival Date',
-        'Final Status', 'Delayed Hours', 'Driver Name', 'Driver Mobile No.', 'Exit From', 'Trip Status', 'Force Complete'
-    ];
-
-    const tableColumn = [
+    const tableColumns = [
+        {
+            label: 'Hide Row',
+            value: ''
+        },
         {
             label: 'Trip Count',
             value: ''
@@ -98,12 +102,10 @@ const VehicleTrackDash = () => {
             label: 'Vehicle Exit (Date / Time)',
             value: 'vehicleExitDate'
         },
-
         {
             label: 'Consignor Name',
             value: 'consignorName'
         },
-
         {
             label: 'Origin',
             value: 'origin'
@@ -164,7 +166,6 @@ const VehicleTrackDash = () => {
             label: 'Driver Mobile No.',
             value: 'driverMobileNo'
         },
-
         {
             label: 'Exit From',
             value: 'exitFrom'
@@ -177,7 +178,7 @@ const VehicleTrackDash = () => {
             label: 'Force Complete',
             value: ''
         }
-    ]
+    ];
 
     const allFilters = ['Trip Running', 'Trip Completed', 'Trip not Assgined', 'Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'Manual Bind'];
 
@@ -499,6 +500,25 @@ const VehicleTrackDash = () => {
         }
     };
 
+    const showDelayedIcon = (data) => {
+        if (data?.finalStatus === 'Early' || data?.finalStatus === 'On Time' || data?.finalStatus === '') {
+            return '';
+        } else if (data?.finalStatus === 'Delayed') {
+            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                const delayedHours = parseInt(data?.delayedHours);
+                if (delayedHours >= 1 && delayedHours <= 18) {
+                    return <GoAlertFill className='fs-3 text-warning warn-icon' />
+                } else if (delayedHours >= 19 && delayedHours <= 35) {
+                    return <MdNearbyError className='fs-3 text-secondary warn-icon' />
+                } else if (delayedHours >= 36) {
+                    return <PiSealWarningFill className='fs-3 text-danger warn-icon' />
+                }
+            } else {
+                return '';
+            }
+        }
+    }
+
     const getDelayedHours = (hours) => {
         if (hours !== null && hours.length > 0) {
             const hoursArr = hours.split('.');
@@ -735,6 +755,11 @@ const VehicleTrackDash = () => {
         setFilteredTrips(sorted);
     };
 
+    const handleHideRow = (vehicle) => {
+        const nonHiddenRows = filteredTrips.filter(data => data?.vehicleNo !== vehicle?.vehicleNo);
+        setFilteredTrips(nonHiddenRows);
+    }
+
     return (
         <div className='m-0 p-0 position-relative'>
             {/* {
@@ -809,7 +834,7 @@ const VehicleTrackDash = () => {
                                     </div>
                                     {
                                         showFilters ? (
-                                            <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: "1", boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
+                                            <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: 2, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
                                                 {
                                                     allFilters.map((data, index) => (
                                                         <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} ${index !== allFilters.length - 1 && 'border-bottom'} cursor-pointer`}
@@ -849,26 +874,31 @@ const VehicleTrackDash = () => {
                         <div className='me-5'>
                             <Tooltip title="Refresh Data">
                                 <Link>
-                                    <IoMdRefresh
-                                        onClick={() => handleFilterTrips()}
+                                    <IoMdRefresh onClick={() => handleFilterTrips()}
                                         className='fs-2 refresh-button bg-thm-dark thm-white rounded p-1 cursor-pointer' />
                                 </Link>
                             </Tooltip>
                         </div>
                     </div>
                     <div className='table-responsive mt-3' style={{ height: "50vh" }}>
-                        <table className='table table-bordered w-100 position-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
-                            <thead className='table-head text-white' style={{ position: "sticky", top: 0 }}>
+                        <table className='table table-striped table-bordered w-100 position-relative'
+                            style={{ overflowY: "scroll", overflowX: 'auto' }}
+                        >
+                            <thead className='table-head text-white' style={{ zIndex: 1, position: "sticky", top: 0 }}>
                                 <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                     {
-                                        tableColumn.map((data, index) => (
-                                            <th className={` text-nowrap ${(data?.label === 'Trip Status' || data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location' || data?.label === 'Consignor Name') && 'width-300'}`} key={index}
-                                                style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumn.length - 1 && "0px 10px 0px 0px" }}>
-                                                <div className='d-flex justify-content-between align-items-center cursor-pointer'
-                                                    onClick={() => handleSortData(data?.value)}
-                                                >
+                                        tableColumns.map((data, index) => (
+                                            <th
+                                                className={`text-nowrap ${(data?.label === 'Trip Status' || data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location' || data?.label === 'Consignor Name') && 'width-300'}`}
+                                                key={index}
+                                                style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px" }}>
+                                                <div className='d-flex justify-content-between align-items-center cursor-pointer' onClick={() => handleSortData(data?.value)}>
                                                     <span className='pe-3'>{data?.label}</span>
-                                                    <FaSort />
+                                                    {
+                                                        (data?.value !== "") && (
+                                                            <FaSort />
+                                                        )
+                                                    }
                                                 </div>
                                             </th>
                                         ))
@@ -877,7 +907,20 @@ const VehicleTrackDash = () => {
                             </thead>
                             <tbody>
                                 {currentTrips.length > 0 && currentTrips.map((data, index) => (
-                                    <tr className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-warning' : getFinalStatus(data) === "Moderate Delayed" ? "text-dark bg-thm-gray" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} key={index}>
+                                    <tr
+                                        // className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-warning' : getFinalStatus(data) === "Moderate Delayed" ? "text-dark bg-thm-gray" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} 
+                                        key={index}>
+                                        <td>
+                                            <button className="button" onClick={() => handleHideRow(data)}>
+                                                <span className="button-decor"></span>
+                                                <div className="button-content">
+                                                    <div className="button__icon">
+                                                        <BiSolidHide className='fs-6 text-white' />
+                                                    </div>
+                                                    <span className="button__text">Hide</span>
+                                                </div>
+                                            </button>
+                                        </td>
                                         <td className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                                         <td>{data?.vehicleNo}</td>
                                         <td>{data?.tripLogNo}</td>
@@ -911,11 +954,9 @@ const VehicleTrackDash = () => {
                                                                     <Link to={"#"} state={data} className='text-decoration-none'>
                                                                         <div className={`${location?.color} ${location?.cursor} mx-2`} key={i}
                                                                             onClick={() => {
-                                                                                setShowLocation(true);
-                                                                                setSelectedVehicle(data);
-                                                                                // setTimeout(() => {
-                                                                                setShowMap(true);
-                                                                                // }, 1000)
+                                                                                i === 1 && setShowLocation(true);
+                                                                                i === 1 && setSelectedVehicle(data);
+                                                                                i === 1 && setShowMap(true);
                                                                             }}
                                                                         >
                                                                             {location?.icon}
@@ -930,7 +971,12 @@ const VehicleTrackDash = () => {
                                             }
                                         </td>
                                         <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
-                                        <td className={`${data?.finalStatus === 'Delayed' && 'fw-bold'}`}>{getFinalStatus(data)}</td>
+                                        <td className={`${data?.finalStatus === 'Delayed'} pe-3 h-100`}>
+                                            <div className='d-flex justify-content-between align-items-center w-100'>
+                                                {getFinalStatus(data)}
+                                                {showDelayedIcon(data)}
+                                            </div>
+                                        </td>
                                         <td>{getDelayedHours(data?.delayedHours)}</td>
                                         <td>{data?.driverName}</td>
                                         <td>{data?.driverMobileNo}</td>
@@ -977,9 +1023,10 @@ const VehicleTrackDash = () => {
                                             mapContainerStyle={mapContainerStyle}
                                             center={center}
                                             zoom={11}
+                                            options={{ gestureHandling: 'greedy' }}
                                         >
                                             <MarkerF
-                                                // icon={image}
+                                                // icon={truck}
                                                 position={center} />
                                         </GoogleMap>
                                     </LoadScript>
