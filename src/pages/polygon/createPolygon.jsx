@@ -92,11 +92,13 @@ const CreatePolygon = () => {
                     });
                 });
 
-                const firstCoord = previousCoords[1].split(', ');
-                previousCoords.push({
-                    lat: parseFloat(firstCoord[0]),
-                    lat: parseFloat(firstCoord[2]),
-                })
+                // console.log("prev", previousCoords);
+
+                // const firstCoord = previousCoords[1].split(', ');
+                // previousCoords.push({
+                //     lat: parseFloat(firstCoord[0]),
+                //     lat: parseFloat(firstCoord[2]),
+                // })
             };
 
             setPlaceName(editData?.placeName);
@@ -119,7 +121,7 @@ const CreatePolygon = () => {
         };
 
         window.addEventListener('keydown', handleUndo);
-        
+
         return () => {
             window.removeEventListener('keydown', handleUndo);
         }

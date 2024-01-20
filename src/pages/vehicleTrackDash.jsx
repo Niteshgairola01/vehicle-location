@@ -26,6 +26,8 @@ import { GoAlertFill } from "react-icons/go";
 import { PiSealWarningFill } from "react-icons/pi";
 import { MdNearbyError } from "react-icons/md";
 import { BiSolidHide } from "react-icons/bi";
+import Card from '../components/Card/card';
+import { Toggle } from '../components/Button/Button';
 
 const VehicleTrackDash = () => {
 
@@ -36,6 +38,7 @@ const VehicleTrackDash = () => {
 
     const [form, setForm] = useState({});
     const [allTrips, setAllTrips] = useState([]);
+    const [sortedTrips, setSortedTrips] = useState([])
     const [filteredTrips, setFilteredTrips] = useState([]);
     const [selectedFilter, setSelectedFilter] = useState([]);
     const [partiesList, setPartiesList] = useState([]);
@@ -56,6 +59,37 @@ const VehicleTrackDash = () => {
     const [showLocation, setShowLocation] = useState(false);
     const [showLocationOption, setShowLocationOption] = useState(false);
     const [currentVehicle, setCurrentVehicle] = useState('');
+
+    const tableColumns = [
+        { label: 'Trip Count', value: '' },
+        { label: 'Vehicle No.', value: 'vehicleNo' },
+        { label: 'Trip No.', value: 'tripLogNo' },
+        { label: 'Loading (Date / Time)', value: 'loadingDate' },
+        { label: 'Vehicle Exit (Date / Time)', value: 'vehicleExitDate' },
+        { label: 'Consignor Name', value: 'consignorName' },
+        { label: 'Origin', value: 'origin' },
+        { label: 'Destination', value: 'destination' },
+        { label: 'Static ETA', value: 'staticETA' },
+        { label: 'GPS (Date / Time)', value: 'locationTime' },
+        { label: 'Route (KM)', value: 'routeKM' },
+        { label: 'KM Covered', value: 'runningKMs' },
+        { label: 'Difference (Km)', value: 'kmDifference' },
+        { label: 'Report Unloading', value: 'unloadingReachDate' },
+        { label: 'Unloading End Date', value: 'unloadingData' },
+        { label: 'Location', value: 'location' },
+        { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate' },
+        { label: 'Final Status', value: 'finalStatus' },
+        { label: 'Delayed Hours', value: 'delayedHours' },
+        { label: 'Driver Name', value: 'driverName' },
+        { label: 'Driver Mobile No.', value: 'driverMobileNo' },
+        { label: 'Exit From', value: 'exitFrom' },
+        { label: 'Trip Status', value: 'tripStatus' },
+        { label: 'Force Complete', value: '' }
+    ];
+
+    const [showedColumns, setShowedColumns] = useState(tableColumns);
+    const [hiddenColumns, setHiddenColumns] = useState([]);
+
     const itemsPerPage = 20
     const indexOfLastPost = currentPage * itemsPerPage;
     const indexOfFirstPost = indexOfLastPost - itemsPerPage;
@@ -77,109 +111,6 @@ const VehicleTrackDash = () => {
         currentPage > pageCount && setCurrentPage(1);
     }, [filteredTrips]);
 
-    const tableColumns = [
-        {
-            label: 'Hide Row',
-            value: ''
-        },
-        {
-            label: 'Trip Count',
-            value: ''
-        },
-        {
-            label: 'Vehicle No.',
-            value: 'vehicleNo'
-        },
-        {
-            label: 'Trip No.',
-            value: 'tripLogNo'
-        },
-        {
-            label: 'Loading (Date / Time)',
-            value: 'loadingDate'
-        },
-        {
-            label: 'Vehicle Exit (Date / Time)',
-            value: 'vehicleExitDate'
-        },
-        {
-            label: 'Consignor Name',
-            value: 'consignorName'
-        },
-        {
-            label: 'Origin',
-            value: 'origin'
-        },
-        {
-            label: 'Destination',
-            value: 'destination'
-        },
-        {
-            label: 'Static ETA',
-            value: 'staticETA'
-        },
-        {
-            label: 'GPS (Date / Time)',
-            value: 'locationTime'
-        },
-        {
-            label: 'Route (KM)',
-            value: 'routeKM'
-        },
-        {
-            label: 'KM Covered',
-            value: 'runningKMs'
-        },
-        {
-            label: 'Difference (Km)',
-            value: 'kmDifference'
-        },
-        {
-            label: 'Report Unloading',
-            value: 'unloadingReachDate'
-        },
-        {
-            label: 'Unloading End Date',
-            value: 'unloadingData'
-        },
-        {
-            label: 'Location',
-            value: 'location'
-        },
-        {
-            label: 'Estimated Arrival Date',
-            value: 'estimatedArrivalDate'
-        },
-        {
-            label: 'Final Status',
-            value: 'finalStatus'
-        },
-        {
-            label: 'Delayed Hours',
-            value: 'delayedHours'
-        },
-        {
-            label: 'Driver Name',
-            value: 'driverName'
-        },
-        {
-            label: 'Driver Mobile No.',
-            value: 'driverMobileNo'
-        },
-        {
-            label: 'Exit From',
-            value: 'exitFrom'
-        },
-        {
-            label: 'Trip Status',
-            value: 'tripStatus'
-        },
-        {
-            label: 'Force Complete',
-            value: ''
-        }
-    ];
-
     const allFilters = ['Trip Running', 'Trip Completed', 'Trip not Assgined', 'Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'Manual Bind'];
 
     const getAllTrips = () => {
@@ -188,12 +119,13 @@ const VehicleTrackDash = () => {
             if (response.status === 200) {
                 setShowLoader(false);
                 const allData = response?.data;
-                const sortedDetails = vehiclesList.map((vehicle) =>
-                    allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
-                );
+                // const sortedDetails = vehiclesList.map((vehicle) =>
+                //     allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
+                // );
 
-                setAllTrips(sortedDetails);
-                setFilteredTrips(sortedDetails);
+                // setSortedTrips(sortedDetails);
+                setAllTrips(allData);
+                setFilteredTrips(allData);
             } else {
                 setShowLoader(false);
                 setAllTrips([]);
@@ -209,7 +141,7 @@ const VehicleTrackDash = () => {
 
     useEffect(() => {
         getAllTrips();
-    }, [vehiclesList]);
+    }, []);
 
     useEffect(() => {
         getAllPartiesList().then((response) => {
@@ -275,11 +207,12 @@ const VehicleTrackDash = () => {
                     allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
                 );
 
-                const allFilteredTrip = sortedDetails.filter(test => {
+                const allFilteredTrip = allData.filter(test => {
                     for (const key in form) {
                         const testValue = String(test[key]).toLowerCase();
                         const formValue = form[key].toLowerCase();
-                        if (testValue !== formValue && formValue.length > 0) {
+                        console.log("key", testValue, formValue);
+                        if ((testValue !== formValue && formValue.length > 0)) {
                             return false;
                         }
                     }
@@ -507,11 +440,11 @@ const VehicleTrackDash = () => {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data?.delayedHours);
                 if (delayedHours >= 1 && delayedHours <= 18) {
-                    return <GoAlertFill className='fs-3 text-warning warn-icon' />
+                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded`}>Mild Delayed</span>
                 } else if (delayedHours >= 19 && delayedHours <= 35) {
-                    return <MdNearbyError className='fs-3 text-secondary warn-icon' />
+                    return <span className={`px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}>Moderate Delayed</span>
                 } else if (delayedHours >= 36) {
-                    return <PiSealWarningFill className='fs-3 text-danger warn-icon' />
+                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded`}>Critical Delayed</span>
                 }
             } else {
                 return '';
@@ -760,6 +693,22 @@ const VehicleTrackDash = () => {
         setFilteredTrips(nonHiddenRows);
     }
 
+    // console.log("filtered", filteredTrips);
+
+    const handleHideColumns = (column, index) => {
+
+        let hidden = [];
+
+        if (hiddenColumns.includes(column)) {
+            hidden = showedColumns.splice(index, 0, column);
+        } else {
+            hidden = tableColumns.filter(data => data?.label !== column?.label)
+            setHiddenColumns([...hiddenColumns, column])
+        }
+
+        setShowedColumns(hidden);
+    };
+
     return (
         <div className='m-0 p-0 position-relative'>
             {/* {
@@ -797,7 +746,7 @@ const VehicleTrackDash = () => {
                             <Row className='dashoard-filter-form rounded'>
                                 {
                                     selectformFields.map((data, index) => (
-                                        <Col sm={12} md={6} lg={2} className='position-relative' key={index}>
+                                        <Col sm={12} md={6} lg={2} className='position-relative' key={index} style={{ zIndex: 2 }}>
                                             <Form.Label>{data?.label}</Form.Label>
                                             <Select
                                                 options={data?.options}
@@ -867,11 +816,41 @@ const VehicleTrackDash = () => {
                     <hr />
 
                     <div className='w-100 mt-5 d-flex justify-content-between align-items-center'>
-                        <div className=''>
-                            <span className='thm-dark fs-6 fw-bold'>Total Trips:</span>
-                            <span className='fs-6 thm-dark ms-2'>{filteredTrips.length}</span>
+                        <div className='d-flex justify-content-start align-items-start'>
+                            <div className=''>
+                                <span className='thm-dark fs-6 fw-bold'>Total Trips:</span>
+                                <span className='fs-6 thm-dark ms-2'>{filteredTrips.length}</span>
+                            </div>
+                            {/* <div className='ms-3 bg-white position-relative' style={{ boxShadow: "0px 0px 10px 0px #c8c9ca", }}>
+                                <span className='thm-dark fs-6 fw-bold cursor-pointer px-5'>Hide Columns</span>
+                                <div className='position-absolute p-3 bg-white' style={{ width: "20rem", maxHeight: "20rem", overflowY: "scroll", zIndex: 3 }}>
+                                    <hr />
+                                    {
+                                        tableColumns.map((data, index) => (
+                                            <div key={index} className='py-2 d-flex justify-content-start align-items-start cursor-pointer'>
+                                                <input className="switch" type="checkbox" onClick={() => handleHideColumns(data, index)} />
+                                                <span className='ms-3'>{data?.label}</span>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div> */}
                         </div>
-                        <div className='me-5'>
+                        <div className='me-5 d-flex jsutify-conent-end align-items-center'>
+                            <div className='d-flex me-3 justify-content-cennter align-items-center'>
+                                <div className='mx-1 thm-white bg-secondary px-2'>
+                                    <span>Mild Delayed: </span>
+                                    <span>10</span>
+                                </div>
+                                <div className='mx-1 px-2 text-dark bg-warning'>
+                                    <span>Moderate Delayed: </span>
+                                    <span>10</span>
+                                </div>
+                                <div className='mx-1 px-2 bg-danger text-white'>
+                                    <span>Critical Delayed: </span>
+                                    <span>10</span>
+                                </div>
+                            </div>
                             <Tooltip title="Refresh Data">
                                 <Link>
                                     <IoMdRefresh onClick={() => handleFilterTrips()}
@@ -887,7 +866,7 @@ const VehicleTrackDash = () => {
                             <thead className='table-head text-white' style={{ zIndex: 1, position: "sticky", top: 0 }}>
                                 <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                     {
-                                        tableColumns.map((data, index) => (
+                                        showedColumns.map((data, index) => (
                                             <th
                                                 className={`text-nowrap ${(data?.label === 'Trip Status' || data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location' || data?.label === 'Consignor Name') && 'width-300'}`}
                                                 key={index}
@@ -910,7 +889,7 @@ const VehicleTrackDash = () => {
                                     <tr
                                         // className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-warning' : getFinalStatus(data) === "Moderate Delayed" ? "text-dark bg-thm-gray" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} 
                                         key={index}>
-                                        <td>
+                                        {/* <td>
                                             <button className="button" onClick={() => handleHideRow(data)}>
                                                 <span className="button-decor"></span>
                                                 <div className="button-content">
@@ -920,7 +899,7 @@ const VehicleTrackDash = () => {
                                                     <span className="button__text">Hide</span>
                                                 </div>
                                             </button>
-                                        </td>
+                                        </td> */}
                                         <td className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                                         <td>{data?.vehicleNo}</td>
                                         <td>{data?.tripLogNo}</td>
@@ -973,7 +952,7 @@ const VehicleTrackDash = () => {
                                         <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
                                         <td className={`${data?.finalStatus === 'Delayed'} pe-3 h-100`}>
                                             <div className='d-flex justify-content-between align-items-center w-100'>
-                                                {getFinalStatus(data)}
+                                                {/* {getFinalStatus(data)} */}
                                                 {showDelayedIcon(data)}
                                             </div>
                                         </td>
@@ -993,7 +972,9 @@ const VehicleTrackDash = () => {
                         </table>
                         {
                             (currentTrips.length === 0 && !showLoader) ? (
-                                <div className='pb-3 text-secondary d-flex justify-content-center align-items-center'>{errorMessage}</div>
+                                <div className='pb-3 text-secondary d-flex justify-content-center align-items-center'>
+                                    {errorMessage}
+                                </div>
                             ) : null
                         }
                         {

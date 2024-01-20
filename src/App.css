@@ -17,6 +17,9 @@ body {
     color: #ffcb31 !important
 }
 
+.bg-danger {
+    background: #ff2137 !important
+}
 
 /* Scroll bar Track */
 
@@ -597,38 +600,13 @@ table thead {
 }
 
 .warn-icon {
-    transition: transform .5s ease-out infinite;
-    animation: bounce .5s ease-out forwards infinite;
-}
-
-@keyframes excl {
-    0% {
-        stroke-dashoffset: 100;
-    }
-
-    10% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 1;
-        stroke-dashoffset: 0;
-    }
-}
-
-@keyframes dot-fade {
-    0% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 1;
-    }
+    transition: transform 1s ease-out infinite;
+    animation: bounce 1s ease-out forwards infinite;
 }
 
 @keyframes bounce {
     0% {
-        opacity: 0;
+        opacity: 0.5;
         transform: scale(0.1);
     }
 
@@ -641,7 +619,6 @@ table thead {
     }
 
     100% {
-        opacity: 1;
         transform: scale(0.9);
     }
 }
@@ -703,4 +680,50 @@ table thead {
 
 .button:hover .button-decor {
     transform: translate(0);
+}
+
+
+
+
+/* Toggle button */
+
+.switch {
+    position: relative;
+    height: 1.5rem;
+    width: 3rem;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 9999px;
+    background-color: rgba(100, 116, 139, 0.377);
+    transition: all .3s ease;
+}
+
+.switch:checked {
+    background-color: var(--thm-dark);
+}
+
+.switch::before {
+    position: absolute;
+    content: "";
+    left: calc(1.5rem - 1.6rem);
+    top: calc(1.5rem - 1.6rem);
+    display: block;
+    height: 1.6rem;
+    width: 1.6rem;
+    cursor: pointer;
+    border: 1px solid rgba(100, 116, 139, 0.527);
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 3px 10px rgba(100, 116, 139, 0.327);
+    transition: all .3s ease;
+}
+
+.switch:hover::before {
+    box-shadow: 0 0 0px 8px rgba(0, 0, 0, .15)
+}
+
+.switch:checked:before {
+    transform: translateX(100%);
+    border-color: var(--thm-dark);
 }
