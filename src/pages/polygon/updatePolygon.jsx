@@ -10,24 +10,8 @@ import { ErrorToast, SuccessToast } from '../../components/toast/toast';
 import { createNewPolygonArea, updatePolygonArea } from '../../hooks/polygonHooks';
 import { RxCross1 } from "react-icons/rx";
 import { useLocation, useNavigate } from 'react-router-dom';
-import StepForm from './stepForm';
-import { IoTriangleOutline } from "react-icons/io5";
-import { FaRegCircle } from "react-icons/fa";
 
-
-// MUI form
-import Box from '@mui/material/Box';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import StepContent from '@mui/material/StepContent';
-// import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-
-
-const CreatePolygon = () => {
+const UpdatePolygon = () => {
 
     const [form, setForm] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -41,8 +25,6 @@ const CreatePolygon = () => {
 
     const [searchCoords, setSearchCoords] = useState([]);
     const [searchLatLong, setSearchLatLong] = useState({});
-
-    const [selectedStep, setSelectedStep] = useState(1);
 
     const [showModal, setShowModal] = useState(true);
 
@@ -202,7 +184,7 @@ const CreatePolygon = () => {
     };
 
     const handleMapClick = (event) => {
-        if (selectedPolygonType === "") {
+        if (shape === "") {
             ErrorToast('Select Polygon Type First')
         } else {
             const clickedPlace = {
@@ -237,27 +219,24 @@ const CreatePolygon = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        if (activeStep === 0) {
-            placeName.length === 0 ? setActiveStep(0) : setActiveStep(1);
-        } else if (activeStep === 1) {
-            selectedCoordinates.length === 0 ? setActiveStep(1) : setActiveStep(2);
-            selectedCoordinates.length === 0 && ErrorToast("Select Coordinates");
-        } else if (activeStep === 2) {
-            if (selectedCategory?.value === null) {
-                ErrorToast("Select Category")
+        if (selectedCoordinates.length === 0) {
+            ErrorToast("Select Coordinates")
+        } else {
+            if (shape === 'Polygon' && selectedCoordinates.length < 3) {
+                ErrorToast("Polygon is not closed")
             } else {
-                if (selectedCategory?.value === 'Reach Point' || selectedCategory?.value === 'Parking') {
-                    let testcoords = coords;
-                    selectedCoordinates.length > 1 && testcoords.push(coords[0]);
 
-                    const form = {
-                        geoName: '',
-                        placeName: placeName,
-                        geofenceType: selectedCategory?.value,
-                        coordinates: testcoords
-                    };
+                let testcoords = coords;
+                selectedCoordinates.length > 1 && testcoords.push(coords[0]);
 
+                const form = {
+                    geoName: geoName,
+                    placeName: placeName,
+                    geofenceType: selectedCategory?.value,
+                    coordinates: testcoords
+                }
+
+                if (!edit) {
                     createNewPolygonArea(form).then((response) => {
                         if (response?.status === 200) {
                             SuccessToast("New polygon area created");
@@ -265,29 +244,20 @@ const CreatePolygon = () => {
                         } else {
                             ErrorToast("")
                         }
-                    }).catch((err) => ErrorToast(err?.message));
-                } else if (geoName.length > 0) {
-                    let testcoords = coords;
-                    selectedCoordinates.length > 1 && testcoords.push(coords[0]);
-
-                    const form = {
-                        geoName: geoName,
-                        placeName: placeName,
-                        geofenceType: selectedCategory?.value,
-                        coordinates: testcoords
-                    }
-
-                    createNewPolygonArea(form).then((response) => {
+                    }).catch((err) => ErrorToast(err?.message))
+                } else {
+                    updatePolygonArea(form).then((response) => {
                         if (response?.status === 200) {
-                            SuccessToast("New polygon area created");
-                            setShowModal(false);
+                            SuccessToast("Polygon area updated");
+                            setShowModal(false)
                         } else {
                             ErrorToast("")
                         }
-                    }).catch((err) => ErrorToast(err?.message));
+                    }).catch((err) => ErrorToast(err?.message))
                 }
             }
         }
+
     };
 
     const mapContainerStyle = {
@@ -316,72 +286,7 @@ const CreatePolygon = () => {
         }
     }
 
-    // console.log("selected coords", selectedCoordinates);
-
-
-
-    // Step form
-
-    const steps = [
-        {
-            label: 'Step 1',
-            content: (
-                <>
-                    <Input className="py-2" label="Place" type="text" name="placeName" value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Place Name" required={true} />
-                </>
-            ),
-        },
-        {
-            label: 'Step 2',
-            content: (
-                <Form.Label className='thm-dark'>Polygon Type</Form.Label>
-            ),
-        },
-        {
-            label: 'Step 3',
-            content: (
-                <>
-                    <div style={{ zIndex: '1500 !important' }}>
-                        <Form.Label className='thm-dark'>Category</Form.Label>
-                        <Select
-                            options={allCategories}
-                            value={selectedCategory}
-                            onChange={handleSelectCtegory}
-                            isClearable={true}
-                            styles={selectStyles}
-                        />
-                    </div>
-
-                    {
-                        (selectedCategory?.value === "Dealer" || selectedCategory?.value === "Plant") ? (
-                            <div>
-                                {
-                                    selectedCategory?.value === 'Dealer' ? (
-                                        <Col sm={12} className='mt-3'>
-                                            <Input className="py-2" label="Dealer" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Delaer" required={true} />
-                                        </Col>
-                                    ) : (
-                                        <Col sm={12} className='mt-3'>
-                                            <Input className="py-2" label="Plant" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Plant" required={true} />
-                                        </Col>
-                                    )
-                                }
-                            </div>
-                        ) : null
-                    }
-                </>
-            ),
-        },
-    ];
-
-    const [activeStep, setActiveStep] = useState(0);
-
-    const [selectedPolygonType, setSelectedPolygonType] = useState('');
-
-    const allPolygonTypesOptions = [
-        { label: 'Polygon', icon: <IoTriangleOutline /> },
-        { label: 'Circle', icon: <FaRegCircle /> },
-    ];
+    console.log("selected coords", selectedCoordinates);
 
     return (
         <Modal show={showModal} fullscreen centered onHide={() => {
@@ -397,81 +302,94 @@ const CreatePolygon = () => {
                 <div className='px-5'>
                     <div>
                         <Row>
-                            <Col sm={12} md={12} lg={3} className='m-0 p-0'>
+                            <Col sm={12} md={12} lg={4} className='pe-3'>
                                 <Card>
+                                    <h6 className='thm-dark'>{!edit ? "Create New Polygon" : 'Edit Polygon'}</h6>
+                                    <hr />
                                     <Form onSubmit={handleSubmit}>
-                                        <Box sx={{ maxWidth: 400 }}>
-                                            <Stepper activeStep={activeStep} orientation="vertical">
-                                                {steps.map((step, index) => (
-                                                    <Step key={step.label}>
-                                                        <StepLabel>{step.label}</StepLabel>
-                                                        <StepContent>
-                                                            {step.content}
-                                                            <div className='mt-3'>
-                                                                {
-                                                                    index > 0 && (
-                                                                        <Button
-                                                                            type="button"
-                                                                            disabled={index === 0}
-                                                                            onClick={() => setActiveStep(activeStep - 1)}
-                                                                            className="py-1 px-3 me-2"
-                                                                        >
-                                                                            Back
-                                                                        </Button>
-                                                                    )
-                                                                }
-                                                                <ColoredButton
-                                                                    variant="contained"
-                                                                    type="submit"
-                                                                    // onClick={() => handleSubmit(activeStep + 1)}
-                                                                    className="py-1 px-2"
-                                                                >
-                                                                    {activeStep == 2 ? 'Create' : 'Continue'}
-                                                                </ColoredButton>
-                                                            </div>
-                                                        </StepContent>
-                                                        {
+                                        <Row>
+                                            <Col sm={6} style={{ zIndex: 2 }}>
+                                                <Form.Label className='thm-dark'>Category</Form.Label>
+                                                <Select
+                                                    options={allCategories}
+                                                    value={selectedCategory}
+                                                    onChange={handleSelectCtegory}
+                                                    isClearable={true}
+                                                    styles={selectStyles}
+                                                />
+                                            </Col>
 
-                                                        }
-                                                    </Step>
-                                                ))}
+                                            <Col sm={6} className='position-relative '>
+                                                <Form.Label className='thm-dark'>Polygon Type</Form.Label>
+                                                <Select
+                                                    options={polygonTypes}
+                                                    value={shape}
+                                                    onChange={handleSelectPolygonType}
+                                                    isClearable={true}
+                                                    styles={selectStyles}
+                                                />
+                                            </Col>
+                                        </Row>
 
-                                            </Stepper>
-                                            {/* {activeStep === steps.length && (
-                                            <Paper square elevation={0} sx={{ p: 3 }}>
-                                                <Typography>All steps completed - you&apos;re finished</Typography>
-                                                <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
-                                                    Reset
-                                                </Button>
-                                            </Paper>
-                                        )} */}
-                                        </Box>
+                                        <Col sm={12} className='mt-3'>
+                                            <Input className="py-2" label="Place" type="text" name="placeName" value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Place Name" />
+                                        </Col>
+
+                                        {
+                                            (selectedCategory?.value === "Dealer" || selectedCategory?.value === "Plant") ? (
+                                                <div>
+                                                    {
+                                                        selectedCategory?.value === 'Dealer' ? (
+                                                            <Col sm={12} className='mt-3'>
+                                                                <Input className="py-2" label="Dealer" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Delaer" />
+                                                            </Col>
+                                                        ) : (
+                                                            <Col sm={12} className='mt-3'>
+                                                                <Input className="py-2" label="Plant" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Plant" />
+                                                            </Col>
+                                                        )
+                                                    }
+                                                </div>
+                                            ) : null
+                                        }
+
+                                        <div className='mt-5 d-flex justify-content-center align-items-center'>
+                                            <ColoredButton className="px-5 w-75 py-1" type="submit">{!edit ? 'Create' : 'Update'}</ColoredButton>
+                                        </div>
                                     </Form>
                                 </Card>
+
+                                <Card>
+                                    <Col sm={12} md={12} lg={6} className='pt-3'>
+                                        <div className='p-3 rounded border border-dark'>
+                                            <p className='thm-dark'>Selected Coordinates</p>
+                                            <hr />
+                                            <div>
+                                                {
+                                                    selectedCoordinates.length === 0 ? (
+                                                        <div className='thm-dark d-flex justify-content-between align-items-center' style={{ width: "80%" }}>
+                                                            <p className='m-0 p-0 text-secondary'>Selected Coordinates</p>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            {
+                                                                selectedCoordinates.map((data, index) => (
+                                                                    <div className='thm-dark d-flex justify-content-between align-items-center' key={index} style={{ width: "80%" }}>
+                                                                        <span>{data?.lat.toFixed(6)}</span>
+                                                                        <span>{data?.lng.toFixed(6)}</span>
+                                                                    </div>
+                                                                ))
+                                                            }
+
+                                                        </>
+                                                    )
+                                                }
+                                            </div>
+                                        </div>
+                                    </Col>
+                                </Card>
                             </Col>
-
-                            <Col sm={12} md={12} lg={9} className='position-relative' style={{ height: "75vh" }}>
-                                {
-                                    activeStep === 1 ? (
-                                        <ul className='position-absolute bg-white m-0 p-0' style={{ listStyleType: "none", left: 20, top: 200, zIndex: 1 }}>
-                                            {
-                                                allPolygonTypesOptions.map((data, index) => (
-                                                    <li className={`${selectedPolygonType === data?.label ? 'polygon-types-active' : 'polygon-types'} py-2 ps-2 pe-5 d-flex justify-content-start cursor-pointer`}
-                                                        onClick={() => {
-                                                            setSelectedPolygonType(data?.label);
-                                                            setSelectedCoordinates([]);
-                                                            setFinalCoords([]);
-                                                        }} key={index}
-                                                    >
-                                                        {data?.icon}
-                                                        <span className='ms-3'>{data?.label}</span>
-                                                    </li>
-                                                ))
-
-                                            }
-                                        </ul>
-                                    ) : null
-                                }
+                            <Col sm={12} md={12} lg={8} className='position-relative' style={{ height: "75vh" }}>
                                 <div className='d-flex justify-conten-end align-items-start flex-row position-absolute' style={{ top: 10, right: 20, zIndex: 1, }}>
                                     {
                                         selectedCoordinates.length > 0 ? (
@@ -500,7 +418,7 @@ const CreatePolygon = () => {
                                         options={{ gestureHandling: 'greedy' }}
                                     >
                                         {
-                                            selectedPolygonType === 'Polygon' ? (
+                                            shape.value === 'Polygon' ? (
                                                 <PolygonF
                                                     path={selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }))}
                                                     options={{
@@ -510,7 +428,7 @@ const CreatePolygon = () => {
                                                         strokeWeight: 2,
                                                     }}
                                                 />
-                                            ) : selectedPolygonType === 'Circle' ? (
+                                            ) : shape.value === 'Circle' ? (
                                                 <>
                                                     <CircleF options={{
                                                         center: selectedCoordinates[0],
@@ -541,4 +459,4 @@ const CreatePolygon = () => {
     )
 }
 
-export default CreatePolygon
+export default UpdatePolygon;

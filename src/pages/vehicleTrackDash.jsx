@@ -60,6 +60,10 @@ const VehicleTrackDash = () => {
     const [showLocationOption, setShowLocationOption] = useState(false);
     const [currentVehicle, setCurrentVehicle] = useState('');
 
+    const [mildCounts, setMildCounts] = useState(0);
+    const [moderateCounts, setModerateCounts] = useState(0);
+    const [criticalCounts, setCriticalCounts] = useState(0);
+
     const tableColumns = [
         { label: 'Trip Count', value: '' },
         { label: 'Vehicle No.', value: 'vehicleNo' },
@@ -186,6 +190,38 @@ const VehicleTrackDash = () => {
     useEffect(() => {
         handleFilterTrips();
     }, [selectedParty, selectedVehicleNo]);
+
+
+    const getDelayCount = () => {
+
+        const mildTrips = filteredTrips.map(data => {
+            const delayedHours = parseInt(data?.delayedHours);
+            return ((delayedHours >= 1 && delayedHours <= 18) === true);
+        });
+        const milds = mildTrips.filter(data => data);
+
+        const moderateTrips = filteredTrips.map(data => {
+            const delayedHours = parseInt(data?.delayedHours);
+            return ((delayedHours >= 19 && delayedHours <= 35) === true);
+        });
+        const moderates = moderateTrips.filter(data => data);
+
+        const criticalTrips = filteredTrips.map(data => {
+            const delayedHours = parseInt(data?.delayedHours);
+            return ((delayedHours >= 36) === true);
+        });
+        const criticals = criticalTrips.filter(data => data);
+
+        console.log("mild trips", milds);
+
+        setMildCounts(milds.length);
+        setModerateCounts(moderates?.length);
+        setCriticalCounts(criticals?.length);
+    };
+
+    useEffect(() => {
+        getDelayCount();
+    }, [filteredTrips]);
 
     const handleChange = (e) => {
         setForm({
@@ -434,23 +470,21 @@ const VehicleTrackDash = () => {
     };
 
     const showDelayedIcon = (data) => {
-        if (data?.finalStatus === 'Early' || data?.finalStatus === 'On Time' || data?.finalStatus === '') {
-            return '';
-        } else if (data?.finalStatus === 'Delayed') {
+        if (data?.finalStatus === 'Delayed') {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data?.delayedHours);
                 if (delayedHours >= 1 && delayedHours <= 18) {
-                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded`}>Mild Delayed</span>
+                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`} style={{ minWidth: "100%" }}>Mild Delayed</span>
                 } else if (delayedHours >= 19 && delayedHours <= 35) {
-                    return <span className={`px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}>Moderate Delayed</span>
+                    return <span className={`px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`} style={{ minWidth: "100%" }}>Moderate Delayed</span>
                 } else if (delayedHours >= 36) {
-                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded`}>Critical Delayed</span>
+                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`} style={{ minWidth: "100%" }}>Critical Delayed</span>
                 }
             } else {
                 return '';
             }
         }
-    }
+    };
 
     const getDelayedHours = (hours) => {
         if (hours !== null && hours.length > 0) {
@@ -840,15 +874,15 @@ const VehicleTrackDash = () => {
                             <div className='d-flex me-3 justify-content-cennter align-items-center'>
                                 <div className='mx-1 thm-white bg-secondary px-2'>
                                     <span>Mild Delayed: </span>
-                                    <span>10</span>
+                                    <span>{mildCounts}</span>
                                 </div>
                                 <div className='mx-1 px-2 text-dark bg-warning'>
                                     <span>Moderate Delayed: </span>
-                                    <span>10</span>
+                                    <span>{moderateCounts}</span>
                                 </div>
-                                <div className='mx-1 px-2 bg-danger text-white'>
+                                <div className='mx-1 px-2 bg-danger text-white blink'>
                                     <span>Critical Delayed: </span>
-                                    <span>10</span>
+                                    <span>{criticalCounts}</span>
                                 </div>
                             </div>
                             <Tooltip title="Refresh Data">
@@ -950,8 +984,8 @@ const VehicleTrackDash = () => {
                                             }
                                         </td>
                                         <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
-                                        <td className={`${data?.finalStatus === 'Delayed'} pe-3 h-100`}>
-                                            <div className='d-flex justify-content-between align-items-center w-100'>
+                                        <td className={`${data?.finalStatus === 'Delayed'} h-100`}>
+                                            <div className='d-flex justify-content-between fw-bold align-items-center m-0 p-0 w-100'>
                                                 {/* {getFinalStatus(data)} */}
                                                 {showDelayedIcon(data)}
                                             </div>

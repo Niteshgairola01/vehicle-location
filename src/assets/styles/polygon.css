@@ -33,3 +33,16 @@
     overflow-y: scroll;
     scroll-behavior: smooth;
 }
+
+.polygon-types {
+    color: var(--thm-dark);
+}
+
+.polygon-types:hover {
+    background-color: #edf1f9;
+}
+
+.polygon-types-active {
+    color: var(--thm-white);
+    background-color: var(--thm-dark);
+}
