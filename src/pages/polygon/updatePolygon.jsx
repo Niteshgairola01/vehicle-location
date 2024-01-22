@@ -432,8 +432,10 @@ const UpdatePolygon = () => {
     return (
         <Modal show={showModal} fullscreen centered onHide={() => {
             setForm({});
+            window.location.href = '/polygon'
             // setShowModal(false);
-            navigate('/polygon');
+            // location.pathname = '/polygon'
+            // navigate('/polygon');
         }} size='xl'
             className='w-100 p-5'>
             <Modal.Header closeButton>

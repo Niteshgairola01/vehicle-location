@@ -436,8 +436,8 @@ const CreatePolygon = () => {
     return (
         <Modal show={showModal} fullscreen centered onHide={() => {
             setForm({});
-            // setShowModal(false);
-            navigate('/polygon');
+            window.location.href = '/polygon'
+            // navigate('/polygon');
         }} size='xl'
             className='w-100 p-5'>
             <Modal.Header closeButton>
