@@ -49,7 +49,7 @@ export const updatePolygonArea = async (form) => {
     const config = {
         method: 'PUT',
         url: url,
-        data: [form],
+        data: form,
         header: {
             "Content-Type": "application/json"
         }
