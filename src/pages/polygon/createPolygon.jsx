@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
+import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF, PolylineF } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton'
 import ColoredButton from '../../components/Button/coloredButton'
 import { Col, Form, Modal, Row } from 'react-bootstrap'
@@ -45,6 +45,9 @@ const CreatePolygon = () => {
     const [selectedStep, setSelectedStep] = useState(1);
 
     const [showModal, setShowModal] = useState(true);
+
+    const [cursorCoordinate, setCursorCoordinate] = useState(null);
+    const [isDrawing, setIsDrawing] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -110,8 +113,6 @@ const CreatePolygon = () => {
                     });
                 });
 
-                // console.log("prev", previousCoords);
-
                 // const firstCoord = previousCoords[1].split(', ');
                 // previousCoords.push({
                 //     lat: parseFloat(firstCoord[0]),
@@ -129,25 +130,25 @@ const CreatePolygon = () => {
         return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
     };
 
-    useEffect(() => {
-        const handleUndo = (event) => {
-            if (event.ctrlKey && event.key === 'z') {
-                const previousCoords = selectedCoordinates;
-                previousCoords.pop();
-                setSelectedCoordinates(previousCoords);
-            }
-        };
+    // useEffect(() => {
+    //     const handleUndo = (event) => {
+    //         if (event.ctrlKey && event.key === 'z') {
+    //             const previousCoords = selectedCoordinates;
+    //             previousCoords.pop();
+    //             setSelectedCoordinates(previousCoords);
+    //         }
+    //     };
 
-        window.addEventListener('keydown', handleUndo);
+    //     window.addEventListener('keydown', handleUndo);
 
-        return () => {
-            window.removeEventListener('keydown', handleUndo);
-        }
-    });
+    //     return () => {
+    //         window.removeEventListener('keydown', handleUndo);
+    //     }
+    // });
 
-    useEffect(() => {
-        getPolygonPath();
-    }, [selectedCoordinates]);
+    // useEffect(() => {
+    //     getPolygonPath();
+    // }, [selectedCoordinates]);
 
     const polygonTypes = [
         {
@@ -188,6 +189,7 @@ const CreatePolygon = () => {
             ...provided,
             fontSize: '0.9rem',
         }),
+        menu: provided => ({ ...provided, zIndex: 9999 })
     };
 
     const handleSelectCtegory = (category) => {
@@ -205,15 +207,61 @@ const CreatePolygon = () => {
         if (selectedPolygonType === "") {
             ErrorToast('Select Polygon Type First')
         } else {
-            const clickedPlace = {
-                lat: event.latLng.lat(),
-                lng: event.latLng.lng(),
-            };
+            const clickedCoordinate = { lat: event.latLng.lat(), lng: event.latLng.lng() };
 
-            setSelectedCoordinates((prevPlaces) => [...prevPlaces, clickedPlace]);
-            setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace]);
+            setSelectedCoordinates([...selectedCoordinates, clickedCoordinate]);
+            setFinalCoords([...selectedCoordinates, clickedCoordinate]);
+
+            // if (!isDrawing) {
+            //     setSelectedCoordinates([clickedCoordinate]);
+            //     setIsDrawing(true);
+            // } else {
+            //     // Avoid adding the same coordinate again on double-click
+            //     if (!selectedCoordinates.some(coord => coord.lat === clickedCoordinate.lat && coord.lng === clickedCoordinate.lng)) {
+            //         setSelectedCoordinates((prevCoordinates) => [...prevCoordinates, clickedCoordinate]);
+            //     }
+            // }
         }
     };
+
+    const handleMapDoubleClick = () => {
+        if (isDrawing && selectedCoordinates.length > 2) {
+            setIsDrawing(false);
+        }
+    };
+
+    const handleCursorMove = (event) => {
+        if (isDrawing) {
+            setCursorCoordinate({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+        }
+    };
+
+
+    const calculateDistance = (coord1, coord2) => {
+        const latDiff = Math.abs(coord1.lat - coord2.lat);
+        const lngDiff = Math.abs(coord1.lng - coord2.lng);
+        return Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsDrawing(false);
+                setSelectedCoordinates([]);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isDrawing]);
+
+    const staticPolylinePath = [...selectedCoordinates, selectedCoordinates[0]]; // Closing the polygon
+    const dynamicPolylinePath = isDrawing
+        ? [...selectedCoordinates, cursorCoordinate].filter(Boolean)
+        : [];
 
     const [coords, setCoords] = useState([]);
 
@@ -234,6 +282,10 @@ const CreatePolygon = () => {
         });
 
     }, [finalCoords, geoName, placeName, selectedCategory]);
+
+    // useState(() => {
+    //     setCoords(selectedCoordinates);
+    // }, [selectedCoordinates]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -284,7 +336,9 @@ const CreatePolygon = () => {
                         } else {
                             ErrorToast("")
                         }
-                    }).catch((err) => ErrorToast(err?.message));
+                    }).catch((err) => {
+                        err?.response?.data ? ErrorToast(err?.response?.data) : ErrorToast(err?.message);
+                    });
                 }
             }
         }
@@ -316,15 +370,11 @@ const CreatePolygon = () => {
         }
     }
 
-    // console.log("selected coords", selectedCoordinates);
-
-
-
     // Step form
 
     const steps = [
         {
-            label: 'Step 1',
+            label: 'Place',
             content: (
                 <>
                     <Input className="py-2" label="Place" type="text" name="placeName" value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Place Name" required={true} />
@@ -332,13 +382,13 @@ const CreatePolygon = () => {
             ),
         },
         {
-            label: 'Step 2',
+            label: 'Polygon',
             content: (
                 <Form.Label className='thm-dark'>Polygon Type</Form.Label>
             ),
         },
         {
-            label: 'Step 3',
+            label: 'Details',
             content: (
                 <>
                     <div style={{ zIndex: '1500 !important' }}>
@@ -386,7 +436,7 @@ const CreatePolygon = () => {
     return (
         <Modal show={showModal} fullscreen centered onHide={() => {
             setForm({});
-            setShowModal(false);
+            // setShowModal(false);
             navigate('/polygon');
         }} size='xl'
             className='w-100 p-5'>
@@ -404,7 +454,7 @@ const CreatePolygon = () => {
                                             <Stepper activeStep={activeStep} orientation="vertical">
                                                 {steps.map((step, index) => (
                                                     <Step key={step.label}>
-                                                        <StepLabel>{step.label}</StepLabel>
+                                                        <StepLabel onClick={() => setActiveStep(index)} className='cursor-pointer'>{step.label}</StepLabel>
                                                         <StepContent>
                                                             {step.content}
                                                             <div className='mt-3'>
@@ -497,19 +547,50 @@ const CreatePolygon = () => {
                                         center={handleMapCenter()}
                                         zoom={11}
                                         onClick={handleMapClick}
+                                        onMouseMove={handleCursorMove}
                                         options={{ gestureHandling: 'greedy' }}
+                                        style={{ cursor: isDrawing ? 'grab' : 'grab' }}
                                     >
                                         {
                                             selectedPolygonType === 'Polygon' ? (
-                                                <PolygonF
-                                                    path={selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }))}
-                                                    options={{
-                                                        fillColor: 'rgba(255, 0, 0, 0.2)',
-                                                        strokeColor: 'red',
-                                                        strokeOpacity: 0.8,
-                                                        strokeWeight: 2,
-                                                    }}
-                                                />
+                                                <>
+                                                    <PolygonF
+                                                        paths={[staticPolylinePath]}
+                                                        options={{
+                                                            fillColor: 'rgba(255, 0, 0, 0.2)',
+                                                            strokeColor: 'red',
+                                                            strokeOpacity: 0.8,
+                                                            strokeWeight: 2,
+                                                        }}
+                                                    />
+                                                    <PolylineF
+                                                        path={dynamicPolylinePath}
+                                                        options={{
+                                                            strokeColor: 'red',
+                                                            strokeOpacity: 0.8,
+                                                            strokeWeight: 2,
+                                                        }}
+                                                    />
+                                                    {selectedCoordinates.map((coordinate, index) => (
+                                                        <React.Fragment key={index}>
+                                                            {index === 0 ? (
+                                                                <CircleF
+                                                                    center={coordinate}
+                                                                    radius={10}
+                                                                    options={{
+                                                                        fillColor: 'green',
+                                                                        strokeColor: 'green',
+                                                                        strokeOpacity: 0.8,
+                                                                        strokeWeight: 2,
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <MarkerF position={coordinate} />
+                                                            )}
+                                                        </React.Fragment>
+                                                    ))}
+                                                    {/* <MarkerF position={coordinate} /> */}
+                                                </>
                                             ) : selectedPolygonType === 'Circle' ? (
                                                 <>
                                                     <CircleF options={{
@@ -523,6 +604,7 @@ const CreatePolygon = () => {
                                                 </>
                                             ) : null
                                         }
+                                        {cursorCoordinate && <MarkerF position={cursorCoordinate} />}
                                         {
                                             selectedCoordinates.length > 0 ? (
                                                 <MarkerF position={selectedCoordinates[0]} />

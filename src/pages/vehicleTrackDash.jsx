@@ -36,6 +36,7 @@ const VehicleTrackDash = () => {
 
     const [showMap, setShowMap] = useState(false);
 
+
     const [form, setForm] = useState({});
     const [allTrips, setAllTrips] = useState([]);
     const [sortedTrips, setSortedTrips] = useState([])
@@ -60,12 +61,17 @@ const VehicleTrackDash = () => {
     const [showLocationOption, setShowLocationOption] = useState(false);
     const [currentVehicle, setCurrentVehicle] = useState('');
 
+    const [allTripsMild, setAllTripsMild] = useState(0);
+    const [allTripsModerate, setAllTripsModerate] = useState(0);
+    const [allTripsCritical, setAllTripsCritical] = useState(0);
+
+
     const [mildCounts, setMildCounts] = useState(0);
     const [moderateCounts, setModerateCounts] = useState(0);
     const [criticalCounts, setCriticalCounts] = useState(0);
 
     const tableColumns = [
-        { label: 'Trip Count', value: '' },
+        { label: 'Trip Count', value: 'tripCount' },
         { label: 'Vehicle No.', value: 'vehicleNo' },
         { label: 'Trip No.', value: 'tripLogNo' },
         { label: 'Loading (Date / Time)', value: 'loadingDate' },
@@ -88,8 +94,10 @@ const VehicleTrackDash = () => {
         { label: 'Driver Mobile No.', value: 'driverMobileNo' },
         { label: 'Exit From', value: 'exitFrom' },
         { label: 'Trip Status', value: 'tripStatus' },
-        { label: 'Force Complete', value: '' }
+        { label: 'Force Complete', value: 'forcecomplete' }
     ];
+
+    const originalOrder = tableColumns.map((column) => column.label);
 
     const [showedColumns, setShowedColumns] = useState(tableColumns);
     const [hiddenColumns, setHiddenColumns] = useState([]);
@@ -193,26 +201,47 @@ const VehicleTrackDash = () => {
 
 
     const getDelayCount = () => {
+        const allMildTrips = allTrips.map(data => {
+            const delayedHours = parseInt(data?.delayedHours);
+            return ((delayedHours >= 0 && delayedHours <= 18) === true && data?.tripStatus === 'Trip Running');
+        });
+
+        const allModerateTrips = allTrips.map(data => {
+            const delayedHours = parseInt(data?.delayedHours);
+            return ((delayedHours >= 19 && delayedHours <= 35) === true && data?.tripStatus === 'Trip Running');
+        });
+
+        const allCriticalTrips = allTrips.map(data => {
+            const delayedHours = parseInt(data?.delayedHours);
+            return ((delayedHours >= 36) === true && data?.tripStatus === 'Trip Running');
+        });
+
+        const allMilds = allMildTrips.filter(data => data);
+        const allModerates = allModerateTrips.filter(data => data);
+        const allCriticals = allCriticalTrips.filter(data => data);
+
+        setAllTripsMild(allMilds?.length);
+        setAllTripsModerate(allModerates?.length);
+        setAllTripsCritical(allCriticals?.length);
+
 
         const mildTrips = filteredTrips.map(data => {
             const delayedHours = parseInt(data?.delayedHours);
-            return ((delayedHours >= 1 && delayedHours <= 18) === true);
+            return ((delayedHours >= 0 && delayedHours <= 18) === true && data?.tripStatus === 'Trip Running');
         });
         const milds = mildTrips.filter(data => data);
 
         const moderateTrips = filteredTrips.map(data => {
             const delayedHours = parseInt(data?.delayedHours);
-            return ((delayedHours >= 19 && delayedHours <= 35) === true);
+            return ((delayedHours >= 19 && delayedHours <= 35) === true && data?.tripStatus === 'Trip Running');
         });
         const moderates = moderateTrips.filter(data => data);
 
         const criticalTrips = filteredTrips.map(data => {
             const delayedHours = parseInt(data?.delayedHours);
-            return ((delayedHours >= 36) === true);
+            return ((delayedHours >= 36) === true && data?.tripStatus === 'Trip Running');
         });
         const criticals = criticalTrips.filter(data => data);
-
-        console.log("mild trips", milds);
 
         setMildCounts(milds.length);
         setModerateCounts(moderates?.length);
@@ -247,7 +276,6 @@ const VehicleTrackDash = () => {
                     for (const key in form) {
                         const testValue = String(test[key]).toLowerCase();
                         const formValue = form[key].toLowerCase();
-                        console.log("key", testValue, formValue);
                         if ((testValue !== formValue && formValue.length > 0)) {
                             return false;
                         }
@@ -294,7 +322,7 @@ const VehicleTrackDash = () => {
                                         delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
-                                                if (delayedHours >= 1 && delayedHours <= 18) {
+                                                if (delayedHours >= 0 && delayedHours <= 18) {
                                                     finalStatusTrips.push(data);
                                                 }
                                             }
@@ -304,7 +332,7 @@ const VehicleTrackDash = () => {
                                         delayedArr1.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
-                                                if (delayedHours >= 1 && delayedHours <= 18) {
+                                                if (delayedHours >= 0 && delayedHours <= 18) {
                                                     finalStatusTrips.push(data);
                                                 }
                                             }
@@ -456,7 +484,7 @@ const VehicleTrackDash = () => {
         } else if (data?.finalStatus === 'Delayed') {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data?.delayedHours);
-                if (delayedHours >= 1 && delayedHours <= 18) {
+                if (delayedHours >= 0 && delayedHours <= 18) {
                     return 'Mild Delayed'
                 } else if (delayedHours >= 19 && delayedHours <= 35) {
                     return 'Moderate Delayed'
@@ -473,7 +501,7 @@ const VehicleTrackDash = () => {
         if (data?.finalStatus === 'Delayed') {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data?.delayedHours);
-                if (delayedHours >= 1 && delayedHours <= 18) {
+                if (delayedHours >= 0 && delayedHours <= 18) {
                     return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`} style={{ minWidth: "100%" }}>Mild Delayed</span>
                 } else if (delayedHours >= 19 && delayedHours <= 35) {
                     return <span className={`px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`} style={{ minWidth: "100%" }}>Moderate Delayed</span>
@@ -483,6 +511,8 @@ const VehicleTrackDash = () => {
             } else {
                 return '';
             }
+        } else if (data?.finalStatus === 'On Time' || data?.finalStatus === 'Early' || data?.finalStatus === "") {
+            return <span style={{ fontWeight: '400' }}>{data?.finalStatus}</span>
         }
     };
 
@@ -727,20 +757,45 @@ const VehicleTrackDash = () => {
         setFilteredTrips(nonHiddenRows);
     }
 
-    // console.log("filtered", filteredTrips);
+    console.log("filtered", filteredTrips);
 
-    const handleHideColumns = (column, index) => {
+    const handleHideColumns = (column) => {
+        const isHidden = hiddenColumns.some((c) => c.label === column.label);
 
-        let hidden = [];
-
-        if (hiddenColumns.includes(column)) {
-            hidden = showedColumns.splice(index, 0, column);
+        if (isHidden) {
+            setShowedColumns((prevShowedColumns) => {
+                const index = tableColumns.findIndex((c) => c.label === column.label);
+                return [...prevShowedColumns.slice(0, index), column, ...prevShowedColumns.slice(index)];
+            });
+            setHiddenColumns(hiddenColumns.filter((c) => c.label !== column.label));
         } else {
-            hidden = tableColumns.filter(data => data?.label !== column?.label)
-            setHiddenColumns([...hiddenColumns, column])
+            setShowedColumns((prevShowedColumns) =>
+                prevShowedColumns.filter((data) => data.label !== column.label)
+            );
+            setHiddenColumns([...hiddenColumns, column]);
         }
+    };
 
-        setShowedColumns(hidden);
+    useEffect(() => {
+        const updatedData = filteredTrips.map((row) => {
+            return Object.fromEntries(
+                showedColumns.map((column) => [column.value, row[column.value]])
+            );
+        });
+        console.log(updatedData);
+    }, [showedColumns, hiddenColumns, filteredTrips]);
+
+    const handleFormatSpecial = (column, value) => {
+        if (column.label === 'Loading (Date / Time)' || column.label === "Estimated Arrival Date") {
+            // console.log("value", value);
+            return handleFormateISTDate(value);
+        } else if (value === "delayedHours") {
+            return getDelayedHours(value);
+        } else if (column?.label === "Vehicle Exit (Date / Time)" || column?.label === "GPS (Date / Time)" || column?.label === "Report Unloading" || column?.label === "Unloading End Date" || column?.label === "Estimated Arrival Date") {
+            return handleFormatDate(value);
+        } else {
+            return value;
+        }
     };
 
     return (
@@ -774,7 +829,23 @@ const VehicleTrackDash = () => {
             <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
                     <DashHead title="Vehicle Tracking Dashboard" />
+                    <div className='w-100 m-0 p-0 d-flex justify-content-end align-items-center mb-3'>
+                        <div className='d-flex justify-content-center align-items-center'>
+                            <div className='mx-1 thm-white bg-secondary px-2'>
+                                <span>Mild Delayed: </span>
+                                <span>{allTripsMild}</span>
+                            </div>
+                            <div className='mx-1 px-2 text-dark bg-warning'>
+                                <span>Moderate Delayed: </span>
+                                <span>{allTripsModerate}</span>
+                            </div>
+                            <div className='mx-1 px-2 bg-danger text-white blink'>
+                                <span>Critical Delayed: </span>
+                                <span>{allTripsCritical}</span>
+                            </div>
+                        </div>
 
+                    </div>
                     <div className='mt-2'>
                         <Form onSubmit={handleSubmit}>
                             <Row className='dashoard-filter-form rounded'>
@@ -862,7 +933,7 @@ const VehicleTrackDash = () => {
                                     {
                                         tableColumns.map((data, index) => (
                                             <div key={index} className='py-2 d-flex justify-content-start align-items-start cursor-pointer'>
-                                                <input className="switch" type="checkbox" onClick={() => handleHideColumns(data, index)} />
+                                                <input className="switch" type="checkbox" onClick={() => handleHideColumns(data)} />
                                                 <span className='ms-3'>{data?.label}</span>
                                             </div>
                                         ))
@@ -880,7 +951,7 @@ const VehicleTrackDash = () => {
                                     <span>Moderate Delayed: </span>
                                     <span>{moderateCounts}</span>
                                 </div>
-                                <div className='mx-1 px-2 bg-danger text-white blink'>
+                                <div className='mx-1 px-2 bg-danger text-white'>
                                     <span>Critical Delayed: </span>
                                     <span>{criticalCounts}</span>
                                 </div>
@@ -920,20 +991,7 @@ const VehicleTrackDash = () => {
                             </thead>
                             <tbody>
                                 {currentTrips.length > 0 && currentTrips.map((data, index) => (
-                                    <tr
-                                        // className={`${getFinalStatus(data) === 'Mild Delayed' ? 'text-dark bg-warning' : getFinalStatus(data) === "Moderate Delayed" ? "text-dark bg-thm-gray" : getFinalStatus(data) === "Critical Delayed" && "text-white bg-danger"}`} 
-                                        key={index}>
-                                        {/* <td>
-                                            <button className="button" onClick={() => handleHideRow(data)}>
-                                                <span className="button-decor"></span>
-                                                <div className="button-content">
-                                                    <div className="button__icon">
-                                                        <BiSolidHide className='fs-6 text-white' />
-                                                    </div>
-                                                    <span className="button__text">Hide</span>
-                                                </div>
-                                            </button>
-                                        </td> */}
+                                    <tr key={index}>
                                         <td className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                                         <td>{data?.vehicleNo}</td>
                                         <td>{data?.tripLogNo}</td>

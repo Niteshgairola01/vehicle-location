@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
+import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF, PolylineF } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton'
 import ColoredButton from '../../components/Button/coloredButton'
 import { Col, Form, Modal, Row } from 'react-bootstrap'
@@ -10,6 +10,18 @@ import { ErrorToast, SuccessToast } from '../../components/toast/toast';
 import { createNewPolygonArea, updatePolygonArea } from '../../hooks/polygonHooks';
 import { RxCross1 } from "react-icons/rx";
 import { useLocation, useNavigate } from 'react-router-dom';
+import StepForm from './stepForm';
+import { IoTriangleOutline } from "react-icons/io5";
+import { FaRegCircle } from "react-icons/fa";
+
+
+// MUI form
+import Box from '@mui/material/Box';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import StepContent from '@mui/material/StepContent';
+// import Button from '@mui/material/Button';
 
 const UpdatePolygon = () => {
 
@@ -26,7 +38,12 @@ const UpdatePolygon = () => {
     const [searchCoords, setSearchCoords] = useState([]);
     const [searchLatLong, setSearchLatLong] = useState({});
 
+    const [selectedStep, setSelectedStep] = useState(1);
+
     const [showModal, setShowModal] = useState(true);
+
+    const [cursorCoordinate, setCursorCoordinate] = useState(null);
+    const [isDrawing, setIsDrawing] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -92,8 +109,6 @@ const UpdatePolygon = () => {
                     });
                 });
 
-                // console.log("prev", previousCoords);
-
                 // const firstCoord = previousCoords[1].split(', ');
                 // previousCoords.push({
                 //     lat: parseFloat(firstCoord[0]),
@@ -104,6 +119,8 @@ const UpdatePolygon = () => {
             setPlaceName(editData?.placeName);
             setGeoName(editData?.geoName);
             setPolygonCategory(editData?.geofenceType);
+
+            editData?.coordinates.length === 1 ? setSelectedPolygonType('Circle') : setSelectedPolygonType('Polygon')
         }
     }, [editData]);
 
@@ -111,25 +128,27 @@ const UpdatePolygon = () => {
         return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
     };
 
-    useEffect(() => {
-        const handleUndo = (event) => {
-            if (event.ctrlKey && event.key === 'z') {
-                const previousCoords = selectedCoordinates;
-                previousCoords.pop();
-                setSelectedCoordinates(previousCoords);
-            }
-        };
+    // useEffect(() => {
+    //     const handleUndo = (event) => {
+    //         if (event.ctrlKey && event.key === 'z') {
+    //             const previousCoords = selectedCoordinates;
+    //             previousCoords.pop();
+    //             setSelectedCoordinates(previousCoords);
+    //         }
+    //     };
 
-        window.addEventListener('keydown', handleUndo);
+    //     window.addEventListener('keydown', handleUndo);
 
-        return () => {
-            window.removeEventListener('keydown', handleUndo);
-        }
-    });
+    //     return () => {
+    //         window.removeEventListener('keydown', handleUndo);
+    //     }
+    // });
 
-    useEffect(() => {
-        getPolygonPath();
-    }, [selectedCoordinates]);
+    // useEffect(() => {
+    //     getPolygonPath();
+    // }, [selectedCoordinates]);
+
+    console.log("selected", selectedCoordinates);
 
     const polygonTypes = [
         {
@@ -170,6 +189,7 @@ const UpdatePolygon = () => {
             ...provided,
             fontSize: '0.9rem',
         }),
+        menu: provided => ({ ...provided, zIndex: 2 })
     };
 
     const handleSelectCtegory = (category) => {
@@ -184,18 +204,63 @@ const UpdatePolygon = () => {
     };
 
     const handleMapClick = (event) => {
-        if (shape === "") {
+        if (selectedPolygonType === "") {
             ErrorToast('Select Polygon Type First')
         } else {
-            const clickedPlace = {
-                lat: event.latLng.lat(),
-                lng: event.latLng.lng(),
-            };
+            const clickedCoordinate = { lat: event.latLng.lat(), lng: event.latLng.lng() };
 
-            setSelectedCoordinates((prevPlaces) => [...prevPlaces, clickedPlace]);
-            setFinalCoords((prevPlaces) => [...prevPlaces, clickedPlace]);
+            setSelectedCoordinates([...selectedCoordinates, clickedCoordinate]);
+            setFinalCoords([...selectedCoordinates, clickedCoordinate]);
+            // if (!isDrawing) {
+            //     setSelectedCoordinates([clickedCoordinate]);
+            //     setIsDrawing(true);
+            // } else {
+            //     // Avoid adding the same coordinate again on double-click
+            //     if (!selectedCoordinates.some(coord => coord.lat === clickedCoordinate.lat && coord.lng === clickedCoordinate.lng)) {
+            //         setSelectedCoordinates((prevCoordinates) => [...prevCoordinates, clickedCoordinate]);
+            //     }
+            // }
         }
     };
+
+    const handleMapDoubleClick = () => {
+        if (isDrawing && selectedCoordinates.length > 2) {
+            setIsDrawing(false);
+        }
+    };
+
+    const handleCursorMove = (event) => {
+        if (isDrawing) {
+            setCursorCoordinate({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+        }
+    };
+
+
+    const calculateDistance = (coord1, coord2) => {
+        const latDiff = Math.abs(coord1.lat - coord2.lat);
+        const lngDiff = Math.abs(coord1.lng - coord2.lng);
+        return Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsDrawing(false);
+                setSelectedCoordinates([]);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isDrawing]);
+
+    const staticPolylinePath = [...selectedCoordinates, selectedCoordinates[0]]; // Closing the polygon
+    const dynamicPolylinePath = isDrawing
+        ? [...selectedCoordinates, cursorCoordinate].filter(Boolean)
+        : [];
 
     const [coords, setCoords] = useState([]);
 
@@ -219,45 +284,60 @@ const UpdatePolygon = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (selectedCoordinates.length === 0) {
-            ErrorToast("Select Coordinates")
-        } else {
-            if (shape === 'Polygon' && selectedCoordinates.length < 3) {
-                ErrorToast("Polygon is not closed")
+
+        if (activeStep === 0) {
+            placeName.length === 0 ? setActiveStep(0) : setActiveStep(1);
+        } else if (activeStep === 1) {
+            selectedCoordinates.length === 0 ? setActiveStep(1) : setActiveStep(2);
+            selectedCoordinates.length === 0 && ErrorToast("Select Coordinates");
+        } else if (activeStep === 2) {
+            if (selectedCategory?.value === null) {
+                ErrorToast("Select Category")
             } else {
+                if (selectedCategory?.value === 'Reach Point' || selectedCategory?.value === 'Parking') {
+                    let testcoords = coords;
+                    selectedCoordinates.length > 1 && testcoords.push(coords[0]);
 
-                let testcoords = coords;
-                selectedCoordinates.length > 1 && testcoords.push(coords[0]);
+                    const form = {
+                        geoName: '',
+                        placeName: placeName,
+                        geofenceType: selectedCategory?.value,
+                        coordinates: testcoords
+                    };
 
-                const form = {
-                    geoName: geoName,
-                    placeName: placeName,
-                    geofenceType: selectedCategory?.value,
-                    coordinates: testcoords
-                }
-
-                if (!edit) {
-                    createNewPolygonArea(form).then((response) => {
+                    updatePolygonArea(form).then((response) => {
                         if (response?.status === 200) {
                             SuccessToast("New polygon area created");
                             setShowModal(false);
                         } else {
                             ErrorToast("")
                         }
-                    }).catch((err) => ErrorToast(err?.message))
-                } else {
+                    }).catch((err) => ErrorToast(err?.message));
+                } else if (geoName.length > 0) {
+                    let testcoords = coords;
+                    selectedCoordinates.length > 1 && testcoords.push(coords[0]);
+
+                    const form = {
+                        geoName: geoName,
+                        placeName: placeName,
+                        geofenceType: selectedCategory?.value,
+                        coordinates: testcoords
+                    }
+
                     updatePolygonArea(form).then((response) => {
+                        console.log("response", response);
                         if (response?.status === 200) {
-                            SuccessToast("Polygon area updated");
-                            setShowModal(false)
+                            SuccessToast("Polygon area Updated");
+                            setShowModal(false);
                         } else {
                             ErrorToast("")
                         }
-                    }).catch((err) => ErrorToast(err?.message))
+                    }).catch((err) => {
+                        err?.response?.data ? ErrorToast(err?.response?.data) : ErrorToast(err?.message);
+                    });
                 }
             }
         }
-
     };
 
     const mapContainerStyle = {
@@ -286,12 +366,73 @@ const UpdatePolygon = () => {
         }
     }
 
-    console.log("selected coords", selectedCoordinates);
+    // Step form
+
+    const steps = [
+        {
+            label: 'Place',
+            content: (
+                <>
+                    <Input className="py-2" label="Place" type="text" name="placeName" value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Place Name" required={true} />
+                </>
+            ),
+        },
+        {
+            label: 'Polygon',
+            content: (
+                <Form.Label className='thm-dark'>Polygon Type</Form.Label>
+            ),
+        },
+        {
+            label: 'Details',
+            content: (
+                <>
+                    <div style={{ zIndex: '1500 !important' }}>
+                        <Form.Label className='thm-dark'>Category</Form.Label>
+                        <Select
+                            options={allCategories}
+                            value={selectedCategory}
+                            onChange={handleSelectCtegory}
+                            isClearable={true}
+                            styles={selectStyles}
+                        />
+                    </div>
+
+                    {
+                        (selectedCategory?.value === "Dealer" || selectedCategory?.value === "Plant") ? (
+                            <div>
+                                {
+                                    selectedCategory?.value === 'Dealer' ? (
+                                        <Col sm={12} className='mt-3'>
+                                            <Input className="py-2" label="Dealer" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Delaer" required={true} />
+                                        </Col>
+                                    ) : (
+                                        <Col sm={12} className='mt-3'>
+                                            <Input className="py-2" label="Plant" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Plant" required={true} />
+                                        </Col>
+                                    )
+                                }
+                            </div>
+                        ) : null
+                    }
+                </>
+            ),
+        },
+    ];
+
+    const [activeStep, setActiveStep] = useState(0);
+
+    const [selectedPolygonType, setSelectedPolygonType] = useState('');
+
+    const allPolygonTypesOptions = [
+        { label: 'Polygon', icon: <IoTriangleOutline /> },
+        { label: 'Circle', icon: <FaRegCircle /> },
+    ];
 
     return (
         <Modal show={showModal} fullscreen centered onHide={() => {
             setForm({});
-            setShowModal(false);
+            // setShowModal(false);
             navigate('/polygon');
         }} size='xl'
             className='w-100 p-5'>
@@ -302,94 +443,81 @@ const UpdatePolygon = () => {
                 <div className='px-5'>
                     <div>
                         <Row>
-                            <Col sm={12} md={12} lg={4} className='pe-3'>
+                            <Col sm={12} md={12} lg={3} className='m-0 p-0'>
                                 <Card>
-                                    <h6 className='thm-dark'>{!edit ? "Create New Polygon" : 'Edit Polygon'}</h6>
-                                    <hr />
                                     <Form onSubmit={handleSubmit}>
-                                        <Row>
-                                            <Col sm={6} style={{ zIndex: 2 }}>
-                                                <Form.Label className='thm-dark'>Category</Form.Label>
-                                                <Select
-                                                    options={allCategories}
-                                                    value={selectedCategory}
-                                                    onChange={handleSelectCtegory}
-                                                    isClearable={true}
-                                                    styles={selectStyles}
-                                                />
-                                            </Col>
+                                        <Box sx={{ maxWidth: 400 }}>
+                                            <Stepper activeStep={activeStep} orientation="vertical">
+                                                {steps.map((step, index) => (
+                                                    <Step key={step.label}>
+                                                        <StepLabel onClick={() => setActiveStep(index)} className='cursor-pointer'>{step.label}</StepLabel>
+                                                        <StepContent>
+                                                            {step.content}
+                                                            <div className='mt-3'>
+                                                                {
+                                                                    index > 0 && (
+                                                                        <Button
+                                                                            type="button"
+                                                                            disabled={index === 0}
+                                                                            onClick={() => setActiveStep(activeStep - 1)}
+                                                                            className="py-1 px-3 me-2"
+                                                                        >
+                                                                            Back
+                                                                        </Button>
+                                                                    )
+                                                                }
+                                                                <ColoredButton
+                                                                    variant="contained"
+                                                                    type="submit"
+                                                                    // onClick={() => handleSubmit(activeStep + 1)}
+                                                                    className="py-1 px-2"
+                                                                >
+                                                                    {activeStep == 2 ? 'Update' : 'Continue'}
+                                                                </ColoredButton>
+                                                            </div>
+                                                        </StepContent>
+                                                        {
 
-                                            <Col sm={6} className='position-relative '>
-                                                <Form.Label className='thm-dark'>Polygon Type</Form.Label>
-                                                <Select
-                                                    options={polygonTypes}
-                                                    value={shape}
-                                                    onChange={handleSelectPolygonType}
-                                                    isClearable={true}
-                                                    styles={selectStyles}
-                                                />
-                                            </Col>
-                                        </Row>
+                                                        }
+                                                    </Step>
+                                                ))}
 
-                                        <Col sm={12} className='mt-3'>
-                                            <Input className="py-2" label="Place" type="text" name="placeName" value={placeName} onChange={(e) => setPlaceName(e.target.value)} placeholder="Place Name" />
-                                        </Col>
-
-                                        {
-                                            (selectedCategory?.value === "Dealer" || selectedCategory?.value === "Plant") ? (
-                                                <div>
-                                                    {
-                                                        selectedCategory?.value === 'Dealer' ? (
-                                                            <Col sm={12} className='mt-3'>
-                                                                <Input className="py-2" label="Dealer" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Delaer" />
-                                                            </Col>
-                                                        ) : (
-                                                            <Col sm={12} className='mt-3'>
-                                                                <Input className="py-2" label="Plant" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Plant" />
-                                                            </Col>
-                                                        )
-                                                    }
-                                                </div>
-                                            ) : null
-                                        }
-
-                                        <div className='mt-5 d-flex justify-content-center align-items-center'>
-                                            <ColoredButton className="px-5 w-75 py-1" type="submit">{!edit ? 'Create' : 'Update'}</ColoredButton>
-                                        </div>
+                                            </Stepper>
+                                            {/* {activeStep === steps.length && (
+                                            <Paper square elevation={0} sx={{ p: 3 }}>
+                                                <Typography>All steps completed - you&apos;re finished</Typography>
+                                                <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
+                                                    Reset
+                                                </Button>
+                                            </Paper>
+                                        )} */}
+                                        </Box>
                                     </Form>
                                 </Card>
-
-                                <Card>
-                                    <Col sm={12} md={12} lg={6} className='pt-3'>
-                                        <div className='p-3 rounded border border-dark'>
-                                            <p className='thm-dark'>Selected Coordinates</p>
-                                            <hr />
-                                            <div>
-                                                {
-                                                    selectedCoordinates.length === 0 ? (
-                                                        <div className='thm-dark d-flex justify-content-between align-items-center' style={{ width: "80%" }}>
-                                                            <p className='m-0 p-0 text-secondary'>Selected Coordinates</p>
-                                                        </div>
-                                                    ) : (
-                                                        <>
-                                                            {
-                                                                selectedCoordinates.map((data, index) => (
-                                                                    <div className='thm-dark d-flex justify-content-between align-items-center' key={index} style={{ width: "80%" }}>
-                                                                        <span>{data?.lat.toFixed(6)}</span>
-                                                                        <span>{data?.lng.toFixed(6)}</span>
-                                                                    </div>
-                                                                ))
-                                                            }
-
-                                                        </>
-                                                    )
-                                                }
-                                            </div>
-                                        </div>
-                                    </Col>
-                                </Card>
                             </Col>
-                            <Col sm={12} md={12} lg={8} className='position-relative' style={{ height: "75vh" }}>
+
+                            <Col sm={12} md={12} lg={9} className='position-relative' style={{ height: "75vh" }}>
+                                {
+                                    activeStep === 1 ? (
+                                        <ul className='position-absolute bg-white m-0 p-0' style={{ listStyleType: "none", left: 20, top: 200, zIndex: 1 }}>
+                                            {
+                                                allPolygonTypesOptions.map((data, index) => (
+                                                    <li className={`${selectedPolygonType === data?.label ? 'polygon-types-active' : 'polygon-types'} py-2 ps-2 pe-5 d-flex justify-content-start cursor-pointer`}
+                                                        onClick={() => {
+                                                            setSelectedPolygonType(data?.label);
+                                                            setSelectedCoordinates([]);
+                                                            setFinalCoords([]);
+                                                        }} key={index}
+                                                    >
+                                                        {data?.icon}
+                                                        <span className='ms-3'>{data?.label}</span>
+                                                    </li>
+                                                ))
+
+                                            }
+                                        </ul>
+                                    ) : null
+                                }
                                 <div className='d-flex justify-conten-end align-items-start flex-row position-absolute' style={{ top: 10, right: 20, zIndex: 1, }}>
                                     {
                                         selectedCoordinates.length > 0 ? (
@@ -415,20 +543,51 @@ const UpdatePolygon = () => {
                                         center={handleMapCenter()}
                                         zoom={11}
                                         onClick={handleMapClick}
+                                        onMouseMove={handleCursorMove}
                                         options={{ gestureHandling: 'greedy' }}
+                                        style={{ cursor: isDrawing ? 'grab' : 'grab' }}
                                     >
                                         {
-                                            shape.value === 'Polygon' ? (
-                                                <PolygonF
-                                                    path={selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }))}
-                                                    options={{
-                                                        fillColor: 'rgba(255, 0, 0, 0.2)',
-                                                        strokeColor: 'red',
-                                                        strokeOpacity: 0.8,
-                                                        strokeWeight: 2,
-                                                    }}
-                                                />
-                                            ) : shape.value === 'Circle' ? (
+                                            selectedPolygonType === 'Polygon' ? (
+                                                <>
+                                                    <PolygonF
+                                                        paths={[staticPolylinePath]}
+                                                        options={{
+                                                            fillColor: 'rgba(255, 0, 0, 0.2)',
+                                                            strokeColor: 'red',
+                                                            strokeOpacity: 0.8,
+                                                            strokeWeight: 2,
+                                                        }}
+                                                    />
+                                                    <PolylineF
+                                                        path={dynamicPolylinePath}
+                                                        options={{
+                                                            strokeColor: 'red',
+                                                            strokeOpacity: 0.8,
+                                                            strokeWeight: 2,
+                                                        }}
+                                                    />
+                                                    {selectedCoordinates.map((coordinate, index) => (
+                                                        <React.Fragment key={index}>
+                                                            {index === 0 ? (
+                                                                <CircleF
+                                                                    center={coordinate}
+                                                                    radius={10}
+                                                                    options={{
+                                                                        fillColor: 'green',
+                                                                        strokeColor: 'green',
+                                                                        strokeOpacity: 0.8,
+                                                                        strokeWeight: 2,
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <MarkerF position={coordinate} />
+                                                            )}
+                                                        </React.Fragment>
+                                                    ))}
+                                                    {/* <MarkerF position={coordinate} /> */}
+                                                </>
+                                            ) : selectedPolygonType === 'Circle' ? (
                                                 <>
                                                     <CircleF options={{
                                                         center: selectedCoordinates[0],
@@ -441,6 +600,7 @@ const UpdatePolygon = () => {
                                                 </>
                                             ) : null
                                         }
+                                        {cursorCoordinate && <MarkerF position={cursorCoordinate} />}
                                         {
                                             selectedCoordinates.length > 0 ? (
                                                 <MarkerF position={selectedCoordinates[0]} />
@@ -459,4 +619,4 @@ const UpdatePolygon = () => {
     )
 }
 
-export default UpdatePolygon;
+export default UpdatePolygon
