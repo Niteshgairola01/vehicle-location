@@ -347,7 +347,7 @@ const CreatePolygon = () => {
                                 {
                                     selectedCategory?.value === 'Dealer' ? (
                                         <Col sm={12} className='mt-3'>
-                                            <Input className="py-2" label="Dealer" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Delaer" required={true} />
+                                            <Input className="py-2" label="Dealer" type="text" value={geoName} name="geoName" onChange={(e) => setGeoName(e.target.value)} placeholder="Dealer" required={true} />
                                         </Col>
                                     ) : (
                                         <Col sm={12} className='mt-3'>
