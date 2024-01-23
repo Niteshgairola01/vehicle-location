@@ -766,7 +766,7 @@ table thead {
 }
 
 .blink {
-    animation: blink 0.8s linear infinite;
+    animation: blink 0.9s linear infinite;
 }
 
 @keyframes blink {

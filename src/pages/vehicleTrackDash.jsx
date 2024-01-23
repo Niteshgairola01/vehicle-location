@@ -979,7 +979,7 @@ const VehicleTrackDash = () => {
                                 <span>Moderate Delayed: </span>
                                 <span>{allTripsModerate}</span>
                             </div>
-                            <div className='mx-1 px-2 bg-danger text-white blink'>
+                            <div className='mx-1 px-2 bg-danger fw-bold text-white blink'>
                                 <span>Critical Delayed: </span>
                                 <span>{allTripsCritical}</span>
                             </div>
