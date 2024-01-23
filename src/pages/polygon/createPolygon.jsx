@@ -56,8 +56,8 @@ const CreatePolygon = () => {
     const editData = location?.state;
     const edit = location.pathname == '/editPolygon' ? true : false;
 
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
 
     const getPolygonPath = () => {
         return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
@@ -283,13 +283,12 @@ const CreatePolygon = () => {
         setSearchCoords(targetValue.split(', '));
     }
 
-    const handleMapCenter = (event) => {
+    const handleMapCenter = () => {
         if (searchLatLong?.lat && selectedCoordinates.length === 0) {
             return searchLatLong;
+        } else {
+            return center
         }
-        //  else {
-        //     return selectedCoordinates.length > 0 ? selectedCoordinates[0] : { lat: 26.858192, lng: 75.669163 }
-        // }
     }
 
     const steps = [
@@ -304,7 +303,27 @@ const CreatePolygon = () => {
         {
             label: 'Polygon',
             content: (
-                <Form.Label className='thm-dark'>Polygon Type</Form.Label>
+                <>
+                    <Form.Label className='thm-dark'>{
+                        selectedCoordinates.length > 0 ? "Selected Coordinates" : 'Polygon Type'
+                    }</Form.Label>
+                    {
+                        selectedCoordinates.length > 0 ? (
+                            <div className='rounded px-3 py-2 d-flex justify-content-start thm-dark align-items-start my-2 flex-column'
+                                style={{ border: '1px solid #000' }}
+                            >
+                                {
+                                    selectedCoordinates.map((data, index) => (
+                                        <div key={index}>
+                                            <span className='m-0 p-0'>{data?.lat.toFixed(6)}, </span>
+                                            <span className='m-0 p-0 ps-3'>{data?.lng?.toFixed(6)}</span>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        ) : null
+                    }
+                </>
             ),
         },
         {
@@ -486,12 +505,12 @@ const CreatePolygon = () => {
                                 <LoadScript googleMapsApiKey={key}>
                                     <GoogleMap
                                         mapContainerStyle={mapContainerStyle}
-                                        center={center}
+                                        center={handleMapCenter()}
                                         onLoad={(map) => {
-                                            const bounds = getBounds();
-                                            map.fitBounds(bounds);
+                                            const bounds = selectedCoordinates.length > 0 && getBounds();
+                                            selectedCoordinates.length > 0 && map.fitBounds(bounds);
 
-                                            setCenter(map.getCenter());
+                                            selectedCoordinates.length > 0 && setCenter(map.getCenter());
                                         }}
                                         zoom={11}
                                         onClick={handleMapClick}
@@ -547,8 +566,15 @@ const CreatePolygon = () => {
                                                     }} />
                                                     <MarkerF position={selectedCoordinates[0]} />
                                                 </>
+                                            ) : selectedPolygonType === "" ? (
+                                                <MarkerF position={handleMapCenter()} />
                                             ) : null
                                         }
+                                        {/* {
+                                            selectedPolygonType === "" ? (
+                                            ): null
+                                        } */}
+
                                     </GoogleMap>
                                 </LoadScript>
                             </Col>

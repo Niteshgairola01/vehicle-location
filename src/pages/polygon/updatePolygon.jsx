@@ -83,6 +83,8 @@ const UpdatePolygon = () => {
                 });
             });
 
+            console.log("eidt data", editData?.coordinates);
+
             setFinalCoords(initialCoords);
 
             setSelectedCoordinates(initialCoords);
@@ -279,7 +281,9 @@ const UpdatePolygon = () => {
             coordinates: coordinates
         });
 
-    }, [selectedCoordinates, geoName, placeName, selectedCategory]);
+    }, [geoName, placeName, selectedCategory]);
+
+    console.log('selected', selectedCoordinates);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -307,7 +311,7 @@ const UpdatePolygon = () => {
                     updatePolygonArea(form).then((response) => {
                         if (response?.status === 200) {
                             SuccessToast("New polygon area created");
-                            setShowModal(false);
+                            navigate('/polygon')
                         } else {
                             ErrorToast("")
                         }
@@ -327,7 +331,7 @@ const UpdatePolygon = () => {
                         console.log("response", response);
                         if (response?.status === 200) {
                             SuccessToast("Polygon area Updated");
-                            setShowModal(false);
+                            navigate('/polygon');
                         } else {
                             ErrorToast("")
                         }
@@ -361,6 +365,7 @@ const UpdatePolygon = () => {
         if (searchLatLong?.lat && selectedCoordinates.length === 0) {
             return searchLatLong;
         } else {
+            // return center;
             return selectedCoordinates.length > 0 ? selectedCoordinates[0] : { lat: 26.858192, lng: 75.669163 }
         }
     }
@@ -431,12 +436,12 @@ const UpdatePolygon = () => {
     const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
 
     const getBounds = () => {
-        const bounds = new window.google.maps.LatLngBounds();
-        selectedCoordinates.forEach((marker) => {
+        const bounds = selectedCoordinates.length > 0 && new window.google.maps.LatLngBounds();
+        selectedCoordinates.length > 0 && selectedCoordinates.forEach((marker) => {
             bounds.extend(marker.position);
         });
 
-        return bounds;
+        return selectedCoordinates.length > 0 ? bounds : center;
     };
 
     return (
@@ -553,10 +558,10 @@ const UpdatePolygon = () => {
                                         mapContainerStyle={mapContainerStyle}
                                         center={handleMapCenter()}
                                         // onLoad={(map) => {
-                                        //     const bounds = getBounds();
-                                        //     map.fitBounds(bounds);
+                                        //     const bounds = selectedCoordinates.length > 0 && getBounds();
+                                        //     selectedCoordinates.length > 0 && map.fitBounds(bounds);
 
-                                        //     setCenter(map.getCenter());
+                                        //     selectedCoordinates.length > 0 && setCenter(map.getCenter());
                                         // }}
                                         zoom={11}
                                         onClick={handleMapClick}
@@ -612,6 +617,8 @@ const UpdatePolygon = () => {
                                                     }} />
                                                     <MarkerF position={selectedCoordinates[0]} />
                                                 </>
+                                            ) : selectedPolygonType === "" ? (
+                                                <MarkerF position={handleMapCenter()} />
                                             ) : null
                                         }
                                     </GoogleMap>

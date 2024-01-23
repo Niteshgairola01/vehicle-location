@@ -31,8 +31,8 @@ import { Toggle } from '../components/Button/Button';
 
 const VehicleTrackDash = () => {
 
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
 
     const [showMap, setShowMap] = useState(false);
 
@@ -49,6 +49,7 @@ const VehicleTrackDash = () => {
     const [selectedVehicle, setSelectedVehicle] = useState({});
     const [hovered, setHovered] = useState(false);
     const [selectedParty, setSelectedParty] = useState('');
+    const [selectedOrigin, setSelectedOrigin] = useState('');
     const [isOpenParty, setIsOpenParty] = useState(false);
     const [isOpenOffice, setIsOpenOffice] = useState(false);
     const [showLoader, setShowLoader] = useState(false);
@@ -173,22 +174,6 @@ const VehicleTrackDash = () => {
                 setShowLoader(false);
                 const allData = response?.data;
 
-                // const uniqueOriginsSet = new Set();
-
-                // data.forEach(item => {
-                //     uniqueOriginsSet.add(item.origin.toLowerCase());
-                // });
-
-                // const uniqueOriginsArray = Array.from(uniqueOriginsSet);
-
-                // const desiredOriginArray = uniqueOriginsArray.map(origin => {
-                //     return {
-                //         origin: origin.charAt(0).toUpperCase() + origin.slice(1)
-                //     };
-                // });
-
-                // setOriginsList(desiredOriginArray)
-
                 setAllTrips(allData);
                 setFilteredTrips(allData);
             } else {
@@ -208,7 +193,26 @@ const VehicleTrackDash = () => {
         getAllTrips();
     }, []);
 
-    console.log("origins", originsList);
+    useEffect(() => {
+        const uniqueOriginsSet = new Set();
+
+        allTrips.forEach(item => {
+            item?.origin !== null && uniqueOriginsSet.add(item.origin.toLowerCase());
+        });
+
+        const uniqueOriginsArray = Array.from(uniqueOriginsSet);
+
+        const desiredOriginArray = uniqueOriginsArray.map(origin => {
+            return {
+                origin: origin.charAt(0).toUpperCase() + origin.slice(1),
+                label: origin.charAt(0).toUpperCase() + origin.slice(1),
+                value: origin.charAt(0).toUpperCase() + origin.slice(1),
+            };
+        });
+
+        setOriginsList(desiredOriginArray)
+
+    }, [filteredTrips]);
 
     useEffect(() => {
         getAllPartiesList().then((response) => {
@@ -252,7 +256,7 @@ const VehicleTrackDash = () => {
 
     useEffect(() => {
         handleFilterTrips();
-    }, [selectedParty, selectedVehicleNo]);
+    }, [selectedOrigin, selectedParty, selectedVehicleNo]);
 
 
     const getDelayCount = () => {
@@ -501,6 +505,7 @@ const VehicleTrackDash = () => {
             });
             setSelectedParty('');
             setSelectedVehicleNo('');
+            setSelectedOrigin('')
         } else {
             if (selectedFilter.includes(filter)) {
                 setSelectedFilter(selectedFilter.filter(item => item !== filter));
@@ -557,11 +562,17 @@ const VehicleTrackDash = () => {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data?.delayedHours);
                 if (delayedHours >= 0 && delayedHours <= 18) {
-                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`} style={{ minWidth: "100%" }}>Mild Delayed</span>
+                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
+                        id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                        style={{ minWidth: "100%" }}>Mild Delayed</span>
                 } else if (delayedHours >= 19 && delayedHours <= 35) {
-                    return <span className={`px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`} style={{ minWidth: "100%" }}>Moderate Delayed</span>
+                    return <span className={`px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}
+                        id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                        style={{ minWidth: "100%" }}>Moderate Delayed</span>
                 } else if (delayedHours >= 36) {
-                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`} style={{ minWidth: "100%" }}>Critical Delayed</span>
+                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
+                        id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                        style={{ minWidth: "100%" }}>Critical Delayed</span>
                 }
             } else {
                 return '';
@@ -682,6 +693,23 @@ const VehicleTrackDash = () => {
         handleFilter();
     };
 
+    const handleChangeOrigin = (selectedValue) => {
+        setSelectedOrigin(selectedValue);
+
+        if (selectedValue === null) {
+            setForm({
+                ...form,
+                origin: ''
+            });
+        } else {
+            setForm({
+                ...form,
+                origin: selectedValue?.origin
+            });
+        }
+    };
+
+
     const handleChangeParty = (selectedValue) => {
         setSelectedParty(selectedValue);
 
@@ -697,6 +725,8 @@ const VehicleTrackDash = () => {
             });
         }
     };
+
+
 
     const handleChangeVehicle = (selectedValue) => {
         setSelectedVehicleNo(selectedValue);
@@ -725,6 +755,12 @@ const VehicleTrackDash = () => {
     };
 
     const selectformFields = [
+        {
+            label: "Origin",
+            options: originsList,
+            value: selectedOrigin,
+            onChange: handleChangeOrigin
+        },
         {
             label: "Party",
             options: partiesList,

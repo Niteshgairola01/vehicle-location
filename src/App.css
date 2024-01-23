@@ -637,7 +637,7 @@ table thead {
 
 
 
-.warn-icon {
+#warn-icon {
     transition: transform 1s ease-out infinite;
     animation: bounce 1s ease-out forwards infinite;
 }
@@ -660,7 +660,6 @@ table thead {
         transform: scale(0.9);
     }
 }
-
 
 .button {
     --clr: var(--thm-dark);
