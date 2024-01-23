@@ -1086,7 +1086,8 @@ const VehicleTrackDash = () => {
                                                         <input className="switch" type="checkbox"
                                                             checked={data?.hidden === true}
                                                             // checked={hiddenColumns.some((c) => c.label === data.label)}
-                                                            onClick={() => handleHideColumns(data)} />
+                                                            // onClick={() => handleHideColumns(data)} 
+                                                            />
                                                         <span className='ms-3'>{data?.label}</span>
                                                     </div>
                                                 ))
