@@ -31,11 +31,10 @@ import { Toggle } from '../components/Button/Button';
 
 const VehicleTrackDash = () => {
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
     const [showMap, setShowMap] = useState(false);
-
 
     const [form, setForm] = useState({});
     const [allTrips, setAllTrips] = useState([]);
@@ -44,6 +43,7 @@ const VehicleTrackDash = () => {
     const [selectedFilter, setSelectedFilter] = useState([]);
     const [partiesList, setPartiesList] = useState([]);
     const [vehiclesList, setVehiclesList] = useState([]);
+    const [originsList, setOriginsList] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
     const [showForceCompleteModal, setShowForceCompleteModal] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState({});
@@ -59,6 +59,8 @@ const VehicleTrackDash = () => {
     const [vehicleData, setVehicleData] = useState({});
     const [showLocation, setShowLocation] = useState(false);
     const [showLocationOption, setShowLocationOption] = useState(false);
+    const [showHideToggle, setShowHideToggle] = useState(false);
+    const [isHovered, setIsHovered] = useState(true);
     const [currentVehicle, setCurrentVehicle] = useState('');
 
     const [allTripsMild, setAllTripsMild] = useState(0);
@@ -70,37 +72,34 @@ const VehicleTrackDash = () => {
     const [moderateCounts, setModerateCounts] = useState(0);
     const [criticalCounts, setCriticalCounts] = useState(0);
 
-    const tableColumns = [
-        { label: 'Trip Count', value: 'tripCount' },
-        { label: 'Vehicle No.', value: 'vehicleNo' },
-        { label: 'Trip No.', value: 'tripLogNo' },
-        { label: 'Loading (Date / Time)', value: 'loadingDate' },
-        { label: 'Vehicle Exit (Date / Time)', value: 'vehicleExitDate' },
-        { label: 'Consignor Name', value: 'consignorName' },
-        { label: 'Origin', value: 'origin' },
-        { label: 'Destination', value: 'destination' },
-        { label: 'Static ETA', value: 'staticETA' },
-        { label: 'GPS (Date / Time)', value: 'locationTime' },
-        { label: 'Route (KM)', value: 'routeKM' },
-        { label: 'KM Covered', value: 'runningKMs' },
-        { label: 'Difference (Km)', value: 'kmDifference' },
-        { label: 'Report Unloading', value: 'unloadingReachDate' },
-        { label: 'Unloading End Date', value: 'unloadingData' },
-        { label: 'Location', value: 'location' },
-        { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate' },
-        { label: 'Final Status', value: 'finalStatus' },
-        { label: 'Delayed Hours', value: 'delayedHours' },
-        { label: 'Driver Name', value: 'driverName' },
-        { label: 'Driver Mobile No.', value: 'driverMobileNo' },
-        { label: 'Exit From', value: 'exitFrom' },
-        { label: 'Trip Status', value: 'tripStatus' },
-        { label: 'Force Complete', value: 'forcecomplete' }
-    ];
-
-    const originalOrder = tableColumns.map((column) => column.label);
-
-    const [showedColumns, setShowedColumns] = useState(tableColumns);
-    const [hiddenColumns, setHiddenColumns] = useState([]);
+    const [tableColumns, setTableColumns] = useState(
+        [
+            { label: 'Trip Count', value: 'tripCount', hidden: false },
+            { label: 'Vehicle No.', value: 'vehicleNo', hidden: false },
+            { label: 'Trip No.', value: 'tripLogNo', hidden: false },
+            { label: 'Loading (Date / Time)', value: 'loadingDate', hidden: false },
+            { label: 'Vehicle Exit (Date / Time)', value: 'vehicleExitDate', hidden: false },
+            { label: 'Consignor Name', value: 'consignorName', hidden: false },
+            { label: 'Origin', value: 'origin', hidden: false },
+            { label: 'Destination', value: 'destination', hidden: false },
+            { label: 'Static ETA', value: 'staticETA', hidden: false },
+            { label: 'GPS (Date / Time)', value: 'locationTime', hidden: false },
+            { label: 'Route (KM)', value: 'routeKM', hidden: false },
+            { label: 'KM Covered', value: 'runningKMs', hidden: false },
+            { label: 'Difference (Km)', value: 'kmDifference', hidden: false },
+            { label: 'Report Unloading', value: 'unloadingReachDate', hidden: false },
+            { label: 'Unloading End Date', value: 'unloadingData', hidden: false },
+            { label: 'Location', value: 'location', hidden: false },
+            { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
+            { label: 'Final Status', value: 'finalStatus', hidden: false },
+            { label: 'Delayed Hours', value: 'delayedHours', hidden: false },
+            { label: 'Driver Name', value: 'driverName', hidden: false },
+            { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
+            { label: 'Exit From', value: 'exitFrom', hidden: false },
+            { label: 'Trip Status', value: 'tripStatus', hidden: false },
+            { label: 'Force Complete', value: 'forcecomplete', hidden: false }
+        ]
+    );
 
     const itemsPerPage = 20
     const indexOfLastPost = currentPage * itemsPerPage;
@@ -118,6 +117,48 @@ const VehicleTrackDash = () => {
         lng: parseFloat(selectedVehicle?.longitude),
     };
 
+    const data = [
+        {
+            origin: 'Jaipur',
+            vehicle: 1
+        },
+        {
+            origin: 'Mumbai',
+            vehicle: 2
+        },
+        {
+            origin: 'Jaipur',
+            vehicle: 3
+        },
+        {
+            origin: 'Delhi',
+            vehicle: 4
+        },
+        {
+            origin: 'NOIDA',
+            vehicle: 5
+        },
+        {
+            origin: 'delhi',
+            vehicle: 6
+        },
+    ];
+
+    const origins = [
+        {
+            origin: 'Jaipur'
+        },
+        {
+            origin: 'Mumbai'
+        },
+        {
+            origin: 'Delhi'
+        },
+        {
+            origin: 'NOIDA'
+        },
+    ]
+
     useEffect(() => {
         currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost);
         currentPage > pageCount && setCurrentPage(1);
@@ -131,11 +172,23 @@ const VehicleTrackDash = () => {
             if (response.status === 200) {
                 setShowLoader(false);
                 const allData = response?.data;
-                // const sortedDetails = vehiclesList.map((vehicle) =>
-                //     allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
-                // );
 
-                // setSortedTrips(sortedDetails);
+                // const uniqueOriginsSet = new Set();
+
+                // data.forEach(item => {
+                //     uniqueOriginsSet.add(item.origin.toLowerCase());
+                // });
+
+                // const uniqueOriginsArray = Array.from(uniqueOriginsSet);
+
+                // const desiredOriginArray = uniqueOriginsArray.map(origin => {
+                //     return {
+                //         origin: origin.charAt(0).toUpperCase() + origin.slice(1)
+                //     };
+                // });
+
+                // setOriginsList(desiredOriginArray)
+
                 setAllTrips(allData);
                 setFilteredTrips(allData);
             } else {
@@ -154,6 +207,8 @@ const VehicleTrackDash = () => {
     useEffect(() => {
         getAllTrips();
     }, []);
+
+    console.log("origins", originsList);
 
     useEffect(() => {
         getAllPartiesList().then((response) => {
@@ -512,7 +567,7 @@ const VehicleTrackDash = () => {
                 return '';
             }
         } else if (data?.finalStatus === 'On Time' || data?.finalStatus === 'Early' || data?.finalStatus === "") {
-            return <span style={{ fontWeight: '400' }}>{data?.finalStatus}</span>
+            return <span className='px-2 text-center w-100' style={{ fontWeight: '400' }}>{data?.finalStatus}</span>
         }
     };
 
@@ -757,49 +812,95 @@ const VehicleTrackDash = () => {
         setFilteredTrips(nonHiddenRows);
     }
 
-    console.log("filtered", filteredTrips);
-
-    const handleHideColumns = (column) => {
-        const isHidden = hiddenColumns.some((c) => c.label === column.label);
-
-        if (isHidden) {
-            setShowedColumns((prevShowedColumns) => {
-                const index = tableColumns.findIndex((c) => c.label === column.label);
-                return [...prevShowedColumns.slice(0, index), column, ...prevShowedColumns.slice(index)];
-            });
-            setHiddenColumns(hiddenColumns.filter((c) => c.label !== column.label));
-        } else {
-            setShowedColumns((prevShowedColumns) =>
-                prevShowedColumns.filter((data) => data.label !== column.label)
-            );
-            setHiddenColumns([...hiddenColumns, column]);
-        }
-    };
-
-    useEffect(() => {
-        const updatedData = filteredTrips.map((row) => {
-            return Object.fromEntries(
-                showedColumns.map((column) => [column.value, row[column.value]])
-            );
+    const handleHideColumns = (index) => {
+        setTableColumns((prevColumns) => {
+            const updatedColumns = [...prevColumns];
+            updatedColumns[index] = {
+                ...updatedColumns[index],
+                hidden: !updatedColumns[index].hidden,
+            };
+            return updatedColumns;
         });
-        console.log(updatedData);
-    }, [showedColumns, hiddenColumns, filteredTrips]);
+    };
 
-    const handleFormatSpecial = (column, value) => {
+    const handleTableColumns = (data, column, value, index, colIndex) => {
         if (column.label === 'Loading (Date / Time)' || column.label === "Estimated Arrival Date") {
-            // console.log("value", value);
-            return handleFormateISTDate(value);
+            return <td key={colIndex}>{handleFormateISTDate(value)}</td>;
         } else if (value === "delayedHours") {
-            return getDelayedHours(value);
-        } else if (column?.label === "Vehicle Exit (Date / Time)" || column?.label === "GPS (Date / Time)" || column?.label === "Report Unloading" || column?.label === "Unloading End Date" || column?.label === "Estimated Arrival Date") {
-            return handleFormatDate(value);
+            return <td key={colIndex}>{getDelayedHours(value)}</td>;
+        } else if (column?.label === "Vehicle Exit (Date / Time)" || column?.label === "GPS (Date / Time)" || column?.label === "Estimated Arrival Date") {
+            return <td key={colIndex}>{handleFormatDate(value)}</td>;
+        } else if (column?.label === "Report Unloading") {
+            return <td key={colIndex} className=''>{data?.unloadingReachDate === "" || data?.unloadingReachDate === null ? '' : handleFormatDate(data?.unloadingReachDate)}</td>
+        } else if (column?.label === "Unloading End Date") {
+            return <td key={colIndex}>{data?.unloadingDate === "" || data?.unloadingDate === null ? '' : handleFormatDate(data?.unloadingDate)}</td>
+        } else if (column?.label === 'KM Covered' || column?.label === 'Difference (Km)' || column?.label === 'Route (KM)') {
+            return <td key={colIndex} className='text-center'>{Math.floor(value)}</td>
+        } else if (column?.label === 'Location') {
+            return <td key={colIndex} className='cursor-pointer position-relative'
+                onMouseOver={() => setHovered(true)}
+                onMouseOut={() => setHovered(false)}
+                onClick={() => handleShowLocation(data)}>
+                {data?.location}
+                <>
+                    {
+                        (showLocationOption && data?.vehicleNo === currentVehicle) ? (
+                            <div className='position-absolute bg-white p-3 rounded vehicle-details-popup'>
+                                <h5 className='thm-dark d-inline'>{data?.vehicleNo}</h5>
+                                <span className='ms-2 thm-dark'>2 Mins</span>
+                                <p className='thm-dark mt-2 mb-0'>{data?.location}</p>
+                                <p className='' style={{ fontSize: "0.8rem" }}>{handleFormatDate(data?.locationTime)}</p>
+                                <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
+                                    {
+                                        locationOptionsBtns.map((location, i) => (
+                                            <Link to={"#"} state={data} className='text-decoration-none'>
+                                                <div className={`${location?.color} ${location?.cursor} mx-2`} key={i}
+                                                    onClick={() => {
+                                                        i === 1 && setShowLocation(true);
+                                                        i === 1 && setSelectedVehicle(data);
+                                                        i === 1 && setShowMap(true);
+                                                    }}
+                                                >
+                                                    {location?.icon}
+                                                    <span className='fw-bold fs-6 mx-2'>{location.title}</span>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                        ) : null
+                    }
+                </>
+            </td>
+        } else if (column?.label === 'Final Status') {
+            return <td key={colIndex}>
+                <div className='d-flex justify-content-between fw-bold align-items-center m-0 p-0 w-100'>
+                    {showDelayedIcon(data)}
+                </div>
+            </td>
+        } else if (column?.label === 'Delayed Hours') {
+            return <td key={colIndex}>{getDelayedHours(value)}</td>
+        } else if (column?.label === 'Force Complete') {
+            return <td key={colIndex} className='h-100 py-3 d-flex justify-content-center align-items-center'>
+                <button className={`border border-none ${((data?.tripStatus === 'Trip Running') && (data?.operationUniqueID.length > 0)) ? 'force-complete-button' : 'force-complete-button-disabled'}`}
+                    onClick={() => handleShowForceComplete(data)}>Force Complete</button>
+            </td>
+        } else if (column?.label === 'Trip Count') {
+            return <td key={colIndex} className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
         } else {
-            return value;
+            return <td key={colIndex}>{value}</td>;
         }
     };
+
+    const handleHideOptions = () => {
+        !isHovered && setShowHideToggle(false);
+    }
 
     return (
-        <div className='m-0 p-0 position-relative'>
+        <div className='m-0 p-0 position-relative'
+            onClick={() => handleHideOptions()}
+        >
             {/* {
                 showMap ? (
                     <div className='bg-white mx-5 pb-3' style={{ width: "93vw", height: "100%", position: "absolute", zIndex: 2, left: 0, top: 0 }}>
@@ -831,6 +932,9 @@ const VehicleTrackDash = () => {
                     <DashHead title="Vehicle Tracking Dashboard" />
                     <div className='w-100 m-0 p-0 d-flex justify-content-end align-items-center mb-3'>
                         <div className='d-flex justify-content-center align-items-center'>
+                            <div className='mx-1 px-2 thm-dark'>
+                                <span>Current Status </span>
+                            </div>
                             <div className='mx-1 thm-white bg-secondary px-2'>
                                 <span>Mild Delayed: </span>
                                 <span>{allTripsMild}</span>
@@ -926,20 +1030,35 @@ const VehicleTrackDash = () => {
                                 <span className='thm-dark fs-6 fw-bold'>Total Trips:</span>
                                 <span className='fs-6 thm-dark ms-2'>{filteredTrips.length}</span>
                             </div>
-                            {/* <div className='ms-3 bg-white position-relative' style={{ boxShadow: "0px 0px 10px 0px #c8c9ca", }}>
-                                <span className='thm-dark fs-6 fw-bold cursor-pointer px-5'>Hide Columns</span>
-                                <div className='position-absolute p-3 bg-white' style={{ width: "20rem", maxHeight: "20rem", overflowY: "scroll", zIndex: 3 }}>
-                                    <hr />
-                                    {
-                                        tableColumns.map((data, index) => (
-                                            <div key={index} className='py-2 d-flex justify-content-start align-items-start cursor-pointer'>
-                                                <input className="switch" type="checkbox" onClick={() => handleHideColumns(data)} />
-                                                <span className='ms-3'>{data?.label}</span>
-                                            </div>
-                                        ))
-                                    }
-                                </div>
-                            </div> */}
+                            <div className='ms-3 bg-white position-relative'>
+                                <div className='hide-columns thm-dark fs-6 cursor-pointer px-5 py-1 rounded text-center'
+                                    onClick={() => {
+                                        setShowHideToggle(!showHideToggle);
+                                        setIsHovered(true)
+                                    }}
+                                    style={{}}>Hide Columns</div>
+                                {
+                                    showHideToggle ? (
+                                        <div className='position-absolute py-3 px-0 bg-white column-items rounded'>
+                                            {
+                                                tableColumns.map((data, index) => (
+                                                    <div key={index}
+                                                        onMouseOver={() => setIsHovered(true)}
+                                                        onMouseOut={() => setIsHovered(false)}
+                                                        onClick={() => handleHideColumns(index)}
+                                                        className='hide-colums-item py-2 ps-3 d-flex justify-content-start align-items-start cursor-pointer'>
+                                                        <input className="switch" type="checkbox"
+                                                            checked={data?.hidden === true}
+                                                            // checked={hiddenColumns.some((c) => c.label === data.label)}
+                                                            onClick={() => handleHideColumns(data)} />
+                                                        <span className='ms-3'>{data?.label}</span>
+                                                    </div>
+                                                ))
+                                            }
+                                        </div>
+                                    ) : null
+                                }
+                            </div>
                         </div>
                         <div className='me-5 d-flex jsutify-conent-end align-items-center'>
                             <div className='d-flex me-3 justify-content-cennter align-items-center'>
@@ -971,20 +1090,26 @@ const VehicleTrackDash = () => {
                             <thead className='table-head text-white' style={{ zIndex: 1, position: "sticky", top: 0 }}>
                                 <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                     {
-                                        showedColumns.map((data, index) => (
-                                            <th
-                                                className={`text-nowrap ${(data?.label === 'Trip Status' || data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location' || data?.label === 'Consignor Name') && 'width-300'}`}
-                                                key={index}
-                                                style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px" }}>
-                                                <div className='d-flex justify-content-between align-items-center cursor-pointer' onClick={() => handleSortData(data?.value)}>
-                                                    <span className='pe-3'>{data?.label}</span>
-                                                    {
-                                                        (data?.value !== "") && (
-                                                            <FaSort />
-                                                        )
-                                                    }
-                                                </div>
-                                            </th>
+                                        tableColumns.map((data, index) => (
+                                            <>
+                                                {
+                                                    data?.hidden === false ? (
+                                                        <th
+                                                            className={`text-nowrap ${(data?.label === 'Trip Status' || data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location' || data?.label === 'Consignor Name') && 'width-300'}`}
+                                                            key={index}
+                                                            style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px" }}>
+                                                            <div className='d-flex justify-content-between align-items-center cursor-pointer' onClick={() => handleSortData(data?.value)}>
+                                                                <span className='pe-3'>{data?.label}</span>
+                                                                {
+                                                                    (data?.value !== "") && (
+                                                                        <FaSort />
+                                                                    )
+                                                                }
+                                                            </div>
+                                                        </th>
+                                                    ) : null
+                                                }
+                                            </>
                                         ))
                                     }
                                 </tr>
@@ -992,71 +1117,13 @@ const VehicleTrackDash = () => {
                             <tbody>
                                 {currentTrips.length > 0 && currentTrips.map((data, index) => (
                                     <tr key={index}>
-                                        <td className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                                        <td>{data?.vehicleNo}</td>
-                                        <td>{data?.tripLogNo}</td>
-                                        <td>{handleFormateISTDate(data?.loadingDate)}</td>
-                                        <td>{handleFormatDate(data?.vehicleExitDate)}</td>
-                                        <td>{data?.consignorName}</td>
-                                        <td>{data?.origin}</td>
-                                        <td>{data?.destination}</td>
-                                        <td>{handleSplitStaticEta(data?.staticETA)}</td>
-                                        <td className={`${handleGPSDate(data?.locationTime) && 'bg-danger text-white'}`}>{handleFormatDate(data?.locationTime)}
-                                        </td>
-                                        <td>{data?.routeKM}</td>
-                                        <td>{Math.floor(data?.runningKMs)}</td>
-                                        <td>{Math.floor(data?.kmDifference)}</td>
-                                        <td>{data?.unloadingReachDate === "" || data?.unloadingReachDate === null ? '' : handleFormatDate(data?.unloadingReachDate)}</td>
-                                        <td>{data?.unloadingData === "" || data?.unloadingData === null ? '' : handleFormatDate(data?.unloadingDate)}</td>
-                                        <td className='cursor-pointer position-relative'
-                                            onMouseOver={() => setHovered(true)}
-                                            onMouseOut={() => setHovered(false)}
-                                            onClick={() => handleShowLocation(data)}>{data?.location}
-                                            {
-                                                (showLocationOption && data?.vehicleNo === currentVehicle) ? (
-                                                    <div className='position-absolute bg-white p-3 rounded vehicle-details-popup'>
-                                                        <h5 className='thm-dark d-inline'>{data?.vehicleNo}</h5>
-                                                        <span className='ms-2 thm-dark'>2 Mins</span>
-                                                        <p className='thm-dark mt-2 mb-0'>{data?.location}</p>
-                                                        <p className='' style={{ fontSize: "0.8rem" }}>{handleFormatDate(data?.locationTime)}</p>
-                                                        <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
-                                                            {
-                                                                locationOptionsBtns.map((location, i) => (
-                                                                    <Link to={"#"} state={data} className='text-decoration-none'>
-                                                                        <div className={`${location?.color} ${location?.cursor} mx-2`} key={i}
-                                                                            onClick={() => {
-                                                                                i === 1 && setShowLocation(true);
-                                                                                i === 1 && setSelectedVehicle(data);
-                                                                                i === 1 && setShowMap(true);
-                                                                            }}
-                                                                        >
-                                                                            {location?.icon}
-                                                                            <span className='fw-bold fs-6 mx-2'>{location.title}</span>
-                                                                        </div>
-                                                                    </Link>
-                                                                ))
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                ) : null
-                                            }
-                                        </td>
-                                        <td>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
-                                        <td className={`${data?.finalStatus === 'Delayed'} h-100`}>
-                                            <div className='d-flex justify-content-between fw-bold align-items-center m-0 p-0 w-100'>
-                                                {/* {getFinalStatus(data)} */}
-                                                {showDelayedIcon(data)}
-                                            </div>
-                                        </td>
-                                        <td>{getDelayedHours(data?.delayedHours)}</td>
-                                        <td>{data?.driverName}</td>
-                                        <td>{data?.driverMobileNo}</td>
-                                        <td>{data?.exitFrom}</td>
-                                        <td>{data?.tripStatus}</td>
-                                        <td className='h-100 py-3 d-flex justify-content-center align-items-center'>
-                                            <button className={`border border-none ${((data?.tripStatus === 'Trip Running') && (data?.operationUniqueID.length > 0)) ? 'force-complete-button' : 'force-complete-button-disabled'}`}
-                                                onClick={() => handleShowForceComplete(data)}>Force Complete</button>
-                                        </td>
+                                        {tableColumns.map((column, colIndex) => (
+                                            <>
+                                                {
+                                                    column?.hidden === false && handleTableColumns(data, column, data[column.value], index, colIndex)
+                                                }
+                                            </>
+                                        ))}
                                     </tr>
                                 ))}
                             </tbody>

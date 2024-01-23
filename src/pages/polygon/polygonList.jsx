@@ -22,8 +22,8 @@ const PolygonList = () => {
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
     const [selectedPolygon, setSelectedPolygon] = useState({});
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
     useEffect(() => {
         getPolygonCategories().then((response) => {
@@ -103,8 +103,6 @@ const PolygonList = () => {
                     <div className='m-0 p-0 position-relative'>
 
                         <div className='my-3 d-flex justify-content-end align-items-center'>
-                            <span className='h-100 text-center thm-dark pe-3 border-right border-dark me-3 d-flex justify-content-center align-items-center' style={{ borderRight: "2px solid #09215f" }}
-                            >{selectedPolygon?.geoName}, {selectedPolygon?.placeName}</span>
                             <Link to='/create-polygon'>
                                 <Button className="px-3">Create New</Button>
                             </Link>

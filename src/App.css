@@ -610,6 +610,33 @@ table thead {
     }
 }
 
+.hide-columns {
+    width: 20rem;
+    border: 2px solid var(--thm-dark);
+}
+
+.hide-columns:hover {
+    color: #fff;
+    background-color: var(--thm-dark);
+}
+
+.column-items {
+    width: 20rem;
+    max-height: 20rem;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+    z-index: 3 !important;
+    border: 1px solid var(--thm-dark);
+}
+
+.hide-colums-item:hover {
+    background-color: var(--thm-secondary);
+}
+
+
+
+
+
 .warn-icon {
     transition: transform 1s ease-out infinite;
     animation: bounce 1s ease-out forwards infinite;
@@ -740,7 +767,7 @@ table thead {
 }
 
 .blink {
-    animation: blink 0.5s linear infinite;
+    animation: blink 0.8s linear infinite;
 }
 
 @keyframes blink {
