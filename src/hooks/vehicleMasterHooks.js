@@ -11,4 +11,4 @@ export const getAllVehiclesList = async () => {
 
     const response = await axios(config);
     return response;
-}
+};

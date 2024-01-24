@@ -39,5 +39,3 @@ export const Radio = ({ label, checked, name, type, className, labelClass, onCha
         </Form.Group>
     )
 }
-
-// export default Input

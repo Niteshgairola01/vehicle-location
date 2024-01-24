@@ -21,10 +21,10 @@ const PolygonList = () => {
     const [selectedCategory, setSelectedCategory] = useState('Dealer');
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
     const [selectedPolygon, setSelectedPolygon] = useState({});
-
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
-
+    const [searchPolygon, setSearchPolygon] = useState('');
+    const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
     useEffect(() => {
         getPolygonCategories().then((response) => {
             (response.status === 200) ? setAllCategories(response?.data) : setAllCategories([]);
@@ -38,18 +38,18 @@ const PolygonList = () => {
 
                 setCategoryPolygons(filteredAreas);
                 setFilteredPolygons(filteredAreas);
-                filteredAreas?.length > 0 ? setSelectedPolygon(filteredAreas[0]) : setSelectedPolygon({});
+                // filteredAreas?.length > 0 ? setSelectedPolygon(filteredAreas[0]) : setSelectedPolygon({});
                 setAllPolygonAreas(response?.data);
 
-                const formattedCoordinates = filteredAreas[0].coordinates.map(coord => {
-                    const [lat, long] = coord.split(', ');
-                    return {
-                        lat: parseFloat(lat),
-                        lng: parseFloat(long)
-                    };
-                });
+                // const formattedCoordinates = filteredAreas[0].coordinates.map(coord => {
+                //     const [lat, long] = coord.split(', ');
+                //     return {
+                //         lat: parseFloat(lat),
+                //         lng: parseFloat(long)
+                //     };
+                // });
 
-                setSelectedCoordinates(formattedCoordinates);
+                // setSelectedCoordinates(formattedCoordinates);
             }
             else {
                 setAllPolygonAreas([]);
@@ -71,6 +71,7 @@ const PolygonList = () => {
 
     const handleSelectCategory = (category) => {
         setSelectedCategory(category);
+        setSearchPolygon('');
         const polygonAreas = allPolygonAreas.filter(data => data?.geoName === category);
         setCategoryPolygons(polygonAreas);
         setFilteredPolygons(polygonAreas);
@@ -91,9 +92,28 @@ const PolygonList = () => {
 
     const handleSearchPolygon = (e) => {
         const searchValue = e.target.value;
-        const filtereds = categoryPolygons.filter(data => (data?.geoName).toLowerCase().includes(searchValue.toLowerCase()) || data?.placeName.toLowerCase().includes(searchValue));
+        setSearchPolygon(searchValue);
+        const filtereds = categoryPolygons.filter(data =>
+        ((data?.geoName && data?.geoName.toLowerCase().includes(searchValue.toLowerCase())) ||
+            (data?.placeName && data?.placeName.toLowerCase().includes(searchValue.toLowerCase())))
+        );
         setFilteredPolygons(filtereds);
     };
+
+    const getBounds = () => {
+        const bounds = new window.google.maps.LatLngBounds();
+        selectedCoordinates.forEach((marker) => {
+            bounds.extend(marker?.position);
+        });
+
+        return bounds;
+    };
+
+    const handleMapCenter = () => {
+        return selectedCoordinates.length > 0 ? selectedCoordinates[0] : center;
+    };
+
+    console.log("selected", selectedPolygon);
 
     return (
         <div className='m-0 p-0 position-relative'>
@@ -103,6 +123,15 @@ const PolygonList = () => {
                     <div className='m-0 p-0 position-relative'>
 
                         <div className='my-3 d-flex justify-content-end align-items-center'>
+                            {
+                                selectedPolygon?.placeName ? (
+                                    <div className='thm-dark me-3'>
+                                        <span>{selectedPolygon?.geoName}{`${selectedPolygon?.geoName ? ',' : ''}`} </span>
+                                        <span className='ps-1'>{selectedPolygon?.placeName}</span>
+                                    </div>
+                                ) : null
+                            }
+
                             <Link to='/create-polygon'>
                                 <Button className="px-3">Create New</Button>
                             </Link>
@@ -126,7 +155,7 @@ const PolygonList = () => {
                                 <Card>
                                     <div className='w-100 d-flex justify-content-start align-items-center'>
                                         <h6 className='thm-dark w-25'>Polygons</h6>
-                                        <SearchField onChange={handleSearchPolygon} type='search' className="w-75" placeholder="Search Polygon" />
+                                        <SearchField onChange={handleSearchPolygon} value={searchPolygon} type='search' className="w-75" placeholder="Search Polygon" />
                                     </div>
                                     <hr />
                                     <div className='mt-2 polygons-list'>
@@ -158,7 +187,12 @@ const PolygonList = () => {
                                 <LoadScript googleMapsApiKey={key}>
                                     <GoogleMap
                                         mapContainerStyle={mapContainerStyle}
-                                        center={selectedCoordinates[0]}
+                                        center={handleMapCenter()}
+                                        onLoad={(map) => {
+                                            const bounds = selectedCoordinates.length < 0 && getBounds();
+                                            selectedCoordinates.length < 0 && map.fitBounds(bounds);
+                                            selectedCoordinates.length < 0 && setCenter(map.getCenter);
+                                        }}
                                         zoom={12}
                                         options={{ gestureHandling: 'greedy' }}
                                     >

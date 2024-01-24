@@ -28,11 +28,12 @@ import { MdNearbyError } from "react-icons/md";
 import { BiSolidHide } from "react-icons/bi";
 import Card from '../components/Card/card';
 import { Toggle } from '../components/Button/Button';
+import '../assets/styles/home.css';
 
 const VehicleTrackDash = () => {
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
     const [showMap, setShowMap] = useState(false);
 
@@ -72,6 +73,8 @@ const VehicleTrackDash = () => {
     const [mildCounts, setMildCounts] = useState(0);
     const [moderateCounts, setModerateCounts] = useState(0);
     const [criticalCounts, setCriticalCounts] = useState(0);
+
+    const [animationKey, setAnimationKey] = useState(0);
 
     const [tableColumns, setTableColumns] = useState(
         [
@@ -118,47 +121,9 @@ const VehicleTrackDash = () => {
         lng: parseFloat(selectedVehicle?.longitude),
     };
 
-    const data = [
-        {
-            origin: 'Jaipur',
-            vehicle: 1
-        },
-        {
-            origin: 'Mumbai',
-            vehicle: 2
-        },
-        {
-            origin: 'Jaipur',
-            vehicle: 3
-        },
-        {
-            origin: 'Delhi',
-            vehicle: 4
-        },
-        {
-            origin: 'NOIDA',
-            vehicle: 5
-        },
-        {
-            origin: 'delhi',
-            vehicle: 6
-        },
-    ];
-
-    const origins = [
-        {
-            origin: 'Jaipur'
-        },
-        {
-            origin: 'Mumbai'
-        },
-        {
-            origin: 'Delhi'
-        },
-        {
-            origin: 'NOIDA'
-        },
-    ]
+    useEffect(() => {
+        setAnimationKey(previousKey => previousKey + 1);
+    }, [filteredTrips]);
 
     useEffect(() => {
         currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost);
@@ -182,6 +147,7 @@ const VehicleTrackDash = () => {
                 setFilteredTrips([]);
             }
         }).catch((err) => {
+            console.log("Error", err);
             err?.mesage && setErrorMessage(err?.message);
             setShowLoader(false);
             setAllTrips([]);
@@ -471,6 +437,7 @@ const VehicleTrackDash = () => {
                 setFilteredTrips([]);
             }
         }).catch((err) => {
+            console.log("trip err", err);
             err?.message && setErrorMessage(err?.message);
             setShowLoader(false);
             setFilteredTrips([])
@@ -557,21 +524,24 @@ const VehicleTrackDash = () => {
         }
     };
 
-    const showDelayedIcon = (data) => {
+    const showDelayedIcon = (data, index, colIndex) => {
         if (data?.finalStatus === 'Delayed') {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data?.delayedHours);
                 if (delayedHours >= 0 && delayedHours <= 18) {
-                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
+                    return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
                         id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                        key={`${index}-${colIndex}-${animationKey}`}
                         style={{ minWidth: "100%" }}>Mild Delayed</span>
                 } else if (delayedHours >= 19 && delayedHours <= 35) {
-                    return <span className={`px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}
+                    return <span className={`py-1 px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}
                         id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                        key={`${index}-${colIndex}-${animationKey}`}
                         style={{ minWidth: "100%" }}>Moderate Delayed</span>
                 } else if (delayedHours >= 36) {
-                    return <span className={`px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
+                    return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
                         id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                        key={`${index}-${colIndex}-${animationKey}`}
                         style={{ minWidth: "100%" }}>Critical Delayed</span>
                 }
             } else {
@@ -912,7 +882,7 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'Final Status') {
             return <td key={colIndex}>
                 <div className='d-flex justify-content-between fw-bold align-items-center m-0 p-0 w-100'>
-                    {showDelayedIcon(data)}
+                    {showDelayedIcon(data, index, colIndex)}
                 </div>
             </td>
         } else if (column?.label === 'Delayed Hours') {
@@ -1085,9 +1055,9 @@ const VehicleTrackDash = () => {
                                                         className='hide-colums-item py-2 ps-3 d-flex justify-content-start align-items-start cursor-pointer'>
                                                         <input className="switch" type="checkbox"
                                                             checked={data?.hidden === true}
-                                                            // checked={hiddenColumns.some((c) => c.label === data.label)}
-                                                            // onClick={() => handleHideColumns(data)} 
-                                                            />
+                                                        // checked={hiddenColumns.some((c) => c.label === data.label)}
+                                                        // onClick={() => handleHideColumns(data)} 
+                                                        />
                                                         <span className='ms-3'>{data?.label}</span>
                                                     </div>
                                                 ))

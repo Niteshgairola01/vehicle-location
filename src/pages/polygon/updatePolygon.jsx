@@ -21,10 +21,14 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import StepContent from '@mui/material/StepContent';
-import { Circle } from '../../assets/images';
 // import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import { Circle } from '../../assets/images';
 
-const UpdatePolygon = () => {
+
+const CreatePolygon = () => {
 
     const [form, setForm] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -54,6 +58,11 @@ const UpdatePolygon = () => {
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
+
+    const getPolygonPath = () => {
+        return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
+    };
+
 
     useEffect(() => {
         if (editData === null) {
@@ -129,9 +138,7 @@ const UpdatePolygon = () => {
         }
     }, [editData]);
 
-    const getPolygonPath = () => {
-        return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
-    };
+    console.log("selected", selectedCoordinates);
 
     // useEffect(() => {
     //     const handleUndo = (event) => {
@@ -152,8 +159,6 @@ const UpdatePolygon = () => {
     // useEffect(() => {
     //     getPolygonPath();
     // }, [selectedCoordinates]);
-
-    console.log("selected", selectedCoordinates);
 
     const polygonTypes = [
         {
@@ -194,13 +199,21 @@ const UpdatePolygon = () => {
             ...provided,
             fontSize: '0.9rem',
         }),
-        menu: provided => ({ ...provided, zIndex: 2 })
+        menu: provided => ({ ...provided, zIndex: 9999 })
     };
 
     const handleSelectCtegory = (category) => {
         setSelectedCategory(category);
         setPolygonCategory(category?.value)
     };
+
+    const handleSelectPolygonType = (type) => {
+        setShape(type);
+        setSelectedCoordinates([]);
+        setFinalCoords([]);
+    };
+
+    console.log("selected", selectedCoordinates);
 
     const handleMapClick = (event) => {
         if (selectedPolygonType === "") {
@@ -214,11 +227,16 @@ const UpdatePolygon = () => {
             const lastCoordLat = selectedCoordinates[selectedCoordinates?.length - 1]?.lat;
             const lastCoordLong = selectedCoordinates[selectedCoordinates?.length - 1]?.lng;
 
-            if (selectedCoordinates.length > 1 && firtsCoordLat === lastCoordLat && firtsCoordLong === lastCoordLong) {
-                ErrorToast("Polygon Is closed");
-            } else {
-                setSelectedCoordinates([...selectedCoordinates, clickedCoordinate]);
-                setFinalCoords([...selectedCoordinates, clickedCoordinate]);
+            if (selectedPolygonType === 'Circle') {
+                setSelectedCoordinates([clickedCoordinate]);
+                setFinalCoords([clickedCoordinate]);
+            } else if (selectedPolygonType === 'Polygon') {
+                if (selectedCoordinates.length > 1 && firtsCoordLat === lastCoordLat && firtsCoordLong === lastCoordLong) {
+                    ErrorToast("Polygon Is closed");
+                } else {
+                    setSelectedCoordinates([...selectedCoordinates, clickedCoordinate]);
+                    setFinalCoords([...selectedCoordinates, clickedCoordinate]);
+                }
             }
         }
     };
@@ -247,7 +265,7 @@ const UpdatePolygon = () => {
             if (event.key === 'Escape') {
                 setIsDrawing(false);
                 setSelectedCoordinates([]);
-                setIsPolygonClosed(false)
+                setIsPolygonClosed(false);
             }
         };
 
@@ -258,11 +276,6 @@ const UpdatePolygon = () => {
         };
     }, [isDrawing]);
 
-    const staticPolylinePath = [...selectedCoordinates, selectedCoordinates[0]]; // Closing the polygon
-    const dynamicPolylinePath = isDrawing
-        ? [...selectedCoordinates, cursorCoordinate].filter(Boolean)
-        : [];
-
     const [coords, setCoords] = useState([]);
 
     useEffect(() => {
@@ -271,7 +284,7 @@ const UpdatePolygon = () => {
             coordinates.push(`${data?.lat.toFixed(6)}, ${data?.lng.toFixed(6)}`)
         });
 
-        setCoords(coordinates)
+        setCoords(coordinates);
 
         setForm({
             ...form,
@@ -281,9 +294,7 @@ const UpdatePolygon = () => {
             coordinates: coordinates
         });
 
-    }, [geoName, placeName, selectedCategory]);
-
-    console.log('selected', selectedCoordinates);
+    }, [selectedCoordinates, geoName, placeName, selectedCategory]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -298,9 +309,6 @@ const UpdatePolygon = () => {
                 ErrorToast("Select Category")
             } else {
                 if (selectedCategory?.value === 'Reach Point' || selectedCategory?.value === 'Parking') {
-                    let testcoords = coords;
-                    selectedCoordinates.length > 1 && testcoords.push(coords[0]);
-
                     const form = {
                         geoName: '',
                         placeName: placeName,
@@ -308,18 +316,15 @@ const UpdatePolygon = () => {
                         coordinates: coords
                     };
 
-                    updatePolygonArea(form).then((response) => {
+                    createNewPolygonArea(form).then((response) => {
                         if (response?.status === 200) {
                             SuccessToast("New polygon area created");
-                            navigate('/polygon')
+                            navigate('/polygon');
                         } else {
                             ErrorToast("")
                         }
                     }).catch((err) => ErrorToast(err?.message));
                 } else if (geoName.length > 0) {
-                    let testcoords = coords;
-                    selectedCoordinates.length > 1 && testcoords.push(coords[0]);
-
                     const form = {
                         geoName: geoName,
                         placeName: placeName,
@@ -327,10 +332,9 @@ const UpdatePolygon = () => {
                         coordinates: coords
                     }
 
-                    updatePolygonArea(form).then((response) => {
-                        console.log("response", response);
+                    createNewPolygonArea(form).then((response) => {
                         if (response?.status === 200) {
-                            SuccessToast("Polygon area Updated");
+                            SuccessToast("New polygon area created");
                             navigate('/polygon');
                         } else {
                             ErrorToast("")
@@ -365,12 +369,9 @@ const UpdatePolygon = () => {
         if (searchLatLong?.lat && selectedCoordinates.length === 0) {
             return searchLatLong;
         } else {
-            // return center;
-            return selectedCoordinates.length > 0 ? selectedCoordinates[0] : { lat: 26.858192, lng: 75.669163 }
+            return center
         }
     }
-
-    // Step form
 
     const steps = [
         {
@@ -384,7 +385,27 @@ const UpdatePolygon = () => {
         {
             label: 'Polygon',
             content: (
-                <Form.Label className='thm-dark'>Polygon Type</Form.Label>
+                <>
+                    <Form.Label className='thm-dark'>{
+                        selectedCoordinates.length > 0 ? "Selected Coordinates" : 'Polygon Type'
+                    }</Form.Label>
+                    {
+                        selectedCoordinates.length > 0 ? (
+                            <div className='rounded px-3 py-2 d-flex justify-content-start thm-dark align-items-start my-2 flex-column'
+                                style={{ border: '1px solid #000' }}
+                            >
+                                {
+                                    selectedCoordinates.map((data, index) => (
+                                        <div key={index}>
+                                            <span className='m-0 p-0'>{data?.lat.toFixed(6)}, </span>
+                                            <span className='m-0 p-0 ps-3'>{data?.lng?.toFixed(6)}</span>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        ) : null
+                    }
+                </>
             ),
         },
         {
@@ -433,15 +454,26 @@ const UpdatePolygon = () => {
         { label: 'Circle', icon: <FaRegCircle /> },
     ];
 
+    const handleSelectActiveStep = (label) => {
+        if (label === 'Place') {
+            placeName.length > 0 && setActiveStep(0);
+        } else if (label === 'Polygon') {
+            placeName.length > 0 && setActiveStep(1);
+        } else if (label === 'Details') {
+            (placeName.length > 0 && selectedCoordinates.length > 0) && 0 && setActiveStep(2);
+        }
+    };
+
     const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
 
     const getBounds = () => {
-        const bounds = selectedCoordinates.length > 0 && new window.google.maps.LatLngBounds();
-        selectedCoordinates.length > 0 && selectedCoordinates.forEach((marker) => {
-            bounds.extend(marker.position);
+        console.log("selected inner", selectedCoordinates);
+        const bounds = new window.google.maps.LatLngBounds();
+        selectedCoordinates.forEach((marker) => {
+            bounds.extend(new window.google.maps.LatLng(marker.lat, marker.lng));
         });
 
-        return selectedCoordinates.length > 0 ? bounds : center;
+        return bounds;
     };
 
     return (
@@ -461,7 +493,7 @@ const UpdatePolygon = () => {
                                             <Stepper activeStep={activeStep} orientation="vertical">
                                                 {steps.map((step, index) => (
                                                     <Step key={step.label}>
-                                                        <StepLabel onClick={() => setActiveStep(index)} className='cursor-pointer'>{step.label}</StepLabel>
+                                                        <StepLabel onClick={() => handleSelectActiveStep(step.label)} className='cursor-pointer'>{step.label}</StepLabel>
                                                         <StepContent>
                                                             {step.content}
                                                             <div className='mt-3'>
@@ -483,7 +515,7 @@ const UpdatePolygon = () => {
                                                                     // onClick={() => handleSubmit(activeStep + 1)}
                                                                     className="py-1 px-2"
                                                                 >
-                                                                    {activeStep == 2 ? 'Update' : 'Continue'}
+                                                                    {activeStep == 2 ? 'Create' : 'Continue'}
                                                                 </ColoredButton>
                                                             </div>
                                                         </StepContent>
@@ -517,8 +549,8 @@ const UpdatePolygon = () => {
                                                         onClick={() => {
                                                             setSelectedPolygonType(data?.label);
                                                             setSelectedCoordinates([]);
-                                                            setFinalCoords([]);
                                                             setIsPolygonClosed(false);
+                                                            setFinalCoords([]);
                                                         }} key={index}
                                                     >
                                                         {data?.icon}
@@ -557,12 +589,12 @@ const UpdatePolygon = () => {
                                     <GoogleMap
                                         mapContainerStyle={mapContainerStyle}
                                         center={handleMapCenter()}
-                                        // onLoad={(map) => {
-                                        //     const bounds = selectedCoordinates.length > 0 && getBounds();
-                                        //     selectedCoordinates.length > 0 && map.fitBounds(bounds);
+                                        onLoad={(map) => {
+                                            const bounds = selectedCoordinates.length > 0 && getBounds();
+                                            selectedCoordinates.length > 0 && map.fitBounds(bounds);
 
-                                        //     selectedCoordinates.length > 0 && setCenter(map.getCenter());
-                                        // }}
+                                            selectedCoordinates.length > 0 && setCenter(map.getCenter());
+                                        }}
                                         zoom={11}
                                         onClick={handleMapClick}
                                         options={{ gestureHandling: 'greedy' }}
@@ -597,8 +629,8 @@ const UpdatePolygon = () => {
                                                     {selectedCoordinates.map((coord, index) => (
                                                         <MarkerF icon={{
                                                             url: Circle,
-                                                            // scaledSize: new window.google.maps.Size(20, 20),
-                                                            // anchor: new window.google.maps.Point(10, 10)
+                                                            scaledSize: new window.google.maps.Size(20, 20),
+                                                            anchor: new window.google.maps.Point(10, 10), // Adjust the values to add margin from the top
                                                         }} key={index} position={coord} onClick={() => {
                                                             index === 0 && setSelectedCoordinates([...selectedCoordinates, coord]);
                                                             setIsPolygonClosed(true);
@@ -621,6 +653,11 @@ const UpdatePolygon = () => {
                                                 <MarkerF position={handleMapCenter()} />
                                             ) : null
                                         }
+                                        {/* {
+                                            selectedPolygonType === "" ? (
+                                            ): null
+                                        } */}
+
                                     </GoogleMap>
                                 </LoadScript>
                             </Col>
@@ -632,4 +669,4 @@ const UpdatePolygon = () => {
     )
 }
 
-export default UpdatePolygon
+export default CreatePolygon

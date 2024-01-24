@@ -16,4 +16,4 @@ const Select = ({ label, name, value, onChange, options, required }) => {
     )
 }
 
-export default Select
+export default Select;

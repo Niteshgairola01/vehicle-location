@@ -11,4 +11,4 @@ export const getAllPartiesList = async () => {
 
     const response = await axios(config);
     return response;
-}
+};

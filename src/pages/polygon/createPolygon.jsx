@@ -53,11 +53,10 @@ const CreatePolygon = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const editData = location?.state;
     const edit = location.pathname == '/editPolygon' ? true : false;
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
     const getPolygonPath = () => {
         return selectedCoordinates.map((place) => ({ lat: place.lat, lng: place.lng }));
@@ -150,12 +149,18 @@ const CreatePolygon = () => {
             const lastCoordLat = selectedCoordinates[selectedCoordinates?.length - 1]?.lat;
             const lastCoordLong = selectedCoordinates[selectedCoordinates?.length - 1]?.lng;
 
-            if (selectedCoordinates.length > 1 && firtsCoordLat === lastCoordLat && firtsCoordLong === lastCoordLong) {
-                ErrorToast("Polygon Is closed");
-            } else {
-                setSelectedCoordinates([...selectedCoordinates, clickedCoordinate]);
-                setFinalCoords([...selectedCoordinates, clickedCoordinate]);
+            if (selectedPolygonType === 'Circle') {
+                setSelectedCoordinates([clickedCoordinate]);
+                setFinalCoords([clickedCoordinate]);
+            } else if (selectedPolygonType === 'Polygon') {
+                if (selectedCoordinates.length > 1 && firtsCoordLat === lastCoordLat && firtsCoordLong === lastCoordLong) {
+                    ErrorToast("Polygon Is closed");
+                } else {
+                    setSelectedCoordinates([...selectedCoordinates, clickedCoordinate]);
+                    setFinalCoords([...selectedCoordinates, clickedCoordinate]);
+                }
             }
+
         }
     };
 
@@ -397,7 +402,7 @@ const CreatePolygon = () => {
         <Modal show={showModal} fullscreen centered onHide={() => navigate('/polygon')} size='xl'
             className='w-100 p-5'>
             <Modal.Header closeButton>
-                <Modal.Title className='thm-dark w-100 text-center'>{!edit ? 'Create Polygon' : 'Edit Polygon'}</Modal.Title>
+                <Modal.Title className='thm-dark w-100 text-center'>Create Polygon</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <div className='px-5'>

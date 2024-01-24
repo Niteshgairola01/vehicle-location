@@ -11,4 +11,4 @@ export const getAllOfficesList = async () => {
 
     const response = await axios(config);
     return response;
-}
+};
