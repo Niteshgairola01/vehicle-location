@@ -37,7 +37,7 @@ const NavBar = () => {
                 </div>
               )
             }
-            <Link to={location.pathname === '/' ? '/track' : '/'} className='m-0 p-0'>
+            <Link to={location.pathname === '/' ? '/login' : '/'} className='m-0 p-0'>
               <Button className="px-4 py-1">{location.pathname === '/' ? 'Login' : 'Logout'}</Button>
             </Link>
           </Nav>
