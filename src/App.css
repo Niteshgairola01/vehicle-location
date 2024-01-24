@@ -620,13 +620,16 @@ table thead {
     background-color: var(--thm-dark);
 }
 
-.column-items {
+.column-items-div {
     width: 20rem;
+    z-index: 3 !important;
+    border: 1px solid var(--thm-dark);
+}
+
+.column-items {
     max-height: 20rem;
     overflow-y: scroll;
     scroll-behavior: smooth;
-    z-index: 3 !important;
-    border: 1px solid var(--thm-dark);
 }
 
 .hide-colums-item:hover {

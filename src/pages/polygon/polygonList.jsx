@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../../assets/styles/polygon.css';
-import { Col, Form, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import { Tooltip } from '@mui/material';
 import Card from '../../components/Card/card';
 import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
@@ -9,7 +9,7 @@ import { CiEdit } from "react-icons/ci";
 import { Link } from 'react-router-dom';
 import { getAllPolygonAreas, getPolygonCategories } from '../../hooks/polygonHooks';
 import DashHead from '../../components/dashboardHead';
-import { Input, SearchField } from '../../components/form/Input';
+import { SearchField } from '../../components/form/Input';
 
 
 const PolygonList = () => {
@@ -23,8 +23,9 @@ const PolygonList = () => {
     const [selectedPolygon, setSelectedPolygon] = useState({});
     const [searchPolygon, setSearchPolygon] = useState('');
     const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
+    
     useEffect(() => {
         getPolygonCategories().then((response) => {
             (response.status === 200) ? setAllCategories(response?.data) : setAllCategories([]);
@@ -112,8 +113,6 @@ const PolygonList = () => {
     const handleMapCenter = () => {
         return selectedCoordinates.length > 0 ? selectedCoordinates[0] : center;
     };
-
-    console.log("selected", selectedPolygon);
 
     return (
         <div className='m-0 p-0 position-relative'>

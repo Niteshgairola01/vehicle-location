@@ -50,7 +50,7 @@
 }
 
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
     width: 3px;
     height: 3px;
 }
@@ -68,4 +68,4 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background: rgb(116, 116, 116);
-}
+} */

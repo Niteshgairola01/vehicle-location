@@ -20,16 +20,7 @@ const VehicleLocation = () => {
         lat: parseFloat(form?.lattitude),
         lng: parseFloat(form?.longitude),
     };
-
-    const image = {
-        url: truck,
-        size: (20, 32)
-    }
-
-    // useEffect(() => {
-    //     console.log("test");
-    // }, [lo])
-
+    
     return (
         <div style={{ height: "92vh", width: "100vw" }}>
             <LoadScript googleMapsApiKey={key}>

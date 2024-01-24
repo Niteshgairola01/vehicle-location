@@ -8,7 +8,7 @@ import { FaRoute } from "react-icons/fa";
 import { IoMdRefresh } from 'react-icons/io';
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
-import { ErrorToast, SuccessToast } from '../components/toast/toast';
+import { ErrorToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
@@ -19,27 +19,18 @@ import ForceCompleteForm from './forceCompleteForm';
 import Loader from '../components/loader/loader';
 import DashHead from '../components/dashboardHead';
 import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
-import { RxCross1 } from 'react-icons/rx';
 import { FaSort } from "react-icons/fa";
-import { truck, warning } from '../assets/images';
-import { GoAlertFill } from "react-icons/go";
-import { PiSealWarningFill } from "react-icons/pi";
-import { MdNearbyError } from "react-icons/md";
-import { BiSolidHide } from "react-icons/bi";
-import Card from '../components/Card/card';
-import { Toggle } from '../components/Button/Button';
 import '../assets/styles/home.css';
 
 const VehicleTrackDash = () => {
 
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
 
     const [showMap, setShowMap] = useState(false);
 
     const [form, setForm] = useState({});
     const [allTrips, setAllTrips] = useState([]);
-    const [sortedTrips, setSortedTrips] = useState([])
     const [filteredTrips, setFilteredTrips] = useState([]);
     const [selectedFilter, setSelectedFilter] = useState([]);
     const [partiesList, setPartiesList] = useState([]);
@@ -58,7 +49,6 @@ const VehicleTrackDash = () => {
     const [selectedVehicleNo, setSelectedVehicleNo] = useState('');
     const [isOpenVehicle, setIsOpenVehicle] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [vehicleData, setVehicleData] = useState({});
     const [showLocation, setShowLocation] = useState(false);
     const [showLocationOption, setShowLocationOption] = useState(false);
     const [showHideToggle, setShowHideToggle] = useState(false);
@@ -147,7 +137,6 @@ const VehicleTrackDash = () => {
                 setFilteredTrips([]);
             }
         }).catch((err) => {
-            console.log("Error", err);
             err?.mesage && setErrorMessage(err?.message);
             setShowLoader(false);
             setAllTrips([]);
@@ -275,7 +264,7 @@ const VehicleTrackDash = () => {
 
     useEffect(() => {
         getDelayCount();
-    }, [filteredTrips]);
+    }, [allTrips, filteredTrips]);
 
     const handleChange = (e) => {
         setForm({
@@ -437,7 +426,6 @@ const VehicleTrackDash = () => {
                 setFilteredTrips([]);
             }
         }).catch((err) => {
-            console.log("trip err", err);
             err?.message && setErrorMessage(err?.message);
             setShowLoader(false);
             setFilteredTrips([])
@@ -746,7 +734,6 @@ const VehicleTrackDash = () => {
     ];
 
     const handleShowLocation = (data) => {
-        setVehicleData(data);
         setCurrentVehicle(data?.vehicleNo)
         setShowLocationOption(true);
     };
@@ -1001,7 +988,7 @@ const VehicleTrackDash = () => {
                                             <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: 2, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
                                                 {
                                                     allFilters.map((data, index) => (
-                                                        <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} ${index !== allFilters.length - 1 && 'border-bottom'} cursor-pointer`}
+                                                        <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} border-bottom cursor-pointer`}
                                                             onMouseOver={() => setHovered(true)}
                                                             onMouseOut={() => setHovered(false)}
                                                             key={index}
@@ -1009,6 +996,10 @@ const VehicleTrackDash = () => {
                                                         >{data}</div>
                                                     ))
                                                 }
+                                                <div className='d-flex justify-content-end align-items-center w-100'>
+                                                    <HoveredButton className="me-2 my-2 py-1 px-4">OK</HoveredButton>
+                                                </div>
+
                                             </div>
                                         ) : null
                                     }
@@ -1041,27 +1032,32 @@ const VehicleTrackDash = () => {
                                     onClick={() => {
                                         setShowHideToggle(!showHideToggle);
                                         setIsHovered(true)
-                                    }}
-                                    style={{}}>Hide Columns</div>
+                                    }}>Hide Columns</div>
                                 {
                                     showHideToggle ? (
-                                        <div className='position-absolute py-3 px-0 bg-white column-items rounded'>
-                                            {
-                                                tableColumns.map((data, index) => (
-                                                    <div key={index}
-                                                        onMouseOver={() => setIsHovered(true)}
-                                                        onMouseOut={() => setIsHovered(false)}
-                                                        onClick={() => handleHideColumns(index)}
-                                                        className='hide-colums-item py-2 ps-3 d-flex justify-content-start align-items-start cursor-pointer'>
-                                                        <input className="switch" type="checkbox"
-                                                            checked={data?.hidden === true}
-                                                        // checked={hiddenColumns.some((c) => c.label === data.label)}
-                                                        // onClick={() => handleHideColumns(data)} 
-                                                        />
-                                                        <span className='ms-3'>{data?.label}</span>
-                                                    </div>
-                                                ))
-                                            }
+                                        <div className='position-absolute pt-3 pb-0 px-0 bg-white column-items-div rounded'>
+                                            <div className='column-items'>
+                                                {
+                                                    tableColumns.map((data, index) => (
+                                                        <>
+                                                            <div key={index}
+                                                                onMouseOver={() => setIsHovered(true)}
+                                                                onMouseOut={() => setIsHovered(false)}
+                                                                onClick={() => handleHideColumns(index)}
+                                                                className='hide-colums-item py-2 ps-3 d-flex justify-content-start align-items-start cursor-pointer'>
+                                                                <input className="switch" type="checkbox"
+                                                                    checked={data?.hidden === true}
+                                                                />
+                                                                <span className='ms-3'>{data?.label}</span>
+                                                            </div>
+                                                        </>
+                                                    ))
+                                                }
+                                            </div>
+
+                                            <div className='d-flex justify-content-end align-items-center w-100'>
+                                                <HoveredButton className="me-3 mb-2 py-1 px-4">OK</HoveredButton>
+                                            </div>
                                         </div>
                                     ) : null
                                 }
@@ -1152,7 +1148,7 @@ const VehicleTrackDash = () => {
                         }
                     </div>
 
-                    <ForceCompleteForm handleFilterTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
+                    <ForceCompleteForm handleFilterTrips={handleFilterTrips} getAllTrips={getAllTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
 
                     <Modal show={showLocation} fullscreen onHide={() => {
                         setShowLocation(false);
