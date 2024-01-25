@@ -25,7 +25,6 @@ import { Tooltip } from '@mui/material';
 
 
 const CreatePolygon = () => {
-
     const [form, setForm] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
@@ -50,8 +49,9 @@ const CreatePolygon = () => {
     }, []);
     const edit = location.pathname === '/editPolygon' ? true : false;
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
+    const fullScreen = useRef(null);
 
     useEffect(() => {
         if (editData === null) {
@@ -106,37 +106,6 @@ const CreatePolygon = () => {
             editData?.coordinates.length === 1 ? setSelectedPolygonType('Circle') : setSelectedPolygonType('Polygon')
         }
     }, [editData]);
-
-    // useEffect(() => {
-    //     const handleUndo = (event) => {
-    //         if (event.ctrlKey && event.key === 'z') {
-    //             const previousCoords = selectedCoordinates;
-    //             previousCoords.pop();
-    //             setSelectedCoordinates(previousCoords);
-    //         }
-    //     };
-
-    //     window.addEventListener('keydown', handleUndo);
-
-    //     return () => {
-    //         window.removeEventListener('keydown', handleUndo);
-    //     }
-    // });
-
-    // useEffect(() => {
-    //     getPolygonPath();
-    // }, [selectedCoordinates]);
-
-    const polygonTypes = [
-        {
-            label: 'Polygon',
-            value: 'Polygon'
-        },
-        {
-            label: 'Circle',
-            value: 'Circle'
-        },
-    ];
 
     const allCategories = [
         {
@@ -431,43 +400,34 @@ const CreatePolygon = () => {
         }
     }, []);
 
-    const toggleFullScreen = () => {
-        const mapDiv = document.getElementById('map-container');
-
-        if (!isFullScreen) {
-            if (mapDiv.requestFullscreen) {
-                mapDiv.requestFullscreen();
-            } else if (mapDiv.mozRequestFullScreen) {
-                mapDiv.mozRequestFullScreen();
-            } else if (mapDiv.webkitRequestFullscreen) {
-                mapDiv.webkitRequestFullscreen();
-            } else if (mapDiv.msRequestFullscreen) {
-                mapDiv.msRequestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
+    const enterFullscreen = () => {
+        const elem = fullScreen.current;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+            elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
         }
-        setIsFullScreen(!isFullScreen);
     };
 
-    useEffect(() => {
-        const handleEvent = (event) => {
-            console.log("event", event);
-        };
+    const exitFullscreen = () => {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    };
 
-        window.addEventListener('keydown', handleEvent);
-        return () => {
-            window.removeEventListener('keydown', handleEvent);
-        };
-    });
+    const handleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            enterFullscreen();
+        } else {
+            exitFullscreen();
+        }
+    };
 
     return (
         <Modal show={true} fullscreen centered onHide={() => navigate('/polygon')} size='xl'
@@ -546,11 +506,11 @@ const CreatePolygon = () => {
                                         </ul>
                                     ) : null
                                 }
-                                <div id="map-container" style={{ width: '100%', height: isFullScreen ? '100vh' : '100%' }}>
+                                <div ref={fullScreen} style={{ width: '100%', height: isFullScreen ? '100vh' : '100%' }}>
                                     <div className='d-flex justify-conten-end align-items-start flex-row position-absolute' style={{ top: 10, right: 20, zIndex: 1, }}>
                                         <Tooltip title={isFullScreen ? 'Exit Full Screen' : 'Full Screen'}>
                                             <Link to="#" className='thm-dark me-3 bg-white p-2 rounded cursor-pointer d-flex justify-content-between align-items-start text-decoration-none'
-                                                onClick={() => toggleFullScreen()}
+                                                onClick={handleFullscreen}
                                             >
                                                 <RxEnterFullScreen className='fs-4' />
                                             </Link>

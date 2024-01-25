@@ -2,6 +2,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { logo } from '../assets/images';
 import Button from './Button/hoveredButton';
+import CButton from './Button/coloredButton';
 import { Link, useLocation } from 'react-router-dom';
 
 const NavBar = () => {
@@ -15,7 +16,7 @@ const NavBar = () => {
     {
       title: "Polygon",
       path: '/polygon'
-    },
+    }
   ];
 
   return (
@@ -37,9 +38,14 @@ const NavBar = () => {
                 </div>
               )
             }
-            <Link to={location.pathname === '/' ? '/login' : '/'} className='m-0 p-0'>
-              <Button className="px-4 py-1">{location.pathname === '/' ? 'Login' : 'Logout'}</Button>
-            </Link>
+            <div>
+              <Link to={location.pathname === '/' ? '/login' : '/'} className='m-0 p-0'>
+                <CButton className="px-4 py-1">Create User</CButton>
+              </Link>
+              <Link to={location.pathname === '/' ? '/login' : '/'} className='m-0 ms-3 p-0'>
+                <Button className="px-4 py-1">{location.pathname === '/' ? 'Login' : 'Logout'}</Button>
+              </Link>
+            </div>
           </Nav>
         </div>
         {/* <Navbar.Toggle aria-controls="responsive-navbar-nav" /> */}

@@ -6,6 +6,8 @@ import banner4 from './banner/banner4.jpg';
 import truck from './truck.png';
 import warning from './gif/warning.gif';
 import Circle from './circle.png';
+import trailer from './banner/trailer.png';
+
 export {
     logo,
     banner1,
@@ -14,5 +16,6 @@ export {
     banner4,
     truck,
     warning,
-    Circle
+    Circle,
+    trailer
 }

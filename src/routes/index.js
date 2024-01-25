@@ -8,10 +8,16 @@ import UpdatePolygon from '../pages/polygon/updatePolygon';
 const AllRoutes = () => {
     return (
         <Routes>
+            {/* Tracking */}
             <Route path="/track" element={<VehicleTrackDash />} />
+
+            {/* Polygon */}
             <Route path="/polygon" element={<PolygonList />} />
             <Route path="/create-polygon" element={<CreatePolygon />} />
             <Route path="/editPolygon" element={<UpdatePolygon />} />
+
+            {/* User */}
+            <Route path="/create-user" element={<UpdatePolygon />} />
         </Routes>
     )
 }
