@@ -12,13 +12,13 @@ const Default = () => {
 
     const name = localStorage.getItem('name');
 
-    useEffect(() => {
-        if (name === null) {
-            navigate('/');
-        } else if (name.length > 0) {
-            navigate('/track')
-        }
-    }, [name]);
+    // useEffect(() => {
+    //     if (name === null) {
+    //         navigate('/');
+    //     } else if (name.length > 0) {
+    //         navigate('/track')
+    //     }
+    // }, [name]);
 
     return (
         <div className='m-0 p-0'>

@@ -39,7 +39,7 @@ const NavBar = () => {
               )
             }
             <div>
-              <Link to={location.pathname === '/' ? '/login' : '/'} className='m-0 p-0'>
+              <Link to='/create-user' className='m-0 p-0'>
                 <CButton className="px-4 py-1">Create User</CButton>
               </Link>
               <Link to={location.pathname === '/' ? '/login' : '/'} className='m-0 ms-3 p-0'>

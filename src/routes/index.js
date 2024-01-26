@@ -4,6 +4,7 @@ import VehicleTrackDash from '../pages/vehicleTrackDash';
 import PolygonList from '../pages/polygon/polygonList';
 import CreatePolygon from '../pages/polygon/createPolygon';
 import UpdatePolygon from '../pages/polygon/updatePolygon';
+import CreateUser from '../pages/user/create-user';
 
 const AllRoutes = () => {
     return (
@@ -17,7 +18,7 @@ const AllRoutes = () => {
             <Route path="/editPolygon" element={<UpdatePolygon />} />
 
             {/* User */}
-            <Route path="/create-user" element={<UpdatePolygon />} />
+            <Route path="/create-user" element={<CreateUser />} />
         </Routes>
     )
 }

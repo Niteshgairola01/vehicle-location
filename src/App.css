@@ -3,10 +3,26 @@
     padding: 0;
 }
 
+/* root */
+:root {
+    --thm-base: #0d6efd;
+    --thm-disbale: #d6d6d6;
+    --thm-black: #000;
+    --thm-blue: blue;
+    --thm-dark: #09215f;
+    --thm-gray: #d7d7d7;
+    --thm-white: #fff;
+    --thm-secondary: #eaeaea;
+    --thm-danger: #ff2137;
+    --thm-warning: #ffcb31;
+}
+
 body {
     /* font-family: sans-serif; */
     overflow-x: hidden;
     font-size: 16px;
+    background-color: #e8e8e847;
+    /* color: var(--thm-dark); */
 }
 
 /* Scroll bar Track */
@@ -34,20 +50,6 @@ body {
 h1 {
     font-size: 4rem;
     font-weight: 900;
-}
-
-/* root */
-:root {
-    --thm-base: #0d6efd;
-    --thm-disbale: #d6d6d6;
-    --thm-black: #000;
-    --thm-blue: blue;
-    --thm-dark: #09215f;
-    --thm-gray: #d7d7d7;
-    --thm-white: #fff;
-    --thm-secondary: #eaeaea;
-    --thm-danger: #ff2137;
-    --thm-warning: #ffcb31;
 }
 
 h2,

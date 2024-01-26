@@ -1,11 +1,11 @@
 import React from 'react'
 import { Form } from 'react-bootstrap'
 
-export const Input = ({ label, value, name, type, className, onChange, onClick, placeholder, required, autocomplete, disabled }) => {
+export const Input = ({ label, value, defaultValue, name, type, className, onChange, onClick, placeholder, required, autocomplete, disabled }) => {
     return (
         <Form.Group className='mb-2'>
             <Form.Label className='thm-dark'>{label}</Form.Label>
-            <Form.Control name={name} type={type} className={`inputfield ${className}`} value={value} onChange={onChange} onClick={onClick} placeholder={placeholder} required={required}
+            <Form.Control name={name} type={type} className={`inputfield ${className}`} defaultValue={defaultValue} value={value} onChange={onChange} onClick={onClick} placeholder={placeholder} required={required}
                 autoComplete={autocomplete} disabled={disabled}
                 style={{ fontSize: "0.8rem" }}
             />

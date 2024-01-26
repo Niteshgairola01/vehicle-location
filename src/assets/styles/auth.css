@@ -1,13 +1,13 @@
+/* Singin In */
+
 .login-main-container {
     width: 100vw;
     height: 100vw;
-    /* max-width: 100vw; */
     max-height: 100vh;
-    /* overflow: hidden; */
-
     background-repeat: no-repeat;
     background: linear-gradient(0deg, rgba(58, 25, 44, 0.3), rgba(20, 27, 75, 0.3)), url('../images/banner/banner1.jpg');
     background-size: cover;
+    background-position: 50% 50%;
 }
 
 .login-main-container .login-form-container {
@@ -18,9 +18,6 @@
     border-radius: 0px 10px 10px 0px;
     backdrop-filter: blur(2px);
     box-shadow: inset 0 0 0 2000px rgba(3, 3, 3, 0.3);
-
-    /* background: linear-gradient(0deg, rgba(3, 3, 3, 0.3), rgba(0, 0, 0, 0.3)), url('../images/banner/banner2.jpg'); */
-    /* background-size: cover; */
 }
 
 .location-marker-icon {
@@ -32,16 +29,20 @@
     color: #09215f10;
     font-size: 40rem;
     font-weight: 300;
-
-    background: linear-gradient(to right, #ff7e5f, #feb47b);
-    /* Replace with your desired gradient colors */
-    -webkit-background-clip: text;
-    background-clip: text;
-    /* color: transparent; */
 }
 
 .login-trailer {
     margin-top: -15%;
-    max-width: 53rem;
-    height: 36rem;
+    max-width: 60rem;
+    height: 23rem;
+    margin-top: 10%;
+    rotate: 2deg;
+}
+
+
+
+/* Register */
+
+.create-user-inner-container{
+    width: 60%;
 }

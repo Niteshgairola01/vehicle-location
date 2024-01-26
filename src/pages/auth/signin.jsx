@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import { Col, Form, Row } from 'react-bootstrap'
 import '../../assets/styles/auth.css';
 import Typewriter from "typewriter-effect";
@@ -16,6 +18,12 @@ const Signin = () => {
 
     const text = "Your vehicles, our priority. We're dedicated to providing top-notch car transportation logistics services, ensuring your assets are handled with the utmost care.";
     const navigate = useNavigate();
+
+    useEffect(() => {
+        AOS.init({
+            delay: 200,
+        });
+    }, []);
 
     const handleChange = (e) => {
         setForm({
@@ -42,7 +50,7 @@ const Signin = () => {
 
     return (
         <Row className='login-main-container p-5'>
-            <Col className='login-form-container bg-white position-relative px-5' sm={5}>
+            <Col className='login-form-container bg-white position-relative px-5' sm={4}>
                 <div className='position-absolute' style={{ top: 60 }}>
                     <GiPathDistance className='location-path-icon' />
                 </div>
@@ -61,13 +69,15 @@ const Signin = () => {
                     </Form>
                 </div>
             </Col>
-            <Col className='login-side-container' style={{ overflow: 'hidden'}} sm={7}>
+            <Col className='login-side-container' style={{ overflow: 'hidden' }} sm={8}>
                 <div className='mt-5 d-flex justify-content-start align-items-start flex-column mx-3 px-5'>
                     <h1 className='text-white text-start'>Navigating Routes, Delivering Trust</h1>
                     <p className='text-start pt-2 px-3 text-white home-desc'>
                         <Typewriter onInit={(typewriter) => typewriter.typeString(text).pauseFor(100).start()} />
                     </p>
-                    <img src={trailer} alt='trailer' className='login-trailer' />
+                    <div data-aos="fade-left">
+                        <img src={trailer} alt='trailer' className='login-trailer' />
+                    </div>
                 </div>
             </Col>
         </Row>
