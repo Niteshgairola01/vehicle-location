@@ -9,7 +9,7 @@ import { ErrorToast, SuccessToast } from '../../components/toast/toast';
 
 import { BiSolidHide } from "react-icons/bi";
 import { BiSolidShow } from "react-icons/bi";
-import { createNewUser, getUsersList } from '../../hooks/authHooks'
+import { createNewUser, getUsersList, updateUser } from '../../hooks/authHooks'
 
 const CreateUser = () => {
 
@@ -21,31 +21,8 @@ const CreateUser = () => {
     const [password, setPassword] = useState('');
     const [createdBy, setCreatedBy] = useState('');
 
-    useEffect(() => {
-        setUserName(selectedUser?.userName);
-        setUserId(selectedUser?.userId);
-        setPassword(selectedUser?.password);
-        setCreatedBy(selectedUser?.createdBy);
-    }, [selectedUser]);
-
     const [offices, setOffices] = useState([]);
     const [selectedOffice, setSelectedOffice] = useState('');
-
-    const usersObj = {
-        userName: 'user',
-        userId: 'PAPL00',
-        office: 'Jaipur',
-        createdBy: 'Admin'
-    };
-
-    const [users, setUsers] = useState([
-        {
-            userName: 'user',
-            userId: 'PAPL00',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        }
-    ]);
     const [searchUser, setSearchUser] = useState('');
     const [selectedUser, setSelectedUser] = useState({});
 
@@ -55,186 +32,44 @@ const CreateUser = () => {
 
     const usersList = [
         {
-            username: 'user1',
+            userName: 'user1',
             userId: 'PAPL00',
+            createdBy: 'Admin',
             office: 'Jaipur',
-            createdBy: 'Admin'
+            password: '1234'
         },
         {
-            username: 'user2',
+            userName: 'user2',
             userId: 'PAPL01',
+            createdBy: 'Admin',
             office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user3',
-            userId: 'PAPL02',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user4',
-            userId: 'PAPL03',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user5',
-            userId: 'PAPL04',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user6',
-            userId: 'PAPL05',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user7',
-            userId: 'PAPL06',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user8',
-            userId: 'PAPL07',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user9',
-            userId: 'PAPL08',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user10',
-            userId: 'PAPL10',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user1',
-            userId: 'PAPL00',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user2',
-            userId: 'PAPL01',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user3',
-            userId: 'PAPL02',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user4',
-            userId: 'PAPL03',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user5',
-            userId: 'PAPL04',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user6',
-            userId: 'PAPL05',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user7',
-            userId: 'PAPL06',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user8',
-            userId: 'PAPL07',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user9',
-            userId: 'PAPL08',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user10',
-            userId: 'PAPL10',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user1',
-            userId: 'PAPL00',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user2',
-            userId: 'PAPL01',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user3',
-            userId: 'PAPL02',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user4',
-            userId: 'PAPL03',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user5',
-            userId: 'PAPL04',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user6',
-            userId: 'PAPL05',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user7',
-            userId: 'PAPL06',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user8',
-            userId: 'PAPL07',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user9',
-            userId: 'PAPL08',
-            office: 'Jaipur',
-            createdBy: 'Admin'
-        },
-        {
-            username: 'user10',
-            userId: 'PAPL10',
-            office: 'Jaipur',
-            createdBy: 'Admin'
+            password: '1234'
         },
     ];
+
+    useEffect(() => {
+        setUserName(selectedUser?.userName);
+        setUserId(selectedUser?.userId);
+        setPassword(selectedUser?.password);
+        setCreatedBy(selectedUser?.createdBy);
+        setSelectedOffice(selectedUser?.office);
+
+        setForm({
+            ...form,
+            password: selectedUser?.password
+        });
+    }, [selectedUser]);
+
+    useEffect(() => {
+        setForm({
+            ...form,
+            username: userName,
+            userId,
+            password: password === '' ? pass : password,
+            createdBy,
+            office: selectedOffice
+        })
+    }, [userName, userId, pass, createdBy, selectedOffice]);
 
     useEffect(() => {
         getAllOfficesList().then((response) => {
@@ -272,10 +107,8 @@ const CreateUser = () => {
         });
     };
 
-    const filteredOffices = offices.filter(data => data?.officeName.toLowerCase().includes(selectedOffice.toLowerCase()));
-    const filteredusers = users.filter(data => data?.userName.toLowerCase().includes(searchUser.toLowerCase()));
-
-    console.log("selected", selectedUser);
+    const filteredOffices = offices.filter(data => data?.officeName.toLowerCase().includes(selectedOffice?.toLowerCase()));
+    const filteredusers = usersList.filter(data => data?.userName.toLowerCase().includes(searchUser.toLowerCase()));
 
     const handleShowOptions = () => {
         showOfficesList && setShowOfficesList(false);
@@ -293,15 +126,24 @@ const CreateUser = () => {
         e.preventDefault();
 
         SuccessToast("User created successfully");
-        // console.log("form", form);
 
-        // createNewUser(form).then((response) => {
-        //     if (response.status === 200) {
-        //         SuccessToast("User created successfully");
-        //     } else {
-        //         ErrorToast("Unable to create user");
-        //     }
-        // }).catch(err => err?.response?.data ? ErrorToast(err?.response?.data) : ErrorToast("Something went wrong"))
+        // if (selectedUser?.username === undefined) {
+        //     createNewUser(form).then((response) => {
+        //         if (response.status === 200) {
+        //             SuccessToast("User created successfully");
+        //         } else {
+        //             ErrorToast("Unable to create user");
+        //         }
+        //     }).catch(err => err?.response?.data ? ErrorToast(err?.response?.data) : ErrorToast("Something went wrong"));
+        // } else {
+        //     updateUser(form).then((response) => {
+        //         if (response.status === 200) {
+        //             SuccessToast("User updated successfully");
+        //         } else {
+        //             ErrorToast("Unable to udpate user");
+        //         }
+        //     }).catch(err => err?.response?.data ? ErrorToast(err?.response?.data) : ErrorToast("Something went wrong"));
+        // }
     };
 
     return (
@@ -350,15 +192,16 @@ const CreateUser = () => {
                             <Form className='w-100' onSubmit={handleSubmit}>
                                 <Row>
                                     <Col sm={6} className='pe-2'>
-                                        <Input label="Name" type='text' defaultValue={selectedUser?.userName} name="userName" onChange={handleChange} placeholder="Username" required={true} />
+                                        <Input label="Name" type='text' value={userName} name="userName" onChange={(e) => setUserName(e.target.value)} placeholder="Username" required={true} />
                                     </Col>
                                     <Col sm={6} className='ps-2'>
-                                        <Input label="User Id" placeholder="ID" disabled={true} />
+                                        <Input label="User Id" value={userId} placeholder="ID" disabled={true} />
                                     </Col>
                                     <Col sm={6} className='mt-1 pe-2 position-relative'>
-                                        <Input label="Passowrd" type={showPassword ? 'text' : 'password'} name="password" onChange={(e) => {
+                                        <Input label="Passowrd" type={showPassword ? 'text' : 'password'} value={password?.length > 0 ? '' : pass} name="password" onChange={(e) => {
                                             handleChange(e);
-                                            setPass(e.target.value)
+                                            setPass(e.target.value);
+                                            setPassword('')
                                         }} placeholder="Password" required={true} />
 
                                         {
@@ -377,7 +220,7 @@ const CreateUser = () => {
 
                                     </Col>
                                     <Col sm={6} className='mt-1 ps-2'>
-                                        <Input label="Created By" type='text' name="createdBy" onChange={handleChange} placeholder="Created By" required={true} />
+                                        <Input label="Created By" type='text' name="createdBy" value={createdBy} onChange={e => setCreatedBy(e.target.value)} placeholder="Created By" required={true} />
                                     </Col>
                                     <Col sm={6} className='position-relative mt-1 ps-2'>
                                         <Input type="text" label="Office" value={selectedOffice} onChange={handleChangeOfficeValue} onClick={() => setShowOfficesList(true)} placeholder="Office" required={true} />
@@ -437,7 +280,7 @@ const CreateUser = () => {
                                                     <tr className='bg-white' key={index}>
                                                         <td className='text-center py-2'>{index + 1}</td>
                                                         <td>{data?.userId}</td>
-                                                        <td>{data?.username}</td>
+                                                        <td>{data?.userName}</td>
                                                         <td>{data?.office}</td>
                                                         <td>{data?.createdBy}</td>
                                                     </tr>
@@ -455,4 +298,4 @@ const CreateUser = () => {
     )
 }
 
-export default CreateUser
+export default CreateUser;

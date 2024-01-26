@@ -31,6 +31,21 @@ export const createNewUser = async (form) => {
     return response;
 };
 
+export const updateUser = async (form) => {
+    const url = `${API}`;
+    const config = {
+        method: "PUT",
+        url,
+        data: form,
+        headers: {
+            "Content-Type": "application/josn",
+        },
+    };
+
+    const response = await axios(config);
+    return response;
+};
+
 export const getUsersList = async () => {
     const url = `${API}`;
     const config = {
