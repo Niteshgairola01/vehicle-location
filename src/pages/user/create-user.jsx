@@ -9,7 +9,7 @@ import { ErrorToast, SuccessToast } from '../../components/toast/toast';
 
 import { BiSolidHide } from "react-icons/bi";
 import { BiSolidShow } from "react-icons/bi";
-import { createNewUser, getUsersList, updateUser } from '../../hooks/authHooks'
+import { createNewUser, getUserId, getUsersList, updateUser } from '../../hooks/authHooks'
 
 const CreateUser = () => {
 
@@ -17,7 +17,6 @@ const CreateUser = () => {
     const [pass, setPass] = useState('');
 
     const [userName, setUserName] = useState('');
-    const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
     const [createdBy, setCreatedBy] = useState('');
 
@@ -29,6 +28,21 @@ const CreateUser = () => {
     const [showUsersList, setShowUsersList] = useState(false);
     const [showOfficesList, setShowOfficesList] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showAllUsers, setShowAllUsers] = useState(false);
+    const [lastUserId, setLastuserId] = useState('PAPL01');
+    const splittedUserId = lastUserId.split('L');
+    const [newUserId, setNewUserId] = useState('');
+
+    // useEffect(() => {
+    //     getUserId().then(response => {
+    //         response?.status === 200 ? setLastuserId(response?.data) : setLastuserId('');
+    //     }).catch(() => setLastuserId(''));
+    // }, []);
+
+    useEffect(() => {
+        selectedUser?.userName === undefined ? setNewUserId(parseInt(splittedUserId[1]) + 1 <= 10 ? `PAPL0${parseInt(splittedUserId[1]) + 1}` : `PAPL${parseInt(splittedUserId[1]) + 1}`)
+            : setNewUserId(selectedUser?.userId);
+    }, [lastUserId, selectedUser]);
 
     const usersList = [
         {
@@ -49,10 +63,9 @@ const CreateUser = () => {
 
     useEffect(() => {
         setUserName(selectedUser?.userName);
-        setUserId(selectedUser?.userId);
         setPassword(selectedUser?.password);
         setCreatedBy(selectedUser?.createdBy);
-        setSelectedOffice(selectedUser?.office);
+        selectedUser?.office ? setSelectedOffice(selectedUser?.office) : setSelectedOffice('');
 
         setForm({
             ...form,
@@ -64,12 +77,12 @@ const CreateUser = () => {
         setForm({
             ...form,
             username: userName,
-            userId,
+            userId: newUserId,
             password: password === '' ? pass : password,
             createdBy,
             office: selectedOffice
         })
-    }, [userName, userId, pass, createdBy, selectedOffice]);
+    }, [userName, newUserId, pass, createdBy, selectedOffice]);
 
     useEffect(() => {
         getAllOfficesList().then((response) => {
@@ -147,7 +160,7 @@ const CreateUser = () => {
     };
 
     return (
-        <div className='mx-5 my-3 px-5 pt-2 pb-5' onClick={() => handleShowOptions()}>
+        <div className='mx-5 my-3 px-5 pt-2 pb-5' style={{ height: "85vh" }} onClick={() => handleShowOptions()}>
             <div className='w-100'>
                 <h3 className='thm-dark'>Create User</h3>
 
@@ -184,20 +197,24 @@ const CreateUser = () => {
                                     }
                                 </div>
 
-                                <Button className="ms-2 px-1">All users</Button>
+                                <Button className="ms-2 px-2" onClick={() => setShowAllUsers(!showAllUsers)}>
+                                    {
+                                        showAllUsers ? 'Hide users list' : 'Show users list'
+                                    }
+                                </Button>
                             </div>
 
                             <hr />
 
                             <Form className='w-100' onSubmit={handleSubmit}>
                                 <Row>
-                                    <Col sm={6} className='pe-2'>
+                                    <Col sm={6} className='pe-5'>
                                         <Input label="Name" type='text' value={userName} name="userName" onChange={(e) => setUserName(e.target.value)} placeholder="Username" required={true} />
                                     </Col>
                                     <Col sm={6} className='ps-2'>
-                                        <Input label="User Id" value={userId} placeholder="ID" disabled={true} />
+                                        <Input label="User Id" value={newUserId} placeholder="ID" disabled={true} />
                                     </Col>
-                                    <Col sm={6} className='mt-1 pe-2 position-relative'>
+                                    <Col sm={6} className='mt-1 pe-5 position-relative'>
                                         <Input label="Passowrd" type={showPassword ? 'text' : 'password'} value={password?.length > 0 ? '' : pass} name="password" onChange={(e) => {
                                             handleChange(e);
                                             setPass(e.target.value);
@@ -222,7 +239,7 @@ const CreateUser = () => {
                                     <Col sm={6} className='mt-1 ps-2'>
                                         <Input label="Created By" type='text' name="createdBy" value={createdBy} onChange={e => setCreatedBy(e.target.value)} placeholder="Created By" required={true} />
                                     </Col>
-                                    <Col sm={6} className='position-relative mt-1 ps-2'>
+                                    <Col sm={6} className='position-relative mt-1 ps-2 pe-5'>
                                         <Input type="text" label="Office" value={selectedOffice} onChange={handleChangeOfficeValue} onClick={() => setShowOfficesList(true)} placeholder="Office" required={true} />
 
                                         {
@@ -257,40 +274,45 @@ const CreateUser = () => {
                             </Form>
                         </Card>
 
-                        <Card>
-                            <div>
-                                <h6 className="thm-dark">All users</h6>
+                        {
+                            showAllUsers ? (
+                                <Card>
+                                    <div>
+                                        <h6 className="thm-dark">All users</h6>
 
-                                <hr />
+                                        <hr />
 
-                                <div className='w-100 table-responsive' style={{ maxHeight: "25rem", }}>
-                                    <table className='table w-100 position-relative' style={{ overflowX: "hidden", overflowY: "scroll" }}>
-                                        <thead style={{ zIndex: 1, position: "sticky", top: 0 }}>
-                                            <tr className='text-white'>
-                                                <th className='ps-2' style={{ width: '7%' }}>S.No.</th>
-                                                <th className='' style={{ width: '12%' }}>User Id</th>
-                                                <th className=''>UserName</th>
-                                                <th className=''>Office</th>
-                                                <th className=''>Created By</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {
-                                                usersList.map((data, index) => (
-                                                    <tr className='bg-white' key={index}>
-                                                        <td className='text-center py-2'>{index + 1}</td>
-                                                        <td>{data?.userId}</td>
-                                                        <td>{data?.userName}</td>
-                                                        <td>{data?.office}</td>
-                                                        <td>{data?.createdBy}</td>
+                                        <div className='w-100 table-responsive' style={{ maxHeight: "25rem", }}>
+                                            <table className='table w-100 position-relative' style={{ overflowX: "hidden", overflowY: "scroll" }}>
+                                                <thead style={{ zIndex: 1, position: "sticky", top: 0 }}>
+                                                    <tr className='text-white'>
+                                                        <th className='ps-2' style={{ width: '7%' }}>S.No.</th>
+                                                        <th className='' style={{ width: '12%' }}>User Id</th>
+                                                        <th className=''>UserName</th>
+                                                        <th className=''>Office</th>
+                                                        <th className=''>Created By</th>
                                                     </tr>
-                                                ))
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </Card>
+                                                </thead>
+                                                <tbody>
+                                                    {
+                                                        usersList.map((data, index) => (
+                                                            <tr className='bg-white' key={index}>
+                                                                <td className='text-center py-2'>{index + 1}</td>
+                                                                <td>{data?.userId}</td>
+                                                                <td>{data?.userName}</td>
+                                                                <td>{data?.office}</td>
+                                                                <td>{data?.createdBy}</td>
+                                                            </tr>
+                                                        ))
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ) : null
+                        }
+
                     </div>
                 </div>
             </div >

@@ -59,3 +59,17 @@ export const getUsersList = async () => {
     const response = await axios(config);
     return response;
 };
+
+export const getUserId = async () => {
+    const url = `${API}`;
+    const config = {
+        method: "GET",
+        url,
+        headers: {
+            "Content-Type": "application/josn",
+        },
+    };
+
+    const response = await axios(config);
+    return response;
+};
