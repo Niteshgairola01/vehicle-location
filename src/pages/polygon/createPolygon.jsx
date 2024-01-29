@@ -211,10 +211,10 @@ const CreatePolygon = () => {
     const handleMapCenter = () => {
         if (searchLatLong?.lat && selectedCoordinates.length === 0) {
             return searchLatLong;
-        } else {
+        } else if (selectedPolygonType === '') {
             return center
         }
-    }
+    };
 
     const steps = [
         {
@@ -347,6 +347,7 @@ const CreatePolygon = () => {
         }
     };
 
+    console.log("selected", selectedPolygonType, selectedCoordinates);
 
     return (
         <Modal show={true} fullscreen centered onHide={() => navigate('/polygon')} size='xl'

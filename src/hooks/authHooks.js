@@ -1,14 +1,29 @@
 import axios from "axios";
-import { API } from "../backend"
+import { API, authBase } from "../backend"
 
 export const singInUser = async (form) => {
-    const url = `${API}`;
+    const url = `${authBase}/loginUser`;
     const config = {
         method: "POST",
         url,
         data: form,
         headers: {
-            "Content-Type": "application/josn",
+            "Content-Type": "application/json",
+        },
+    };
+
+    const response = await axios(config);
+    return response;
+};
+
+export const signOutUser = async (form) => {
+    const url = `${authBase}/logoutUser`;
+    const config = {
+        method: "POST",
+        url,
+        data: form,
+        headers: {
+            "Content-Type": "application/json",
         },
     };
 
@@ -17,13 +32,13 @@ export const singInUser = async (form) => {
 };
 
 export const createNewUser = async (form) => {
-    const url = `${API}`;
+    const url = `${authBase}/createUser`;
     const config = {
         method: "POST",
         url,
         data: form,
         headers: {
-            "Content-Type": "application/josn",
+            "Content-Type": "application/json",
         },
     };
 
@@ -32,13 +47,14 @@ export const createNewUser = async (form) => {
 };
 
 export const updateUser = async (form) => {
-    const url = `${API}`;
+    console.log("form", form);
+    const url = `${authBase}/updateUserData`;
     const config = {
         method: "PUT",
         url,
         data: form,
         headers: {
-            "Content-Type": "application/josn",
+            "Content-Type": "application/json",
         },
     };
 
@@ -47,12 +63,12 @@ export const updateUser = async (form) => {
 };
 
 export const getUsersList = async () => {
-    const url = `${API}`;
+    const url = `${authBase}/getAllUsers`;
     const config = {
         method: "GET",
         url,
         headers: {
-            "Content-Type": "application/josn",
+            "Content-Type": "application/json",
         },
     };
 
@@ -61,12 +77,12 @@ export const getUsersList = async () => {
 };
 
 export const getUserId = async () => {
-    const url = `${API}`;
+    const url = `${authBase}`;
     const config = {
         method: "GET",
         url,
         headers: {
-            "Content-Type": "application/josn",
+            "Content-Type": "application/json",
         },
     };
 

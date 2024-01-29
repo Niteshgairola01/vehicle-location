@@ -86,6 +86,7 @@ const VehicleTrackDash = () => {
             { label: 'Location', value: 'location', hidden: false },
             { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
             { label: 'Final Status', value: 'finalStatus', hidden: false },
+            { label: 'OEM Final Status', value: 'oemFinalStatus', hidden: false },
             { label: 'Delayed Hours', value: 'delayedHours', hidden: false },
             { label: 'Driver Name', value: 'driverName', hidden: false },
             { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
@@ -120,7 +121,8 @@ const VehicleTrackDash = () => {
         currentPage > pageCount && setCurrentPage(1);
     }, [filteredTrips]);
 
-    const allFilters = ['Trip Running', 'Trip Completed', 'Trip not Assgined', 'Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'Manual Bind'];
+    const allFilters = ['Trip Running', 'Trip Completed', 'Trip not Assgined', 'Early', 'On Time',
+        'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'Manual Bind'];
 
     const getAllTrips = () => {
         setShowLoader(true)
@@ -402,6 +404,15 @@ const VehicleTrackDash = () => {
                                     }
                                 }
                             }
+
+                            // if(selectedFilter.includes("Mild Delayed (As Per OEM)")){
+                            //     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                            //         const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                    
+                            //     } else {
+                            //         const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
+                            //     }
+                            // }
 
                             tripsFilteredByTripStatus = finalStatusTrips;
                         } else {
@@ -872,6 +883,8 @@ const VehicleTrackDash = () => {
                     {showDelayedIcon(data, index, colIndex)}
                 </div>
             </td>
+        } else if (column?.label === 'OEM Final Status') {
+            return <td key={colIndex}>{data?.oemFinalStatus}</td>
         } else if (column?.label === 'Delayed Hours') {
             return <td key={colIndex}>{getDelayedHours(value)}</td>
         } else if (column?.label === 'Force Complete') {

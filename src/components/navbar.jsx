@@ -3,10 +3,16 @@ import Navbar from 'react-bootstrap/Navbar';
 import { logo } from '../assets/images';
 import Button from './Button/hoveredButton';
 import CButton from './Button/coloredButton';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { signOutUser } from '../hooks/authHooks';
+import { ErrorToast, SuccessToast } from './toast/toast';
 
 const NavBar = () => {
   const location = useLocation();
+  const userId = localStorage.getItem('userId');
+  const userRole = localStorage.getItem('role');
+
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -18,6 +24,19 @@ const NavBar = () => {
       path: '/polygon'
     }
   ];
+
+  const handleLogOutUser = () => {
+    const form = { userId }
+    if (location?.pathname !== '/') {
+      signOutUser(form).then((response) => {
+        if (response?.status === 200) {
+          localStorage.clear();
+          navigate('/')
+          SuccessToast("Logged out successfully");
+        }
+      }).catch(() => ErrorToast("Unable to log out user"));
+    }
+  };
 
   return (
     <Navbar collapseOnSelect expand="lg" className="bg-white navbar mb-0">
@@ -39,11 +58,15 @@ const NavBar = () => {
               )
             }
             <div>
-              <Link to='/create-user' className='m-0 p-0'>
-                <CButton className="px-4 py-1">Create User</CButton>
-              </Link>
-              <Link to={location.pathname === '/' ? '/login' : '/'} className='m-0 ms-3 p-0'>
-                <Button className="px-4 py-1">{location.pathname === '/' ? 'Login' : 'Logout'}</Button>
+              {
+                userRole === 'Admin' ? (
+                  <Link to='/create-user' className='m-0 p-0'>
+                    <CButton className="px-4 py-1">Create User</CButton>
+                  </Link>
+                ) : null
+              }
+              <Link className='m-0 ms-3 p-0'>
+                <Button className="px-4 py-1" onClick={() => handleLogOutUser()}>Logout</Button>
               </Link>
             </div>
           </Nav>

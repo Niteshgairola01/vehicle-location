@@ -34,6 +34,7 @@ const PolygonList = () => {
     }, []);
 
     useEffect(() => {
+
         getAllPolygonAreas().then((response) => {
             if (response.status === 200) {
                 const filteredAreas = response?.data.filter(data => data?.geofenceType === 'Dealer');
