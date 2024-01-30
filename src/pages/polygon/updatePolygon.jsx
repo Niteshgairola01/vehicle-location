@@ -49,8 +49,8 @@ const CreatePolygon = () => {
     }, []);
     const edit = location.pathname === '/editPolygon' ? true : false;
 
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
     const fullScreen = useRef(null);
 
     useEffect(() => {
@@ -429,6 +429,22 @@ const CreatePolygon = () => {
         }
     };
 
+    const handleMarkerDragEnd = (index, e) => {
+        const { lat, lng } = e.latLng.toJSON();
+
+        const updatedCoordinates = [...selectedCoordinates];
+
+        if (index === 0 || index === selectedCoordinates.length - 1) {
+            updatedCoordinates[0] = { lat, lng };
+            updatedCoordinates[selectedCoordinates.length - 1] = { lat, lng };
+        } else {
+            updatedCoordinates[index] = { lat, lng };
+        }
+
+        setSelectedCoordinates(updatedCoordinates);
+    }
+
+
     return (
         <Modal show={true} fullscreen centered onHide={() => navigate('/polygon')} size='xl'
             className='w-100 p-5'>
@@ -580,7 +596,10 @@ const CreatePolygon = () => {
                                                             }} key={index} position={coord} onClick={() => {
                                                                 index === 0 && setSelectedCoordinates([...selectedCoordinates, coord]);
                                                                 setIsPolygonClosed(true);
-                                                            }} />
+                                                            }}
+                                                                draggable={true}
+                                                                onDragEnd={(e) => handleMarkerDragEnd(index, e)}
+                                                            />
                                                         ))}
                                                     </>
                                                 ) : selectedPolygonType === 'Circle' ? (

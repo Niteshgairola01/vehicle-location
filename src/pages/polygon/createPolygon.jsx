@@ -39,8 +39,8 @@ const CreatePolygon = () => {
     const [isFullScreen, setIsFullScreen] = useState(false);
 
     const navigate = useNavigate();
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
     const fullScreen = useRef(null);
 
     const allCategories = [
@@ -347,7 +347,22 @@ const CreatePolygon = () => {
         }
     };
 
-    console.log("selected", selectedPolygonType, selectedCoordinates);
+    const handleMarkerDragEnd = (index, e) => {
+        const { lat, lng } = e.latLng.toJSON();
+
+        const updatedCoordinates = [...selectedCoordinates];
+
+        if (index === 0 || index === selectedCoordinates.length - 1) {
+            updatedCoordinates[0] = { lat, lng };
+            updatedCoordinates[selectedCoordinates.length - 1] = { lat, lng };
+        } else {
+            updatedCoordinates[index] = { lat, lng };
+        }
+        
+        setSelectedCoordinates(updatedCoordinates);
+    };
+
+    // console.log("selected", selectedPolygonType, selectedCoordinates);
 
     return (
         <Modal show={true} fullscreen centered onHide={() => navigate('/polygon')} size='xl'
@@ -480,7 +495,7 @@ const CreatePolygon = () => {
                                             style={{ cursor: isDrawing ? 'grab' : 'grab' }}
                                         >
                                             {
-                                                selectedPolygonType === 'Polygon' ? (
+                                                (selectedPolygonType === 'Polygon' && selectedCoordinates.length > 0) ? (
                                                     <>
                                                         {selectedCoordinates.length > 1 && (
                                                             <PolylineF
@@ -506,17 +521,25 @@ const CreatePolygon = () => {
                                                         )}
 
                                                         {selectedCoordinates.map((coord, index) => (
-                                                            <MarkerF icon={{
-                                                                url: Circle,
-                                                                scaledSize: new window.google.maps.Size(20, 20),
-                                                                anchor: new window.google.maps.Point(10, 10), // Adjust the values to add margin from the top
-                                                            }} key={index} position={coord} onClick={() => {
-                                                                index === 0 && setSelectedCoordinates([...selectedCoordinates, coord]);
-                                                                setIsPolygonClosed(true);
-                                                            }} />
+                                                            <>
+                                                                <MarkerF
+                                                                    icon={{
+                                                                        url: Circle,
+                                                                        scaledSize: new window.google.maps.Size(20, 20),
+                                                                        anchor: new window.google.maps.Point(10, 10), // Adjust the values to add margin from the top
+                                                                    }}
+                                                                    key={index}
+                                                                    position={coord} onClick={() => {
+                                                                        index === 0 && setSelectedCoordinates([...selectedCoordinates, coord]);
+                                                                        setIsPolygonClosed(true);
+                                                                    }}
+                                                                    draggable={true}
+                                                                    onDragEnd={(e) => handleMarkerDragEnd(index, e)}
+                                                                />
+                                                            </>
                                                         ))}
                                                     </>
-                                                ) : selectedPolygonType === 'Circle' ? (
+                                                ) : (selectedPolygonType === 'Circle' && selectedCoordinates.length > 0) ? (
                                                     <>
                                                         <CircleF options={{
                                                             center: selectedCoordinates[0],
@@ -528,7 +551,7 @@ const CreatePolygon = () => {
                                                         }} />
                                                         <MarkerF position={selectedCoordinates[0]} />
                                                     </>
-                                                ) : selectedPolygonType === "" ? (
+                                                ) : selectedPolygonType === "" || selectedCoordinates.length === 0 ? (
                                                     <MarkerF position={handleMapCenter()} />
                                                 ) : null
                                             }

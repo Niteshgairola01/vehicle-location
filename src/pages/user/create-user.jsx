@@ -145,43 +145,50 @@ const CreateUser = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (selectedUser?.userName === undefined) {
-            createNewUser(form).then((response) => {
-                if (response.status === 200) {
-                    SuccessToast(response?.data);
-                    setPass('');
-                    setUserName('');
-                    setCreatedBy('');
-                    setSelectedOffice('');
-                    setSelectedUser({});
-                    setSelectedUser({});
-                    getAllUsers();
-                }
-            }).catch(err => err?.response?.status === 411 && ErrorToast(err?.response?.data));
+        const officeIncluded = offices.filter((data) => data?.officeName === selectedOffice);
+
+        if (officeIncluded.length > 0) {
+            if (selectedUser?.userName === undefined) {
+                createNewUser(form).then((response) => {
+                    if (response.status === 200) {
+                        SuccessToast(response?.data);
+                        setPass('');
+                        setUserName('');
+                        setCreatedBy('');
+                        setSelectedOffice('');
+                        setSelectedUser({});
+                        setSelectedUser({});
+                        getAllUsers();
+                    }
+                }).catch(err => err?.response?.status === 411 && ErrorToast(err?.response?.data));
+            } else {
+                const updateForm = [
+                    {
+                        userId: loggedInUser
+                    },
+                    form
+                ];
+                updateUser(updateForm).then((response) => {
+                    if (response.status === 200) {
+                        SuccessToast(response?.data);
+                        setPass('');
+                        setUserName('');
+                        setCreatedBy('');
+                        setSelectedOffice('');
+                        setSelectedUser({});
+                        getAllUsers();
+                    } else {
+                        ErrorToast("Unable to udpate user");
+                    }
+                }).catch(err => {
+                    console.log("err", err);
+                    err?.response?.status === 410 ? ErrorToast("User Id not found") : err?.response?.status === 411 && ErrorToast(err?.response?.data)
+                });
+            }
         } else {
-            const updateForm = [
-                {
-                    userId: loggedInUser
-                },
-                form
-            ];
-            updateUser(updateForm).then((response) => {
-                if (response.status === 200) {
-                    SuccessToast(response?.data);
-                    setPass('');
-                    setUserName('');
-                    setCreatedBy('');
-                    setSelectedOffice('');
-                    setSelectedUser({});
-                    getAllUsers();
-                } else {
-                    ErrorToast("Unable to udpate user");
-                }
-            }).catch(err => {
-                console.log("err", err);
-                err?.response?.status === 410 ? ErrorToast("User Id not found") : err?.response?.status === 411 && ErrorToast(err?.response?.data)
-            });
+            ErrorToast("Select a valid office");
         }
+
     };
 
     return (

@@ -9,7 +9,7 @@ function App() {
     <>
       <Toaster />
       <Default />
-      <AutoLogout />
+      {/* <AutoLogout /> */}
     </>
   );
 }
