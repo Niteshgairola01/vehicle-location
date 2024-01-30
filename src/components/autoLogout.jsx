@@ -1,8 +1,22 @@
-import React, { useEffect } from 'react'
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { signOutUser } from '../hooks/authHooks';
 
 const AutoLogout = () => {
 
     const keepLoggedIn = localStorage.getItem('keepLoggedIn');
+    const loggedInUser = localStorage.getItem('userId');
+
+    const navigate = useNavigate();
+
+    const logOutUser = () => {
+        signOutUser({ userId: loggedInUser }).then((response) => {
+            if (response?.status === 200) {
+                localStorage.clear();
+                navigate('/');
+            }
+        });
+    };
 
     useEffect(() => {
         const setTabClosedTimestamp = () => {
@@ -17,9 +31,13 @@ const AutoLogout = () => {
                 const timeDifference = currentTime - parseInt(tabClosedTimestamp, 10);
                 console.log("looged in", keepLoggedIn);
                 if (keepLoggedIn === 'true') {
-                    (timeDifference > 1 * 10 * 1000) && localStorage.clear();
+                    if (timeDifference > 10 * 60 * 1000) {
+                        logOutUser();
+                    }
+                    // (timeDifference > 1 * 10 * 1000) && localStorage.clear();
                 } else if (keepLoggedIn === 'false') {
-                    localStorage.clear();
+                    // localStorage.clear();
+                    logOutUser();
                 }
             }
         };

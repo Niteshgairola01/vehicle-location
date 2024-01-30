@@ -34,6 +34,16 @@ const Signin = () => {
     const text = "Your vehicles, our priority. We're dedicated to providing top-notch car transportation logistics services, ensuring your assets are handled with the utmost care.";
     const navigate = useNavigate();
 
+    const loggedInUser = localStorage.getItem('userId');
+
+    useEffect(() => {
+        if (loggedInUser === null) {
+            navigate('/');
+        } else if (loggedInUser.length > 0) {
+            navigate('/track')
+        }
+    }, [loggedInUser]);
+
     useEffect(() => {
         AOS.init({
             delay: 200,
@@ -93,10 +103,10 @@ const Signin = () => {
                 },
                 resetForm
             ];
-            
+
             updateUser(updateForm).then((response) => {
                 if (response.status === 200) {
-                    signOutUser({userId: resetId}).then((response) => {
+                    signOutUser({ userId: resetId }).then((response) => {
                         if (response?.status === 200) {
                             localStorage.clear();
                             singInUser(resetForm).then((response) => {

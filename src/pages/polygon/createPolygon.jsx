@@ -39,8 +39,8 @@ const CreatePolygon = () => {
     const [isFullScreen, setIsFullScreen] = useState(false);
 
     const navigate = useNavigate();
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
     const fullScreen = useRef(null);
 
     const allCategories = [
