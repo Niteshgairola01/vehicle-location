@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { autoSignOutUser, signOutUser } from '../hooks/authHooks';
 
 const AutoLogout = () => {
     const loggedInUser = localStorage.getItem('userId');
     const keepLoggedIn = localStorage.getItem('keepLoggedIn');
     const navigate = useNavigate();
+
+    const location = useLocation();
 
     const handleLogOut = () => {
         signOutUser({ userId: loggedInUser }).then((response) => {
@@ -74,18 +76,18 @@ const AutoLogout = () => {
         const handleUnload = () => {
             const timestamp = new Date().getTime();
             localStorage.setItem('unloadTimestamp', timestamp.toString());
+            autoSignOutUser([loggedInUser, formattedDateTime]);
             // localStorage.setItem("test 2", 2);
-            // autoSignOutUser([loggedInUser, formattedDateTime]);
-            localStorage.setItem("test567", 12345);
+            // localStorage.setItem("test567", 12345);
         };
 
-        window.addEventListener('beforeunload', handleUnload);
+        if (location.pathname !== '/') {
+            window.addEventListener('beforeunload', handleUnload);
+        }
 
-        // localStorage.setItem("userId", 'PAPL-02')
-
-        // Function to check time difference on page load
         const handleLoad = () => {
             const storedTimestamp = localStorage.getItem('unloadTimestamp');
+            localStorage.setItem("test", 3456)
             if (storedTimestamp) {
                 const storedTime = parseInt(storedTimestamp, 10);
                 const currentTime = new Date().getTime();
@@ -94,23 +96,29 @@ const AutoLogout = () => {
                 if (timeDifference > 10 * 60 * 1000) {
                     localStorage.clear();
                 } else {
-                    localStorage.removeItem("test567")
-                    // autoSignOutUser([loggedInUser, null]).then((response) => {
-                    //     if (response.status === 200) {
-                    //         console.log("timer added");
-                    //     }
-                    // }).catch((err) => {
-                    //     console.log("err", err?.response?.data);
-                    // })
+                    autoSignOutUser([loggedInUser, null]).then((response) => {
+                        if (response.status === 200) {
+                            console.log("timer added");
+                        }
+                    }).catch((err) => {
+                        console.log("err", err?.response?.data);
+                    })
                 }
+                // localStorage.removeItem("test567")
             }
         };
 
-        window.addEventListener('load', handleLoad);
+        if (location.pathname !== '/') {
+            // setTimeout(() => {
+                window.addEventListener('load', handleLoad);
+            // }, 1500);
+        }
 
         return () => {
+            // if (location.pathname !== '/') {
             window.removeEventListener('beforeunload', handleUnload);
-            window.removeEventListener('load', handleLoad);
+            window.removeEventListener('unload', handleLoad);
+            // }
         };
     }, []);
 
