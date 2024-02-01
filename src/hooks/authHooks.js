@@ -31,6 +31,21 @@ export const signOutUser = async (form) => {
     return response;
 };
 
+export const autoSignOutUser = async (form) => {
+    const url = `${authBase}/storeBrowserCloseTime`;
+    const config = {
+        method: "POST",
+        url,
+        data: form,
+        headers: {
+            "Content-Type": "application/json",
+        },
+    };
+
+    const response = await axios(config);
+    return response;
+};
+
 export const createNewUser = async (form) => {
     const url = `${authBase}/createUser`;
     const config = {

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signOutUser } from '../hooks/authHooks';
+import { autoSignOutUser, signOutUser } from '../hooks/authHooks';
 
 const AutoLogout = () => {
     const loggedInUser = localStorage.getItem('userId');
     const keepLoggedIn = localStorage.getItem('keepLoggedIn');
+    const navigate = useNavigate();
 
     const handleLogOut = () => {
         signOutUser({ userId: loggedInUser }).then((response) => {
@@ -14,76 +15,104 @@ const AutoLogout = () => {
         })
     };
 
-    console.log("keep logged", keepLoggedIn === 'false');
+    // Tab inactivity
 
+    const events = [
+        "load",
+        "mousemove",
+        "mousedown",
+        "click",
+        "scroll",
+        "keypress",
+    ];
+    let timer;
 
-    const handleCloseWindow = () => {
-        window.close();
-    }
+    const handleLogoutTimer = () => {
+        timer = setTimeout(() => {
+            resetTimer();
+            Object.values(events).forEach((item) => {
+                window.removeEventListener(item, resetTimer);
+            });
+            logoutAction();
+        }, 10 * 60 * 1000);
+    };
+
+    const resetTimer = () => {
+        if (timer) clearTimeout(timer);
+    };
 
     useEffect(() => {
-        window.addEventListener('beforeunload', (event) => {
-            // Cancel the event as handling it is not allowed in most browsers
-            // event.preventDefault();
-            // Prompt the user with a confirmation dialog
-            // event.returnValue = '';
-            // Perform cleanup tasks or any necessary actions here
-            handleCloseWindow();
+        Object.values(events).forEach((item) => {
+            window.addEventListener(item, () => {
+                resetTimer();
+                handleLogoutTimer();
+            });
         });
-    }, [])
-
-
-    useEffect(() => {
-
-        if (keepLoggedIn === 'true') {
-            localStorage.setItem("userId", loggedInUser, 1 * 2 * 2000);
-        } else {
-            handleLogOut();
-        }
-
-        // const handleBeforeUnload = (event) => {
-        //     event.preventDefault();
-        //     // Check if the event is due to a page reload
-        //     if (event.currentTarget.performance.navigation.type === 1) {
-        //         return;
-        //     }
-
-        //     if (keepLoggedIn === 'false') {
-        //         handleLogOut();
-        //     } else {
-        //         const timestamp = new Date().getTime();
-        //         localStorage.setItem('timestamp', JSON.stringify(timestamp));
-        //     }
-        // };
-
-        // const storedData = localStorage.getItem('timestamp');
-        // if (storedData) {
-        //     const storedTimestamp = JSON.parse(storedData);
-        //     const currentTime = new Date().getTime();
-        //     const timeDifference = currentTime - storedTimestamp;
-
-        //     if (keepLoggedIn === 'true' && timeDifference > 10 * 60 * 1000) {
-        //         handleLogOut();
-        //     } else if (keepLoggedIn === 'false') {
-        //         handleLogOut();
-        //     }
-        // }
-
-        // window.addEventListener('beforeunload', handleBeforeUnload);
-
-        // return () => {
-        //     window.removeEventListener('beforeunload', handleBeforeUnload);
-        // };
     }, []);
 
-    // const handleBeforeUnload = () => {
-    //     if (keepLoggedIn === 'false') {
-    //         handleLogOut();
-    //     } else {
-    //         const timestamp = new Date().getTime();
-    //         localStorage.setItem('timestamp', JSON.stringify(timestamp));
-    //     }
-    // };
+    const logoutAction = () => {
+        localStorage.clear();
+        navigate('/')
+    };
+
+
+
+    // Tab close / reload
+
+    let now = new Date();
+
+    let year = now.getFullYear();
+    let month = ('0' + (now.getMonth() + 1)).slice(-2);
+    let day = ('0' + now.getDate()).slice(-2);
+    let hours = ('0' + now.getHours()).slice(-2);
+    let minutes = ('0' + now.getMinutes()).slice(-2);
+    let seconds = ('0' + now.getSeconds()).slice(-2);
+
+    let formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+    useEffect(() => {
+        const handleUnload = () => {
+            const timestamp = new Date().getTime();
+            localStorage.setItem('unloadTimestamp', timestamp.toString());
+            // localStorage.setItem("test 2", 2);
+            // autoSignOutUser([loggedInUser, formattedDateTime]);
+            localStorage.setItem("test567", 12345);
+        };
+
+        window.addEventListener('beforeunload', handleUnload);
+
+        // localStorage.setItem("userId", 'PAPL-02')
+
+        // Function to check time difference on page load
+        const handleLoad = () => {
+            const storedTimestamp = localStorage.getItem('unloadTimestamp');
+            if (storedTimestamp) {
+                const storedTime = parseInt(storedTimestamp, 10);
+                const currentTime = new Date().getTime();
+                const timeDifference = currentTime - storedTime;
+
+                if (timeDifference > 10 * 60 * 1000) {
+                    localStorage.clear();
+                } else {
+                    localStorage.removeItem("test567")
+                    // autoSignOutUser([loggedInUser, null]).then((response) => {
+                    //     if (response.status === 200) {
+                    //         console.log("timer added");
+                    //     }
+                    // }).catch((err) => {
+                    //     console.log("err", err?.response?.data);
+                    // })
+                }
+            }
+        };
+
+        window.addEventListener('load', handleLoad);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleUnload);
+            window.removeEventListener('load', handleLoad);
+        };
+    }, []);
 
     return (
         <div>

@@ -24,7 +24,7 @@ import { Circle } from '../../assets/images';
 import { Tooltip } from '@mui/material';
 
 
-const CreatePolygon = () => {
+const UpdatePolygon = () => {
     const [form, setForm] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
@@ -49,8 +49,8 @@ const CreatePolygon = () => {
     }, []);
     const edit = location.pathname === '/editPolygon' ? true : false;
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
     const fullScreen = useRef(null);
 
     useEffect(() => {
@@ -276,7 +276,7 @@ const CreatePolygon = () => {
     const handleMapCenter = () => {
         if (searchLatLong?.lat && selectedCoordinates.length === 0) {
             return searchLatLong;
-        } else {
+        } else if (selectedPolygonType === '') {
             return center
         }
     }
@@ -444,12 +444,14 @@ const CreatePolygon = () => {
         setSelectedCoordinates(updatedCoordinates);
     }
 
+    console.log("selected", selectedCoordinates);
+
 
     return (
         <Modal show={true} fullscreen centered onHide={() => navigate('/polygon')} size='xl'
             className='w-100 p-5'>
             <Modal.Header closeButton>
-                <Modal.Title className='thm-dark w-100 text-center'>{!edit ? 'Create Polygon' : 'Edit Polygon'}</Modal.Title>
+                <Modal.Title className='thm-dark w-100 text-center'>{'Update Polygon'}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <div className='px-5'>
@@ -484,7 +486,7 @@ const CreatePolygon = () => {
                                                                     // onClick={() => handleSubmit(activeStep + 1)}
                                                                     className="py-1 px-2"
                                                                 >
-                                                                    {activeStep == 2 ? 'Create' : 'Continue'}
+                                                                    {activeStep == 2 ? 'Update' : 'Continue'}
                                                                 </ColoredButton>
                                                             </div>
                                                         </StepContent>
@@ -563,7 +565,7 @@ const CreatePolygon = () => {
                                             style={{ cursor: isDrawing ? 'grab' : 'grab' }}
                                         >
                                             {
-                                                selectedPolygonType === 'Polygon' ? (
+                                                (selectedPolygonType === 'Polygon' && selectedCoordinates.length > 0) ? (
                                                     <>
                                                         {selectedCoordinates.length > 1 && (
                                                             <PolylineF
@@ -602,7 +604,7 @@ const CreatePolygon = () => {
                                                             />
                                                         ))}
                                                     </>
-                                                ) : selectedPolygonType === 'Circle' ? (
+                                                ) : (selectedPolygonType === 'Circle' && selectedCoordinates.length > 0) ? (
                                                     <>
                                                         <CircleF options={{
                                                             center: selectedCoordinates[0],
@@ -614,7 +616,7 @@ const CreatePolygon = () => {
                                                         }} />
                                                         <MarkerF position={selectedCoordinates[0]} />
                                                     </>
-                                                ) : selectedPolygonType === "" ? (
+                                                ) : selectedCoordinates.length === 0 ? (
                                                     <MarkerF position={handleMapCenter()} />
                                                 ) : null
                                             }
@@ -630,4 +632,4 @@ const CreatePolygon = () => {
     )
 }
 
-export default CreatePolygon
+export default UpdatePolygon

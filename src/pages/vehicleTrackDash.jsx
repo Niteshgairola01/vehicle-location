@@ -24,8 +24,8 @@ import '../assets/styles/home.css';
 
 const VehicleTrackDash = () => {
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
     const [showMap, setShowMap] = useState(false);
 
@@ -330,8 +330,10 @@ const VehicleTrackDash = () => {
                                 }
                             }
 
-                            if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
-                                console.log("delayed");
+                            if (
+                                (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) &&
+                                (!selectedFilter.includes('On Time & Early (As per OEM)') && !selectedFilter.includes('Delayed (As per OEM)'))
+                            ) {
                                 if (selectedFilter.includes('Mild Delayed')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
                                         const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
@@ -376,7 +378,7 @@ const VehicleTrackDash = () => {
                                                     finalStatusTrips.push(data);
                                                 }
                                             }
-                                        })
+                                        });
                                     }
                                 }
 
@@ -500,13 +502,14 @@ const VehicleTrackDash = () => {
                                         }
 
                                         if (selectedFilter.includes('Critical Delayed')) {
+                                            console.log("oem ontime delayed");
                                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                                 const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                                 let delayedArr2 = [];
                                                 delayedArr1.forEach(data => {
                                                     if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                         const delayedHours = parseInt(data?.delayedHours);
-                                                        if (delayedHours <= 36) {
+                                                        if (delayedHours >= 36) {
                                                             delayedArr2.push(data);
                                                         }
                                                     }
@@ -524,11 +527,13 @@ const VehicleTrackDash = () => {
                                                 delayedArr1.forEach(data => {
                                                     if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                         const delayedHours = parseInt(data?.delayedHours);
-                                                        if (delayedHours <= 36) {
+                                                        if (delayedHours >= 36) {
                                                             delayedArr2.push(data);
                                                         }
                                                     }
                                                 });
+
+                                                console.log("delayed arr", delayedArr2);
 
                                                 delayedArr2.forEach(data => {
                                                     const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
@@ -552,7 +557,7 @@ const VehicleTrackDash = () => {
                                 if (selectedFilter.includes('Delayed (As per OEM)')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                         allFilteredTrip.forEach(data => {
-                                            const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
+                                            const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
                                             if (testData === true) {
                                                 finalStatusTrips.push(data)
                                             }
@@ -560,7 +565,6 @@ const VehicleTrackDash = () => {
 
                                     } else if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
                                         if (selectedFilter.includes('Mild Delayed')) {
-                                            console.log("oem ontime delayed");
                                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                                 const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                                 let delayedArr2 = [];
@@ -643,13 +647,14 @@ const VehicleTrackDash = () => {
                                         }
 
                                         if (selectedFilter.includes('Critical Delayed')) {
+                                            console.log("oem ontime delayed");
                                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                                 const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                                 let delayedArr2 = [];
                                                 delayedArr1.forEach(data => {
                                                     if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                         const delayedHours = parseInt(data?.delayedHours);
-                                                        if (delayedHours <= 36) {
+                                                        if (delayedHours >= 36) {
                                                             delayedArr2.push(data);
                                                         }
                                                     }
@@ -667,11 +672,13 @@ const VehicleTrackDash = () => {
                                                 delayedArr1.forEach(data => {
                                                     if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                         const delayedHours = parseInt(data?.delayedHours);
-                                                        if (delayedHours <= 36) {
+                                                        if (delayedHours >= 36) {
                                                             delayedArr2.push(data);
                                                         }
                                                     }
                                                 });
+
+                                                console.log("delayed arr", delayedArr2);
 
                                                 delayedArr2.forEach(data => {
                                                     const testData = (data?.oemFinalStatus === 'Delayed');

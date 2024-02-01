@@ -8,8 +8,8 @@ function App() {
   return (
     <>
       <Toaster />
+      <AutoLogout />
       <Default />
-      {/* <AutoLogout /> */}
     </>
   );
 }
