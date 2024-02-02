@@ -12,13 +12,13 @@ import { ErrorToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
 import Loader from '../components/loader/loader';
 import DashHead from '../components/dashboardHead';
-import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, MarkerF, useLoadScript } from '@react-google-maps/api';
 import { FaSort } from "react-icons/fa";
 import '../assets/styles/home.css';
 import { autoSignOutUser } from '../hooks/authHooks';
@@ -119,16 +119,136 @@ const VehicleTrackDash = () => {
         setReload(true);
     }, []);
 
+    const location = useLocation();
+
+    const loggedInUser = localStorage.getItem('userId');
+
+    const [load, setLoad] = useState(false);
+
+
+    const hasFunctionExecuted = useRef(false);
+
+    useEffect(() => {
+        const handleActivity = () => {
+            if (!hasFunctionExecuted.current) {
+                console.log('Activity detected');
+                // Call your function here
+                autoSignOutUser([loggedInUser, null]).then((response) => {
+                    if (response.status === 200) {
+                        console.log("timer added");
+                    }
+                }).catch((err) => {
+                    console.log("err", err?.response?.data);
+                });
+
+                hasFunctionExecuted.current = true; // Set the flag to true after the function executes
+            }
+        };
+
+        const events = [
+            // "load", // Uncomment if you want to include the load event
+            "mousemove",
+            "mousedown",
+            "click",
+            "scroll",
+            "keypress",
+        ];
+
+        if (location.pathname !== '/') {
+            events.forEach(event => {
+                document.addEventListener(event, handleActivity);
+            });
+        }
+
+
+        return () => {
+            if (location.pathname !== '/') {
+
+                events.forEach(event => {
+                    document.removeEventListener(event, handleActivity);
+                });
+            }
+        };
+    }, []); // useEffect will run only once on component mount
+
+
     // useEffect(() => {
-    //     if (reload === false) {
-    //         const hasReloaded = sessionStorage.getItem('hasReloaded');
-    //         if (hasReloaded === null) {
-    //             window.location.reload();
-    //             console.log("session storag");
+    //     const handleSingout = (event) => {
+
+    //         console.log("pageshow");
+    //         // if(event.)
+    //         // autoSignOutUser([loggedInUser, null]).then((response) => {
+    //         //     if (response.status === 200) {
+    //         //         console.log("timer added");
+    //         //     }
+    //         // }).catch((err) => {
+    //         //     console.log("err", err?.response?.data);
+    //         // })
+    //     };
+
+    //     // if(location.pathname !== '/'){
+    //     //     window.onpageshow = handleSingout();
+    //     // }
+
+    //     // window.addEventListener('pageshow', (event) => {
+    //     //     if (event.persisted) {
+    //     //         autoSignOutUser([loggedInUser, null]).then((response) => {
+    //     //             if (response.status === 200) {
+    //     //                 console.log("timer added");
+    //     //             }
+    //     //         }).catch((err) => {
+    //     //             console.log("err", err?.response?.data);
+    //     //         })
+    //     //     }
+    //     // });
+
+    //     // return () => {
+    //     //     window.removeEventListener('pageshow', handleSingout)
+    //     // }
+    // }, []);
+
+    // console.log("added", functionAdded);
+
+    // useEffect(() => {
+    //     if (load === false) {
+    //         autoSignOutUser([loggedInUser, null]).then((response) => {
+    //             if (response.status === 200) {
+    //                 console.log("timer added");
+    //             }
+    //         }).catch((err) => {
+    //             console.log("err", err?.response?.data);
+    //         })
+    //     }
+    //     setLoad(true);
+    // }, [load]);
+
+    // useEffect(() => {
+    //     // if (reload === false) {
+    //         if (location.pathname === '/track') {
+    //             const hasReloaded = sessionStorage.getItem('hasReloaded');
+    //             if (hasReloaded === null) {
+    //                 window.location.reload();
+    //                 console.log("session storag");
+    //                 sessionStorage.setItem('hasReloaded', true);
+    //             }
+    //         }
+    //     // }
+    // }, []);
+
+
+    // useEffect(() => {
+    //     if (location.pathname === '/track') {
+    //         const hasReloadedSession = sessionStorage.getItem('hasReloaded');
+    //         const hasReloadedLocal = localStorage.getItem('hasReloaded');
+
+    //         if (!hasReloadedSession && !hasReloadedLocal) {
     //             sessionStorage.setItem('hasReloaded', true);
+    //             localStorage.setItem('hasReloaded', true);
+    //             // setShouldReload(tru`e);
     //         }
     //     }
-    // }, [reload]);
+    // }, []);
+
 
     useEffect(() => {
         setAnimationKey(previousKey => previousKey + 1);
