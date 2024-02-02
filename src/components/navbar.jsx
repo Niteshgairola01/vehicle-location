@@ -31,6 +31,7 @@ const NavBar = () => {
       signOutUser(form).then((response) => {
         if (response?.status === 200) {
           localStorage.clear();
+          // sessionStorage.clear();
           navigate('/')
           SuccessToast("Logged out successfully");
         }

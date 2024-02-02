@@ -21,6 +21,7 @@ import DashHead from '../components/dashboardHead';
 import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import { FaSort } from "react-icons/fa";
 import '../assets/styles/home.css';
+import { autoSignOutUser } from '../hooks/authHooks';
 
 const VehicleTrackDash = () => {
 
@@ -111,6 +112,23 @@ const VehicleTrackDash = () => {
         lat: parseFloat(selectedVehicle?.lattitude),
         lng: parseFloat(selectedVehicle?.longitude),
     };
+
+    const [reload, setReload] = useState(false);
+
+    useEffect(() => {
+        setReload(true);
+    }, []);
+
+    // useEffect(() => {
+    //     if (reload === false) {
+    //         const hasReloaded = sessionStorage.getItem('hasReloaded');
+    //         if (hasReloaded === null) {
+    //             window.location.reload();
+    //             console.log("session storag");
+    //             sessionStorage.setItem('hasReloaded', true);
+    //         }
+    //     }
+    // }, [reload]);
 
     useEffect(() => {
         setAnimationKey(previousKey => previousKey + 1);

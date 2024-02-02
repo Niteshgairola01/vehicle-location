@@ -9,18 +9,18 @@ const AutoLogout = () => {
 
     const location = useLocation();
 
-    const handleLogOut = () => {
-        signOutUser({ userId: loggedInUser }).then((response) => {
-            if (response?.status === 200) {
-                localStorage.clear();
-            }
-        })
-    };
+    // const handleLogOut = () => {
+    //     signOutUser({ userId: loggedInUser }).then((response) => {
+    //         if (response?.status === 200) {
+    //             localStorage.clear();
+    //         }
+    //     })
+    // };
 
     // Tab inactivity
 
     const events = [
-        "load",
+        // "load",
         "mousemove",
         "mousedown",
         "click",
@@ -54,6 +54,7 @@ const AutoLogout = () => {
 
     const logoutAction = () => {
         localStorage.clear();
+        // sessionStorage.clear();
         navigate('/')
     };
 
@@ -85,6 +86,7 @@ const AutoLogout = () => {
             window.addEventListener('beforeunload', handleUnload);
         }
 
+
         const handleLoad = () => {
             const storedTimestamp = localStorage.getItem('unloadTimestamp');
             localStorage.setItem("test", 3456)
@@ -95,6 +97,7 @@ const AutoLogout = () => {
 
                 if (timeDifference > 10 * 60 * 1000) {
                     localStorage.clear();
+                    // sessionStorage.clear();
                 } else {
                     autoSignOutUser([loggedInUser, null]).then((response) => {
                         if (response.status === 200) {
@@ -104,20 +107,18 @@ const AutoLogout = () => {
                         console.log("err", err?.response?.data);
                     })
                 }
-                // localStorage.removeItem("test567")
             }
         };
 
+
         if (location.pathname !== '/') {
-            // setTimeout(() => {
-                window.addEventListener('load', handleLoad);
-            // }, 1500);
+            window.onload = handleLoad();
         }
 
         return () => {
             // if (location.pathname !== '/') {
             window.removeEventListener('beforeunload', handleUnload);
-            window.removeEventListener('unload', handleLoad);
+            window.removeEventListener('load', handleLoad);
             // }
         };
     }, []);

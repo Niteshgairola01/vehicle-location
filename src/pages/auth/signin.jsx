@@ -109,6 +109,7 @@ const Signin = () => {
                     signOutUser({ userId: resetId }).then((response) => {
                         if (response?.status === 200) {
                             localStorage.clear();
+                            // sessionStorage.clear();
                             singInUser(resetForm).then((response) => {
                                 if (response.status === 200) {
                                     const userData = response?.data;
