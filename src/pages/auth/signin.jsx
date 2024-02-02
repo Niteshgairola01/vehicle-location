@@ -37,53 +37,14 @@ const Signin = () => {
     const loggedInUser = localStorage.getItem('userId');
     const storedTimestamp = localStorage.getItem('unloadTimestamp');
 
-    const [load, setLoad] = useState(false);
-
-    useEffect(() => {
-        // setTimeout(() => {
-        setLoad(true);
-        // }, 500)
-    }, []);
-
     useEffect(() => {
         if (loggedInUser === null) {
             navigate('/');
-        } else if (loggedInUser.length > 0) {
-            if (load === true) {
-                // setTimeout(() => {
-                //     autoSignOutUser([loggedInUser, null]).then((response) => {
-                //         if (response.status === 200) {
-                //             console.log("timer added");
-                //         }
-                //     }).catch((err) => {
-                //         console.log("err", err?.response?.data);
-                //     });
-                // }, 500)
-            }
-
-            // const handleSingout = () => {
-            // autoSignOutUser([loggedInUser, null]).then((response) => {
-            //     if (response.status === 200) {
-            //         console.log("timer added");
-            //     }
-            // }).catch((err) => {
-            //     console.log("err", err?.response?.data);
-            // })
-            // }
-
-            // window.addEventListener('pageshow', handleSingout)
-
-            // if (location.pathname !== '/') {
-            // window.onpageshow = handleSingout();
-            // }
-            // setTimeout(() => {
-                navigate('/track')
-            // }, 1000)
-
+        } else if (loggedInUser.length > 0) {            
+                navigate('/track');
         }
-    }, [load, loggedInUser]);
+    }, [loggedInUser]);
 
-    localStorage.setItem("test", 3456)
     if (storedTimestamp) {
         const storedTime = parseInt(storedTimestamp, 10);
         const currentTime = new Date().getTime();

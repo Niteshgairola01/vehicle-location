@@ -73,16 +73,19 @@ const AutoLogout = () => {
 
     let formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-    useEffect(() => {
-        const handleUnload = () => {
-            const timestamp = new Date().getTime();
-            localStorage.setItem('unloadTimestamp', timestamp.toString());
-            autoSignOutUser([loggedInUser, formattedDateTime]);
-            // localStorage.setItem("test 2", 2);
-            // localStorage.setItem("test567", 12345);
-        };
+    const handleUnload = () => {
+        const timestamp = new Date().getTime();
+        localStorage.setItem('unloadTimestamp', timestamp.toString());
+        autoSignOutUser([loggedInUser, formattedDateTime]);
+        // localStorage.setItem("test 2", 2);
+        // localStorage.setItem("test567", 12345);
+    };
 
+    useEffect(() => {
         if (location.pathname !== '/') {
+
+            // window.onbeforeunload = handleUnload();
+
             window.addEventListener('beforeunload', handleUnload);
         }
 
@@ -110,7 +113,7 @@ const AutoLogout = () => {
         //     }
         // };
 
-        
+
 
         // if (location.pathname !== '/') {
         //     // window.addEventListener('DOMContentLoaded', handleLoad)
