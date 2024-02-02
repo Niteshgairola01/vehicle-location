@@ -77,57 +77,17 @@ const AutoLogout = () => {
         const timestamp = new Date().getTime();
         localStorage.setItem('unloadTimestamp', timestamp.toString());
         autoSignOutUser([loggedInUser, formattedDateTime]);
-        // localStorage.setItem("test 2", 2);
-        // localStorage.setItem("test567", 12345);
     };
 
     useEffect(() => {
         if (location.pathname !== '/') {
-
-            // window.onbeforeunload = handleUnload();
-
             window.addEventListener('beforeunload', handleUnload);
         }
 
-
-        // const handleLoad = () => {
-        //     const storedTimestamp = localStorage.getItem('unloadTimestamp');
-        //     localStorage.setItem("test", 3456)
-        //     if (storedTimestamp) {
-        //         const storedTime = parseInt(storedTimestamp, 10);
-        //         const currentTime = new Date().getTime();
-        //         const timeDifference = currentTime - storedTime;
-
-        //         if (timeDifference > 10 * 60 * 1000) {
-        //             localStorage.clear();
-        //             // sessionStorage.clear();
-        //         } else {
-        //             autoSignOutUser([loggedInUser, null]).then((response) => {
-        //                 if (response.status === 200) {
-        //                     console.log("timer added");
-        //                 }
-        //             }).catch((err) => {
-        //                 console.log("err", err?.response?.data);
-        //             })
-        //         }
-        //     }
-        // };
-
-
-
-        // if (location.pathname !== '/') {
-        //     // window.addEventListener('DOMContentLoaded', handleLoad)
-        //     document.onload = handleLoad();
-        // };
-
         return () => {
-            if (location.pathname !== '/') {
-                window.removeEventListener('beforeunload', handleUnload);
-                // window.removeEventListener('load', handleLoad);
-                // window.removeEventListener('DOMContentLoaded', handleLoad)
-            }
+            window.removeEventListener('beforeunload', handleUnload);
         };
-    }, []);
+    })
 
     return (
         <div>
