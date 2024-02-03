@@ -6,11 +6,12 @@ import Card from '../../components/Card/card';
 import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton';
 import { CiEdit } from "react-icons/ci";
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { getAllPolygonAreas, getPolygonCategories } from '../../hooks/polygonHooks';
 import DashHead from '../../components/dashboardHead';
 import { SearchField } from '../../components/form/Input';
 import { RxEnterFullScreen, RxCross1 } from "react-icons/rx";
+import { autoSignOutUser } from '../../hooks/authHooks';
 
 const PolygonList = () => {
 

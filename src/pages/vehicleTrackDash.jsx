@@ -128,72 +128,71 @@ const VehicleTrackDash = () => {
 
     const hasFunctionExecuted = useRef(false);
 
-    // const hasFunctionExecuted = useRef(false);
     const [shown, setShown] = useState(false);
 
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'hidden') {
-                setShown(false);
-                hasFunctionExecuted.current = true;
-            } else {
-                setShown(true);
-                hasFunctionExecuted.current = false;
-            }
-        };
+    // useEffect(() => {
+    //     const handleVisibilityChange = () => {
+    //         if (document.visibilityState === 'hidden') {
+    //             setShown(false);
+    //             hasFunctionExecuted.current = true;
+    //         } else {
+    //             setShown(true);
+    //             hasFunctionExecuted.current = false;
+    //         }
+    //     };
 
-        document.addEventListener('visibilitychange', handleVisibilityChange);
+    //     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    });
+    //     return () => {
+    //         document.removeEventListener('visibilitychange', handleVisibilityChange);
+    //     };
+    // });
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        // if (shown === true) {
-        const handleActivity = () => {
-            if (!hasFunctionExecuted.current) {
-                console.log('Activity detected');
-                // Call your function here
-                autoSignOutUser([loggedInUser, null]).then((response) => {
-                    if (response.status === 200) {
-                        console.log("timer added");
-                    }
-                }).catch((err) => {
-                    console.log("err", err?.response?.data);
-                });
+    //     // if (shown === true) {
+    //     const handleActivity = () => {
+    //         if (!hasFunctionExecuted.current) {
+    //             console.log('Activity detected');
+    //             // Call your function here
+    //             autoSignOutUser([loggedInUser, null]).then((response) => {
+    //                 if (response.status === 200) {
+    //                     console.log("timer added");
+    //                 }
+    //             }).catch((err) => {
+    //                 console.log("err", err?.response?.data);
+    //             });
 
-                hasFunctionExecuted.current = true; // Set the flag to true after the function executes
-            }
-        };
+    //             hasFunctionExecuted.current = true; // Set the flag to true after the function executes
+    //         }
+    //     };
 
-        const events = [
-            // "load", // Uncomment if you want to include the load event
-            "mousemove",
-            "mousedown",
-            "click",
-            "scroll",
-            "keypress",
-        ];
+    //     const events = [
+    //         // "load", // Uncomment if you want to include the load event
+    //         "mousemove",
+    //         "mousedown",
+    //         "click",
+    //         "scroll",
+    //         "keypress",
+    //     ];
 
-        if (location.pathname !== '/') {
-            events.forEach(event => {
-                document.addEventListener(event, handleActivity);
-            });
-        }
+    //     if (location.pathname !== '/') {
+    //         events.forEach(event => {
+    //             document.addEventListener(event, handleActivity);
+    //         });
+    //     }
 
 
-        return () => {
-            if (location.pathname !== '/') {
+    //     return () => {
+    //         if (location.pathname !== '/') {
 
-                events.forEach(event => {
-                    document.removeEventListener(event, handleActivity);
-                });
-            }
-        };
-        // }
-    }, [shown, hasFunctionExecuted]); // useEffect will run only once on component mount
+    //             events.forEach(event => {
+    //                 document.removeEventListener(event, handleActivity);
+    //             });
+    //         }
+    //     };
+    //     // }
+    // }, [shown, hasFunctionExecuted]); // useEffect will run only once on component mount
 
 
     // useEffect(() => {
