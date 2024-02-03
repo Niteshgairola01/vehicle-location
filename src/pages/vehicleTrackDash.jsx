@@ -128,48 +128,48 @@ const VehicleTrackDash = () => {
 
     const hasFunctionExecuted = useRef(false);
 
-    useEffect(() => {
-        const handleActivity = () => {
-            if (!hasFunctionExecuted.current) {
-                console.log('Activity detected');
-                // Call your function here
-                autoSignOutUser([loggedInUser, null]).then((response) => {
-                    if (response.status === 200) {
-                        console.log("timer added");
-                    }
-                }).catch((err) => {
-                    console.log("err", err?.response?.data);
-                });
+    // useEffect(() => {
+    //     const handleActivity = () => {
+    //         if (!hasFunctionExecuted.current) {
+    //             console.log('Activity detected');
+    //             // Call your function here
+    //             autoSignOutUser([loggedInUser, null]).then((response) => {
+    //                 if (response.status === 200) {
+    //                     console.log("timer added");
+    //                 }
+    //             }).catch((err) => {
+    //                 console.log("err", err?.response?.data);
+    //             });
 
-                hasFunctionExecuted.current = true; // Set the flag to true after the function executes
-            }
-        };
+    //             hasFunctionExecuted.current = true; // Set the flag to true after the function executes
+    //         }
+    //     };
 
-        const events = [
-            // "load", // Uncomment if you want to include the load event
-            "mousemove",
-            "mousedown",
-            "click",
-            "scroll",
-            "keypress",
-        ];
+    //     const events = [
+    //         // "load", // Uncomment if you want to include the load event
+    //         "mousemove",
+    //         "mousedown",
+    //         "click",
+    //         "scroll",
+    //         "keypress",
+    //     ];
 
-        if (location.pathname !== '/') {
-            events.forEach(event => {
-                document.addEventListener(event, handleActivity);
-            });
-        }
+    //     if (location.pathname !== '/') {
+    //         events.forEach(event => {
+    //             document.addEventListener(event, handleActivity);
+    //         });
+    //     }
 
 
-        return () => {
-            if (location.pathname !== '/') {
+    //     return () => {
+    //         if (location.pathname !== '/') {
 
-                events.forEach(event => {
-                    document.removeEventListener(event, handleActivity);
-                });
-            }
-        };
-    }, []); // useEffect will run only once on component mount
+    //             events.forEach(event => {
+    //                 document.removeEventListener(event, handleActivity);
+    //             });
+    //         }
+    //     };
+    // }, []); // useEffect will run only once on component mount
 
 
     // useEffect(() => {

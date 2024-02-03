@@ -72,7 +72,6 @@ const AutoLogout = () => {
     let seconds = ('0' + now.getSeconds()).slice(-2);
 
     let formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-
     const handleUnload = () => {
         const timestamp = new Date().getTime();
         localStorage.setItem('unloadTimestamp', timestamp.toString());
