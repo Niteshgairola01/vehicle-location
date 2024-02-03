@@ -95,7 +95,7 @@ const AllRoutes = () => {
                 .catch((err) => {
                     console.log("err", err?.response?.data);
                 });
-        }, 1000); // Adjust the debounce delay as per your requirement
+        }, 100); // Adjust the debounce delay as per your requirement
 
         const handleStorageChange = (event) => {
             if (event.key === 'tabClosed' && event.newValue === 'true') {

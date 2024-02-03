@@ -97,9 +97,19 @@ const VehicleTrackDash = () => {
         ]
     );
 
+    const closed = localStorage.getItem('reload');
+
+    // useEffect(() => {
+    //     localStorage.setItem('tabClosed', 'false');
+    // }, []);
+
     useEffect(() => {
-        localStorage.setItem('tabClosed', 'false');
-    }, [])
+        if(closed === 'true'){
+            window.location.reload();
+            localStorage.setItem("reload", "false");
+        }
+        // closed === 'true' && 
+    }, []);
 
 
     const itemsPerPage = 20

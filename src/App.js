@@ -14,6 +14,11 @@ function App() {
   //     setLoggedInuser(localStorage.getItem('userId'))
   // }, []);
 
+
+  // useEffect(() => {
+  //   localStorage.setItem("reload", 'true');
+  // }, []);
+
   useEffect(() => {
     if (storedTimestamp) {
       const storedTime = parseInt(storedTimestamp, 10);

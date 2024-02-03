@@ -36,6 +36,11 @@ const Signin = () => {
     const loggedInUser = localStorage.getItem('userId');
     const storedTimestamp = localStorage.getItem('unloadTimestamp');
 
+
+    useEffect(() => {
+        localStorage.setItem("reload", "true");
+    }, []);
+
     useEffect(() => {
         if (loggedInUser === null) {
             navigate('/');
