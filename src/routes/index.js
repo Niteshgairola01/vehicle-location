@@ -6,6 +6,7 @@ import CreatePolygon from '../pages/polygon/createPolygon';
 import UpdatePolygon from '../pages/polygon/updatePolygon';
 import CreateUser from '../pages/user/create-user';
 import { autoSignOutUser } from '../hooks/authHooks';
+import { debounce } from 'lodash';
 
 const AllRoutes = () => {
     const location = useLocation();
@@ -78,22 +79,23 @@ const AllRoutes = () => {
     // }, [shown, hasFunctionExecuted]); // useEffect will run only once on component mount
 
     const [tabClosed, setTabClosed] = useState(localStorage.getItem('tabClosed'));
-    console.log("tab closed", tabClosed);
 
     useEffect(() => {
-        const handleActivity = () => {
+        const handleActivity = debounce(() => {
             console.log('Activity detected');
-            autoSignOutUser([loggedInUser, null]).then((response) => {
-                if (response.status === 200) {
-                    console.log("timer added");
-                }
-            }).catch((err) => {
-                console.log("err", err?.response?.data);
-            });
-
-            localStorage.setItem("tabClosed", 'false');
             setTabClosed('false');
-        };
+            localStorage.setItem("tabClosed", 'false');
+
+            autoSignOutUser([loggedInUser, null])
+                .then((response) => {
+                    if (response.status === 200) {
+                        console.log("timer added");
+                    }
+                })
+                .catch((err) => {
+                    console.log("err", err?.response?.data);
+                });
+        }, 1000); // Adjust the debounce delay as per your requirement
 
         const handleStorageChange = (event) => {
             if (event.key === 'tabClosed' && event.newValue === 'true') {
@@ -111,21 +113,29 @@ const AllRoutes = () => {
         ];
 
         const addEventListeners = () => {
-            events.forEach(event => {
-                document.addEventListener(event, handleActivity);
-            });
+            if (location.pathname !== '/') {
+                events.forEach(event => {
+                    document.addEventListener(event, handleActivity);
+                });
+            }
         };
 
         const removeEventListeners = () => {
-            events.forEach(event => {
-                document.removeEventListener(event, handleActivity);
-            });
+            // if (location.pathname !== "/") {
+                events.forEach(event => {
+                    document.removeEventListener(event, handleActivity);
+                });
+            // }
         };
 
-        if (tabClosed === 'true') {
+        let listenersAdded = false;
+
+        if (tabClosed === 'true' && !listenersAdded) {
             addEventListeners();
-        } else {
+            listenersAdded = true;
+        } else if (tabClosed === 'false' && listenersAdded) {
             removeEventListeners();
+            listenersAdded = false;
         }
 
         window.addEventListener('storage', handleStorageChange);
@@ -134,7 +144,8 @@ const AllRoutes = () => {
             removeEventListeners();
             window.removeEventListener('storage', handleStorageChange);
         };
-    }, [tabClosed, loggedInUser]); // Include loggedInUser if used inside the effect
+    }, [tabClosed, loggedInUser]);
+
     return (
         <>
             <Routes>

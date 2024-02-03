@@ -97,6 +97,11 @@ const VehicleTrackDash = () => {
         ]
     );
 
+    useEffect(() => {
+        localStorage.setItem('tabClosed', 'false');
+    }, [])
+
+
     const itemsPerPage = 20
     const indexOfLastPost = currentPage * itemsPerPage;
     const indexOfFirstPost = indexOfLastPost - itemsPerPage;
