@@ -47,7 +47,6 @@ const UpdatePolygon = () => {
     useEffect(() => {
         editData = polygonData;
     }, []);
-    const edit = location.pathname === '/editPolygon' ? true : false;
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
@@ -156,7 +155,11 @@ const UpdatePolygon = () => {
             const lastCoordLong = selectedCoordinates[selectedCoordinates?.length - 1]?.lng;
 
             if (selectedPolygonType === 'Circle') {
-                setSelectedCoordinates([clickedCoordinate]);
+                if (selectedCoordinates.length === 1) {
+                    ErrorToast("Polygon Is closed");
+                } else {
+                    setSelectedCoordinates([clickedCoordinate]);
+                }
             } else if (selectedPolygonType === 'Polygon') {
                 if (selectedCoordinates.length > 1 && firtsCoordLat === lastCoordLat && firtsCoordLong === lastCoordLong) {
                     ErrorToast("Polygon Is closed");
