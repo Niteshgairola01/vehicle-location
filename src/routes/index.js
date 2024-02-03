@@ -12,7 +12,7 @@ const AllRoutes = () => {
     const loggedInUser = localStorage.getItem('userId');
 
     const hasFunctionExecuted = useRef(false);
-    const [shown, setShown] = useState(true);
+    const [shown, setShown] = useState(false);
 
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -76,7 +76,7 @@ const AllRoutes = () => {
                 }
             };
         }
-    }, [shown]); // useEffect will run only once on component mount
+    }, [shown, hasFunctionExecuted]); // useEffect will run only once on component mount
 
 
     return (
