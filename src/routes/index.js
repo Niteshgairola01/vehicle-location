@@ -20,8 +20,8 @@ const AllRoutes = () => {
                 setShown(false);
                 hasFunctionExecuted.current = true;
             } else {
-                hasFunctionExecuted.current = false;
                 setShown(true);
+                hasFunctionExecuted.current = false;
             }
         };
 
@@ -30,11 +30,11 @@ const AllRoutes = () => {
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, []);
+    });
 
     useEffect(() => {
 
-        if (shown === true) {
+        // if (shown === true) {
             const handleActivity = () => {
                 if (!hasFunctionExecuted.current) {
                     console.log('Activity detected');
@@ -60,7 +60,7 @@ const AllRoutes = () => {
                 "keypress",
             ];
 
-            if (location.pathname !== '/') {
+            if (location.pathname !== '/' && location.pathname !== '/track') {
                 events.forEach(event => {
                     document.addEventListener(event, handleActivity);
                 });
@@ -68,14 +68,14 @@ const AllRoutes = () => {
 
 
             return () => {
-                if (location.pathname !== '/') {
+                if (location.pathname !== '/' && location.pathname !== '/track') {
 
                     events.forEach(event => {
                         document.removeEventListener(event, handleActivity);
                     });
                 }
             };
-        }
+        // }
     }, [shown, hasFunctionExecuted]); // useEffect will run only once on component mount
 
 

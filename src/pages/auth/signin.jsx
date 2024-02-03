@@ -20,7 +20,6 @@ const Signin = () => {
     const [form, setForm] = useState({});
     const [pass, setPass] = useState('');
     const [showPass, setShowPass] = useState(false);
-    const [keepLoggedIn, setKeepLoggedIn] = useState(false);
     const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
 
     //Reset Password 
@@ -40,8 +39,8 @@ const Signin = () => {
     useEffect(() => {
         if (loggedInUser === null) {
             navigate('/');
-        } else if (loggedInUser.length > 0) {            
-                navigate('/track');
+        } else if (loggedInUser.length > 0) {
+            navigate('/track');
         }
     }, [loggedInUser]);
 
@@ -50,7 +49,7 @@ const Signin = () => {
         const currentTime = new Date().getTime();
         const timeDifference = currentTime - storedTime;
 
-        if (timeDifference > 1 * 30 * 1000) {
+        if (timeDifference > 10 * 60 * 1000) {
             localStorage.clear();
         }
     }
@@ -91,7 +90,6 @@ const Signin = () => {
                 const userData = response?.data;
                 localStorage.setItem("userId", userData?.userId);
                 localStorage.setItem("role", userData?.role);
-                localStorage.setItem("keepLoggedIn", keepLoggedIn);
 
                 setResetId(userData?.userId);
                 SuccessToast("Logged in successfully");
@@ -126,7 +124,6 @@ const Signin = () => {
                                     const userData = response?.data;
                                     localStorage.setItem("userId", userData?.userId);
                                     localStorage.setItem("role", userData?.role);
-                                    localStorage.setItem("keepLoggedIn", keepLoggedIn);
 
                                     setResetId(userData?.userId);
                                     SuccessToast("Logged in successfully");
@@ -197,11 +194,6 @@ const Signin = () => {
                                             ) : null
                                         }
                                     </div>
-
-                                    {/* <Form.Group className="d-flex justify-content-start align-items-center" >
-                                        <Form.Check className='cursor-pointer' checked={keepLoggedIn} onChange={() => setKeepLoggedIn(!keepLoggedIn)} />
-                                        <Form.Label className='thm-dark ms-2 mt-1 cursor-pointer' onClick={() => setKeepLoggedIn(!keepLoggedIn)}>Keep me logged in</Form.Label>
-                                    </Form.Group> */}
                                     <div className='w-100 mt-3 d-flex justify-content-center align-items-center'>
                                         <Button type="submit" className="py-1 px-4">Reset Password</Button>
                                     </div>
@@ -228,10 +220,6 @@ const Signin = () => {
                                             ) : null
                                         }
                                     </div>
-                                    <Form.Group className="d-flex justify-content-start align-items-center" >
-                                        <Form.Check className='cursor-pointer' checked={keepLoggedIn} onChange={() => setKeepLoggedIn(!keepLoggedIn)} />
-                                        <Form.Label className='thm-dark ms-2 mt-1 cursor-pointer' onClick={() => setKeepLoggedIn(!keepLoggedIn)}>Keep me logged in</Form.Label>
-                                    </Form.Group>
                                     <div className='w-100 mt-3 d-flex justify-content-center align-items-center'>
                                         <Button type="submit" className="py-1 px-5">Sing in</Button>
                                     </div>
