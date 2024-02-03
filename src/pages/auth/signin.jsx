@@ -44,15 +44,15 @@ const Signin = () => {
         }
     }, [loggedInUser]);
 
-    if (storedTimestamp) {
-        const storedTime = parseInt(storedTimestamp, 10);
-        const currentTime = new Date().getTime();
-        const timeDifference = currentTime - storedTime;
+    // if (storedTimestamp) {
+    //     const storedTime = parseInt(storedTimestamp, 10);
+    //     const currentTime = new Date().getTime();
+    //     const timeDifference = currentTime - storedTime;
 
-        if (timeDifference > 10 * 60 * 1000) {
-            localStorage.clear();
-        }
-    }
+    //     if (timeDifference > 1 * 15 * 1000) {
+    //         localStorage.clear();
+    //     }
+    // }
 
     useEffect(() => {
         AOS.init({

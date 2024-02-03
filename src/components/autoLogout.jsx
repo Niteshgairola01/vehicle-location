@@ -1,21 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { autoSignOutUser, signOutUser } from '../hooks/authHooks';
 
 const AutoLogout = () => {
     const loggedInUser = localStorage.getItem('userId');
-    const keepLoggedIn = localStorage.getItem('keepLoggedIn');
     const navigate = useNavigate();
 
     const location = useLocation();
-
-    // const handleLogOut = () => {
-    //     signOutUser({ userId: loggedInUser }).then((response) => {
-    //         if (response?.status === 200) {
-    //             localStorage.clear();
-    //         }
-    //     })
-    // };
 
     // Tab inactivity
 
@@ -53,11 +44,14 @@ const AutoLogout = () => {
     }, []);
 
     const logoutAction = () => {
-        localStorage.clear();
-        // sessionStorage.clear();
-        navigate('/')
+        const form = { userId: localStorage.getItem('userId') }
+        signOutUser(form).then((response) => {
+            if (response?.status === 200) {
+                localStorage.clear();
+                navigate('/')
+            }
+        }).catch(() => console.log("Unable to log out user"));
     };
-
 
 
     // Tab close / reload
