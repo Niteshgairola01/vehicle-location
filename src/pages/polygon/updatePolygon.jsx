@@ -22,12 +22,15 @@ import StepLabel from '@mui/material/StepLabel';
 import StepContent from '@mui/material/StepContent';
 import { Circle } from '../../assets/images';
 import { Tooltip } from '@mui/material';
+import { getAllPartiesList } from '../../hooks/clientMasterHooks';
 
 
 const UpdatePolygon = () => {
     const [form, setForm] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
+    const [partiesList, setPartiesList] = useState([]);
+    const [selectedParty, setSelectedParty] = useState('');
 
     const [placeName, setPlaceName] = useState('');
     const [geoName, setGeoName] = useState('');
@@ -48,8 +51,28 @@ const UpdatePolygon = () => {
         editData = polygonData;
     }, []);
 
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    useEffect(() => {
+        getAllPartiesList().then((response) => {
+            if (response.status === 200) {
+                if (response?.data.length > 0) {
+                    const filteredData = response?.data.map(data => ({
+                        ...data,
+                        label: data?.clientName,
+                        value: data?.clientName
+                    }));
+
+                    setPartiesList(filteredData);
+                } else {
+                    setPartiesList([]);
+                }
+            } else {
+                setPartiesList([]);
+            }
+        }).catch(() => setPartiesList([]));
+    }, []);
+
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
     const fullScreen = useRef(null);
 
     useEffect(() => {
@@ -65,6 +88,12 @@ const UpdatePolygon = () => {
                 label: editData?.geofenceType,
                 value: editData?.geofenceType,
             });
+
+            setSelectedParty({
+                label: editData?.dealerOEM,
+                value: editData?.dealerOEM
+            });
+
             let initialCoords = [];
             let previousCoords = [];
 
@@ -142,6 +171,10 @@ const UpdatePolygon = () => {
         setPolygonCategory(category?.value)
     };
 
+    const handleSelectParty = (party) => {
+        setSelectedParty(party);
+    };
+
     const handleMapClick = (event) => {
         if (selectedPolygonType === "") {
             ErrorToast('Select Polygon Type First')
@@ -207,6 +240,49 @@ const UpdatePolygon = () => {
 
     }, [selectedCoordinates, geoName, placeName, selectedCategory]);
 
+    const handleUpdate = () => {
+        if (selectedCategory?.value === null) {
+            ErrorToast("Select Category")
+        } else {
+            if (selectedCategory?.value === 'Reach Point' || selectedCategory?.value === 'Parking') {
+                const form = {
+                    geoName: '',
+                    placeName: placeName,
+                    geofenceType: selectedCategory?.value,
+                    coordinates: coords
+                };
+
+                updatePolygonArea(form).then((response) => {
+                    if (response?.status === 200) {
+                        SuccessToast("Polygon area Updated");
+                        navigate('/polygon');
+                    } else {
+                        ErrorToast("")
+                    }
+                }).catch((err) => ErrorToast(err?.message));
+            } else if (geoName.length > 0) {
+                const form = {
+                    geoName: geoName,
+                    placeName: placeName,
+                    geofenceType: selectedCategory?.value,
+                    coordinates: coords,
+                    ...(selectedCategory?.value === 'Dealer' && { dealerOEM: selectedParty?.value })
+                };
+
+                updatePolygonArea(form).then((response) => {
+                    if (response?.status === 200) {
+                        SuccessToast("Polygon area Updated");
+                        navigate('/polygon');
+                    } else {
+                        ErrorToast("")
+                    }
+                }).catch((err) => {
+                    err?.response?.data ? ErrorToast(err?.response?.data) : ErrorToast(err?.message);
+                });
+            }
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -216,45 +292,19 @@ const UpdatePolygon = () => {
             selectedCoordinates.length === 0 ? setActiveStep(1) : setActiveStep(2);
             selectedCoordinates.length === 0 && ErrorToast("Select Coordinates");
         } else if (activeStep === 2) {
-            if (selectedCategory?.value === null) {
-                ErrorToast("Select Category")
-            } else {
-                if (selectedCategory?.value === 'Reach Point' || selectedCategory?.value === 'Parking') {
-                    const form = {
-                        geoName: '',
-                        placeName: placeName,
-                        geofenceType: selectedCategory?.value,
-                        coordinates: coords
-                    };
+            selectedCategory?.label === undefined && selectedCategory.label !== 'Dealer' ? setActiveStep(2) : setActiveStep(3);
 
-                    updatePolygonArea(form).then((response) => {
-                        if (response?.status === 200) {
-                            SuccessToast("Polygon area Updated");
-                            navigate('/polygon');
-                        } else {
-                            ErrorToast("")
-                        }
-                    }).catch((err) => ErrorToast(err?.message));
-                } else if (geoName.length > 0) {
-                    const form = {
-                        geoName: geoName,
-                        placeName: placeName,
-                        geofenceType: selectedCategory?.value,
-                        coordinates: coords
-                    }
-
-                    updatePolygonArea(form).then((response) => {
-                        if (response?.status === 200) {
-                            SuccessToast("Polygon area Updated");
-                            navigate('/polygon');
-                        } else {
-                            ErrorToast("")
-                        }
-                    }).catch((err) => {
-                        err?.response?.data ? ErrorToast(err?.response?.data) : ErrorToast(err?.message);
-                    });
-                }
+            if (selectedCategory?.label === undefined) {
+                setActiveStep(2);
+            } else if (selectedCategory?.label !== 'Dealer') {
+                setActiveStep(2);
+                handleUpdate();
             }
+            else if (selectedCategory?.label === 'Dealer') {
+                setActiveStep(3);
+            }
+        } else if (activeStep === 3) {
+            handleUpdate();
         }
     };
 
@@ -352,6 +402,21 @@ const UpdatePolygon = () => {
                         ) : null
                     }
                 </>
+            ),
+        },
+        {
+            label: 'OEM Name',
+            content: (
+                <div style={{ zIndex: '1500 !important' }}>
+                    <Form.Label className='thm-dark'>Category</Form.Label>
+                    <Select
+                        options={partiesList}
+                        value={selectedParty}
+                        onChange={handleSelectParty}
+                        isClearable={true}
+                        styles={selectStyles}
+                    />
+                </div>
             ),
         },
     ];
@@ -465,39 +530,50 @@ const UpdatePolygon = () => {
                                     <Form onSubmit={handleSubmit}>
                                         <Box sx={{ maxWidth: 400 }}>
                                             <Stepper activeStep={activeStep} orientation="vertical">
-                                                {steps.map((step, index) => (
-                                                    <Step key={step.label}>
-                                                        <StepLabel onClick={() => handleSelectActiveStep(step.label)} className='cursor-pointer'>{step.label}</StepLabel>
-                                                        <StepContent>
-                                                            {step.content}
-                                                            <div className='mt-3'>
-                                                                {
-                                                                    index > 0 && (
-                                                                        <Button
-                                                                            type="button"
-                                                                            disabled={index === 0}
-                                                                            onClick={() => setActiveStep(activeStep - 1)}
-                                                                            className="py-1 px-3 me-2"
-                                                                        >
-                                                                            Back
-                                                                        </Button>
-                                                                    )
-                                                                }
-                                                                <ColoredButton
-                                                                    variant="contained"
-                                                                    type="submit"
-                                                                    // onClick={() => handleSubmit(activeStep + 1)}
-                                                                    className="py-1 px-2"
-                                                                >
-                                                                    {activeStep == 2 ? 'Update' : 'Continue'}
-                                                                </ColoredButton>
-                                                            </div>
-                                                        </StepContent>
-                                                        {
+                                                {steps.map((step, index) => {
 
-                                                        }
-                                                    </Step>
-                                                ))}
+                                                    if (step.label === 'OEM Name' && selectedCategory?.label !== 'Dealer') {
+                                                        return null;
+                                                    }
+
+                                                    return (
+                                                        <Step key={step.label}>
+                                                            <StepLabel onClick={() => handleSelectActiveStep(step.label)} className='cursor-pointer'>{step.label}</StepLabel>
+                                                            <StepContent>
+                                                                {step.content}
+                                                                <div className='mt-3'>
+                                                                    {
+                                                                        index > 0 && (
+                                                                            <Button
+                                                                                type="button"
+                                                                                disabled={index === 0}
+                                                                                onClick={() => setActiveStep(activeStep - 1)}
+                                                                                className="py-1 px-3 me-2"
+                                                                            >
+                                                                                Back
+                                                                            </Button>
+                                                                        )
+                                                                    }
+                                                                    <ColoredButton
+                                                                        variant="contained"
+                                                                        type="submit"
+                                                                        className="py-1 px-2"
+                                                                    >
+                                                                        {(activeStep === 2 && selectedCategory?.label !== 'Dealer') ? 'Update' :
+                                                                            (activeStep === 2 && selectedCategory?.label === 'Dealer') ? 'Continue' :
+                                                                                activeStep === 3 ? 'Update' : "Continue"}
+
+                                                                        {/* {activeStep == 2 ? 'Update' : 'Continue'} */}
+                                                                    </ColoredButton>
+                                                                </div>
+                                                            </StepContent>
+                                                            {
+
+                                                            }
+                                                        </Step>
+                                                    )
+                                                }
+                                                )}
 
                                             </Stepper>
                                         </Box>
@@ -593,7 +669,7 @@ const UpdatePolygon = () => {
                                                             />
                                                         )}
 
-                                                        {selectedCoordinates.map((coord, index) => (
+                                                        {selectedCoordinates.length > 0 && selectedCoordinates.map((coord, index) => (
                                                             <MarkerF icon={{
                                                                 url: Circle,
                                                                 // scaledSize: new window.google.maps.Size(20, 20),
