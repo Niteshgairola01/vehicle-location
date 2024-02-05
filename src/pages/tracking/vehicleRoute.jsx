@@ -1,37 +1,30 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Card from '../../components/Card/card'
 import { GoogleMap, LoadScript, MarkerF, Polyline, PolylineF } from '@react-google-maps/api'
 import { useLocation } from 'react-router-dom';
 import { getVehicleRoute } from '../../hooks/vehicleMasterHooks';
 import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
+import { truck } from '../../assets/images';
 
 const VehicleRoute = () => {
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
-    const rouetObject = Object.freeze({
-        id: 1234,
-        dateTime: 'Feb 3 2024 16:00',
-        km: 240,
-        latLongDistance: 0.44,
-        lat: 19.0760,
-        lng: 72.8777,
-        speed: 40,
-    })
     const [routeData, setRouteData] = useState([]);
     const [coordinates, setCoordinates] = useState([]);
     const [currentPosition, setCurrentPosition] = useState([]);
     const [form, setForm] = useState([]);
 
     const [pause, setPause] = useState(true);
+    const [currentCoordinates, setCurrentCoordinates] = useState({});
+    const [currentCoordDetails, setCurrentCoordsDetails] = useState({});
 
     const mapContainerStyle = {
         width: '100%',
         height: '95%',
     };
-
 
     const history = useLocation();
     const vehicleData = history.state;
@@ -44,28 +37,26 @@ const VehicleRoute = () => {
         setCurrentPosition([
             {
                 title: 'Date/Time',
-                value: routeData[0]?.dateTime
+                value: currentCoordDetails?.date
             },
             {
                 title: 'Km Run',
-                value: routeData[0]?.km
+                value: currentCoordDetails?.km
             },
             {
                 title: 'Speed',
-                value: routeData[0]?.speed
+                value: currentCoordDetails?.speed
             },
             {
                 title: 'Latitude',
-                value: routeData[0]?.lat
+                value: currentCoordDetails?.lat
             },
             {
                 title: 'Longitude',
-                value: routeData[0]?.lng
+                value: currentCoordDetails?.lng
             }
         ]);
-    }, [routeData]);
-
-
+    }, []);
 
     useEffect(() => {
         if (form.length > 0) {
@@ -92,15 +83,89 @@ const VehicleRoute = () => {
         }
     }, [form]);
 
+    // const [arrayLocation, setArrayLocation] = useState(0);
+    let arrayLocation = useRef(0);
+
+    useEffect(() => {
+        let timeoutIds = [];
+
+        const setNextCoordinate = (index) => {
+            if (index < coordinates.length) {
+                setCurrentCoordinates(coordinates[index]);
+                arrayLocation.current = index;
+                timeoutIds.push(setTimeout(() => setNextCoordinate(index + 1), 1000));
+            }
+        };
+
+        const setNextCoord = (index) => {
+            if (index < routeData.length) {
+                setCurrentCoordsDetails(routeData[index]);
+                timeoutIds.push(setTimeout(() => setNextCoord(index + 1), 1000));
+            }
+        };
+
+        if (pause === false) {
+            timeoutIds = [];
+            setNextCoord(arrayLocation.current);
+            setNextCoordinate(arrayLocation.current);
+        } else {
+            timeoutIds.forEach(clearTimeout);
+            if (coordinates.length > 0 && currentCoordDetails.lat === undefined) {
+                setCurrentCoordinates({ lat: coordinates[0].lat, lng: coordinates[0].lng });
+                setCurrentCoordsDetails(routeData[arrayLocation.current]);
+            }
+            // else if (coordinates.length > 0 && currentCoordDetails.lat !== undefined) {
+            //     setCurrentCoordinates({ lat: coordinates[arrayLocation.current].lat, lng: coordinates[arrayLocation.current].lng });
+            //     setCurrentCoordsDetails(routeData[arrayLocation.current]);
+            // }
+            // else {
+            // }
+        }
+
+        return () => {
+            timeoutIds.forEach(clearTimeout);
+        };
+    }, [pause]);
+
+    const [markerRotation, setMarkerRotation] = useState(0);
+
+    useEffect(() => {
+        if (coordinates.length > 1) {
+            // Calculate angle between consecutive points
+            const heading = new window.google.maps.geometry.spherical.computeHeading(
+                new window.google.maps.LatLng(coordinates[0]),
+                new window.google.maps.LatLng(coordinates[coordinates.length - 1])
+            );
+
+            console.log("heading", heading);
+
+            setMarkerRotation(heading);
+        }
+    }, [coordinates]);
+
     const handleCenter = () => {
         if (coordinates.length > 0) {
-            return { lat: coordinates[0].lat, lng: coordinates[0].lng }
+            if (currentCoordinates.lat === undefined) {
+                return { lat: coordinates[0].lat, lng: coordinates[0].lng }
+            } else {
+                if (currentCoordinates.lat === coordinates[coordinates.length - 1].lat) {
+                    return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
+                } else {
+                    return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
+                }
+            }
         } else {
             return { lat: 0, lng: 0 }
         }
     };
 
-    console.log("coordinates", coordinates);
+    const handleChange = (e) => {
+        arrayLocation.current = parseInt(e.target.value);
+        console.log("array location", parseInt(e.target.value));
+    };
+
+
+    console.log("");
 
     return (
         <div className='thm-dark mt-5 mx-5'>
@@ -142,13 +207,31 @@ const VehicleRoute = () => {
                                     strokeWeight: 2,
                                 }}
                             />
-                            <MarkerF position={handleCenter()} />
+                            {
+                                coordinates.length > 0 && (
+                                    <MarkerF
+                                        icon={{
+                                            url: truck,
+                                            // scaledSize: new window.google.maps.Size(20, 20)
+                                            scaledSize: new window.google.maps.Size(40, 40),
+                                            anchor: new window.google.maps.Point(30, 25), // Adjust the values to add margin from the top
+                                            // rotation: markerRotation
+                                            // rotation: 0
+                                        }}
+                                        position={handleCenter()}
+                                    />
+                                )
+                            }
                         </GoogleMap>
                     </LoadScript>
                 </div>
 
                 <div className='w-100'>
-                    <input type="range" min="0" max="100" className='w-100' />
+                    <input type="range"
+                        min={0} max={coordinates.length - 1}
+                        // value={arrayLocation?.current}
+                        onChange={handleChange}
+                        className='w-100' />
                 </div>
 
                 <div className='w-100 mt-2 py-2 bg-thm-dark rounded d-flex justify-content-around align-items-center'>
@@ -161,14 +244,35 @@ const VehicleRoute = () => {
                             )
                         }
                     </div>
-                    {
-                        currentPosition.map((data, index) => (
-                            <div className='text-center text-white' key={index}>
-                                <p className='m-0 p-0'>{data?.value}</p>
-                                <p className='m-0 p-0 fw-bold text-uppercase'>{data?.title}</p>
-                            </div>
-                        ))
-                    }
+                    {/* {
+                        currentPosition.map((data, index) => ( */}
+                    <div className='text-center text-white'>
+                        <p className='m-0 p-0'>{currentCoordDetails?.date}</p>
+                        <p className='m-0 p-0 fw-bold text-uppercase'>Date/time</p>
+                    </div>
+
+
+                    <div className='text-center text-white'>
+                        <p className='m-0 p-0'>{currentCoordDetails?.latLongDistance}</p>
+                        <p className='m-0 p-0 fw-bold text-uppercase'>Km Run</p>
+                    </div>
+
+                    <div className='text-center text-white'>
+                        <p className='m-0 p-0'>{currentCoordDetails?.speed}</p>
+                        <p className='m-0 p-0 fw-bold text-uppercase'>Speed</p>
+                    </div>
+
+                    <div className='text-center text-white'>
+                        <p className='m-0 p-0'>{currentCoordDetails?.lat}</p>
+                        <p className='m-0 p-0 fw-bold text-uppercase'>Latitude</p>
+                    </div>
+
+                    <div className='text-center text-white'>
+                        <p className='m-0 p-0'>{currentCoordDetails?.long}</p>
+                        <p className='m-0 p-0 fw-bold text-uppercase'>Longitude</p>
+                    </div>
+                    {/* ))
+                    } */}
                 </div>
             </Card>
         </div>
