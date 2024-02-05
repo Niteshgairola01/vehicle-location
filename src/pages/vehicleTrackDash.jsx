@@ -25,8 +25,8 @@ import { autoSignOutUser } from '../hooks/authHooks';
 
 const VehicleTrackDash = () => {
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
     const [showMap, setShowMap] = useState(false);
 
@@ -104,7 +104,7 @@ const VehicleTrackDash = () => {
     // }, []);
 
     useEffect(() => {
-        if(closed === 'true'){
+        if (closed === 'true') {
             window.location.reload();
             localStorage.setItem("reload", "false");
         }
@@ -1055,18 +1055,19 @@ const VehicleTrackDash = () => {
         {
             title: 'History',
             icon: <FaRoute />,
-            path: "#",
-            handleClick: '#',
-            color: 'text-secondary',
-            cursor: 'cursor-not-allowed',
+            path: "/vehicle-route",
+            handleClick: (data, i) => { i === 0 && console.log('test') },
+            color: 'thm-dark',
+            cursor: 'cursor-pointer',
         },
         {
             title: 'Track',
             icon: <FaRoute />,
-            path: "/location",
-            handleClick: (data) => {
-                setShowLocation(true);
-                setSelectedVehicle(data);
+            path: "#",
+            handleClick: (data, i) => {
+                i === 1 && setShowLocation(true);
+                i === 1 && setSelectedVehicle(data);
+                i === 1 && setShowMap(true);
             },
             color: 'thm-dark',
             cursor: 'cursor-pointer'
@@ -1157,22 +1158,38 @@ const VehicleTrackDash = () => {
                                 <p className='thm-dark mt-2 mb-0'>{data?.location}</p>
                                 <p className='' style={{ fontSize: "0.8rem" }}>{handleFormatDate(data?.locationTime)}</p>
                                 <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
-                                    {
+                                    {/* {
                                         locationOptionsBtns.map((location, i) => (
-                                            <Link to={"#"} state={data} className='text-decoration-none'>
+                                            <Link to={location.path} state={data} className='text-decoration-none'>
                                                 <div className={`${location?.color} ${location?.cursor} mx-2`} key={i}
-                                                    onClick={() => {
-                                                        i === 1 && setShowLocation(true);
-                                                        i === 1 && setSelectedVehicle(data);
-                                                        i === 1 && setShowMap(true);
-                                                    }}
+                                                    onClick={location.handleClick(data, i)}
                                                 >
                                                     {location?.icon}
                                                     <span className='fw-bold fs-6 mx-2'>{location.title}</span>
                                                 </div>
                                             </Link>
                                         ))
-                                    }
+                                    } */}
+                                    <Link to={'/vehicle-route'} state={data} className='text-decoration-none'>
+                                        <div className={`thm-dark cursor-pointer mx-2`}>
+                                            <FaRoute />
+                                            <span className='fw-bold fs-6 mx-2'>{'History'}</span>
+                                        </div>
+                                    </Link>
+
+
+                                    <Link to={'#'} state={data} className='text-decoration-none'>
+                                        <div className={`thm-dark cursor-pointer mx-2`}
+                                            onClick={() => {
+                                                setShowLocation(true);
+                                                setSelectedVehicle(data);
+                                                setShowMap(true);
+                                            }}
+                                        >
+                                            <FaRoute />
+                                            <span className='fw-bold fs-6 mx-2'>{'Track'}</span>
+                                        </div>
+                                    </Link>
                                 </div>
                             </div>
                         ) : null

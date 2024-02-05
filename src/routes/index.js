@@ -7,6 +7,7 @@ import UpdatePolygon from '../pages/polygon/updatePolygon';
 import CreateUser from '../pages/user/create-user';
 import { autoSignOutUser } from '../hooks/authHooks';
 import { debounce } from 'lodash';
+import VehicleRoute from '../pages/tracking/vehicleRoute';
 
 const AllRoutes = () => {
     const location = useLocation();
@@ -122,9 +123,9 @@ const AllRoutes = () => {
 
         const removeEventListeners = () => {
             // if (location.pathname !== "/") {
-                events.forEach(event => {
-                    document.removeEventListener(event, handleActivity);
-                });
+            events.forEach(event => {
+                document.removeEventListener(event, handleActivity);
+            });
             // }
         };
 
@@ -151,6 +152,7 @@ const AllRoutes = () => {
             <Routes>
                 {/* Tracking */}
                 <Route path="/track" element={<VehicleTrackDash />} />
+                <Route path="/vehicle-route" element={<VehicleRoute />} />
 
                 {/* Polygon */}
                 <Route path="/polygon" element={<PolygonList />} />
