@@ -437,6 +437,8 @@ const UpdatePolygon = () => {
             placeName.length > 0 && setActiveStep(1);
         } else if (label === 'Details') {
             (placeName.length > 0 && selectedCoordinates.length > 0) && setActiveStep(2);
+        } else if (label === 'OEM Name') {
+            selectedCategory?.label === 'Dealer' && setActiveStep(3);
         }
     };
 

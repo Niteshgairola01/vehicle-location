@@ -7,6 +7,7 @@ import Signin from '../pages/auth/signin';
 const Default = () => {
 
     const location = useLocation();
+    
     return (
         <div className='m-0 p-0'>
             {

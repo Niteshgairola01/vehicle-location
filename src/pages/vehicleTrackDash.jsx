@@ -12,16 +12,15 @@ import { ErrorToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
-import { Link, useLocation } from 'react-router-dom';
+import { Link} from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
 import Loader from '../components/loader/loader';
 import DashHead from '../components/dashboardHead';
-import { GoogleMap, LoadScript, MarkerF, useLoadScript } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import { FaSort } from "react-icons/fa";
 import '../assets/styles/home.css';
-import { autoSignOutUser } from '../hooks/authHooks';
 
 const VehicleTrackDash = () => {
 
