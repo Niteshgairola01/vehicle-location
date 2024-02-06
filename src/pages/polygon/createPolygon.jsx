@@ -9,7 +9,7 @@ import { Input } from '../../components/form/Input';
 import { ErrorToast, SuccessToast } from '../../components/toast/toast';
 import { createNewPolygonArea } from '../../hooks/polygonHooks';
 import { RxEnterFullScreen, RxCross1 } from "react-icons/rx";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IoTriangleOutline } from "react-icons/io5";
 import { FaRegCircle } from "react-icons/fa";
 
@@ -43,6 +43,9 @@ const CreatePolygon = () => {
     const [isPolygonClosed, setIsPolygonClosed] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
+
+    const location = useLocation();
+    const geofencePosition = location.state;
 
     const navigate = useNavigate();
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
@@ -87,6 +90,12 @@ const CreatePolygon = () => {
     const handleSelectParty = (party) => {
         setSelectedParty(party);
     };
+
+    useEffect(() => {
+        if (geofencePosition !== null) {
+            setSearchLatLong(geofencePosition)
+        }
+    }, [geofencePosition]);
 
     useEffect(() => {
         getAllPartiesList().then((response) => {
@@ -425,7 +434,9 @@ const CreatePolygon = () => {
     };
 
     return (
-        <Modal show={true} fullscreen centered onHide={() => navigate('/polygon')} size='xl'
+        <Modal show={true} fullscreen centered onHide={() => {
+            geofencePosition === null ? navigate('/polygon') : navigate('/vehicle-route')
+        }} size='xl'
             className='w-100 p-5'>
             <Modal.Header closeButton>
                 <Modal.Title className='thm-dark w-100 text-center'>Create Polygon</Modal.Title>

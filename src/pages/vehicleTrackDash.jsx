@@ -12,7 +12,7 @@ import { ErrorToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
-import { Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
@@ -24,8 +24,8 @@ import '../assets/styles/home.css';
 
 const VehicleTrackDash = () => {
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
     const [showMap, setShowMap] = useState(false);
 
@@ -572,7 +572,7 @@ const VehicleTrackDash = () => {
                                 if (selectedFilter.includes('Delayed (As per OEM)')) {
                                     if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                         allFilteredTrip.forEach(data => {
-                                            const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
+                                            const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
                                             if (testData === true) {
                                                 finalStatusTrips.push(data)
                                             }
@@ -1169,7 +1169,13 @@ const VehicleTrackDash = () => {
                                             </Link>
                                         ))
                                     } */}
-                                    <Link to={'/vehicle-route'} state={data} className='text-decoration-none'>
+                                    <Link to={'/vehicle-route'} state={data}
+                                        onClick={() => {
+                                            localStorage.setItem("vehicle", data?.vehicleNo);
+                                            localStorage.setItem("vehicleExitDbID", data?.vehicleExitDbID);
+                                            localStorage.setItem("lastDbID", data?.lastDbID);
+                                        }}
+                                        className='text-decoration-none'>
                                         <div className={`thm-dark cursor-pointer mx-2`}>
                                             <FaRoute />
                                             <span className='fw-bold fs-6 mx-2'>{'History'}</span>

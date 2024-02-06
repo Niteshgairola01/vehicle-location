@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Card from '../../components/Card/card'
-import { GoogleMap, LoadScript, MarkerF, Polyline, PolylineF } from '@react-google-maps/api'
-import { useLocation, useNavigate } from 'react-router-dom';
+import { GoogleMap, InfoWindow, InfoWindowF, LoadScript, MarkerF, Polyline, PolylineF } from '@react-google-maps/api'
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getVehicleRoute } from '../../hooks/vehicleMasterHooks';
 import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
 import { truck } from '../../assets/images';
 import { Modal } from 'react-bootstrap';
+import { ReactSVG } from 'react-svg';
 
 const VehicleRoute = () => {
 
@@ -23,6 +24,14 @@ const VehicleRoute = () => {
     const [currentCoordDetails, setCurrentCoordsDetails] = useState({});
     const [rangeValue, setRangeValue] = useState(0);
 
+    const [stoppage, setStoppage] = useState([]);
+    const [stopageCoords, setStopageCoord] = useState([]);
+    const [selectedMarker, setSelectedMarker] = useState(null);
+    const [markerDetails, setMarkerDetails] = useState({});
+    const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
+
+    const [showGeofenceOption, setShowGeofenceOption] = useState(false);
+    const [geofencePosition, setGeofencePosition] = useState({ lat: 26.858192, lng: 75.669163 })
     const [playbackSpeed, setPlayBackSpeed] = useState(1000);
     const navigate = useNavigate();
     const mapContainerStyle = {
@@ -33,13 +42,25 @@ const VehicleRoute = () => {
     const history = useLocation();
     const vehicleData = history.state;
 
+    const vehicleNo = localStorage.getItem("vehicle");
+    const exitId = localStorage.getItem('vehicleExitDbID');
+    const lastId = localStorage.getItem('lastDbID');
+
+    const markerRef = useRef(null);
+
+    useEffect(() => {
+        if (markerRef.current) {
+            markerRef.current.style.transform = `rotate(${90}deg)`;
+        }
+    }, []);
+
     useEffect(() => {
         arrayLocation.current = rangeValue;
     }, [rangeValue]);
 
     useEffect(() => {
-        setForm([vehicleData?.vehicleNo, vehicleData?.vehicleExitDbID, vehicleData?.lastDbID])
-    }, [vehicleData]);
+        setForm([vehicleNo, exitId, lastId])
+    }, [vehicleNo, exitId, lastId]);
 
     useState(() => {
         setCurrentPosition([
@@ -66,12 +87,89 @@ const VehicleRoute = () => {
         ]);
     }, [currentCoordDetails]);
 
+    const handleSVGCallback = (svgContent) => {
+        // console.log("contnet", svgContent);
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+            // console.log(doc); // Log parsed document for inspection
+
+            const groups = doc.querySelectorAll('g');
+            // console.log(groups); // Log groups for inspection
+
+            groups.forEach((group) => {
+                const paths = group.querySelectorAll('path');
+                paths.forEach((path) => {
+                    const pathData = path.getAttribute('d');
+                    // console.log(pathData);
+                });
+            });
+        } catch (error) {
+            console.error('Error parsing SVG content:', error);
+        }
+    };
+
     useEffect(() => {
         if (form.length > 0) {
             getVehicleRoute(form).then((response) => {
                 if (response.status === 200) {
                     const allData = response?.data;
                     setRouteData(response?.data);
+
+                    // const latitudesMap = new Map();
+                    // const repeatedLatitudes = [];
+
+                    // allData.forEach(obj => {
+                    //     if (!latitudesMap.has(obj.lat)) {
+                    //         latitudesMap.set(obj.lat, 1);
+                    //     } else {
+                    //         if (latitudesMap.get(obj.lat) === 1) {
+                    //             repeatedLatitudes.push(obj);
+                    //         }
+                    //         latitudesMap.set(obj.lat, latitudesMap.get(obj.lat) + 1);
+                    //     }
+                    // });
+
+                    const latitudesMap = new Map(); // To store seen latitudes
+                    const repeatedLatitudes = [];
+
+                    allData.forEach(obj => {
+                        // If the latitude has not been encountered yet, add it to the latitudes map
+                        if (!latitudesMap.has(obj.lat)) {
+                            latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
+                        } else {
+                            // Increase the count for the latitude in the map
+                            const existingLatData = latitudesMap.get(obj.lat);
+                            latitudesMap.set(obj.lat, {
+                                count: existingLatData.count + 1,
+                                arrival: existingLatData.arrival,
+                                exit: obj.date,
+                                lng: obj.long
+                            });
+                        }
+                    });
+
+                    // Filter latitudes that are repeated
+                    latitudesMap.forEach((value, key) => {
+                        if (value.count > 1) {
+                            repeatedLatitudes.push({
+                                lat: key,
+                                lng: value.lng,
+                                arrival: value.arrival,
+                                exit: value.exit
+                            });
+                        }
+                    });
+
+                    setStoppage(repeatedLatitudes);
+
+                    let repeatedCoords = [];
+
+                    repeatedLatitudes.map((data) => {
+                        repeatedCoords.push({ lat: parseFloat(data?.lat), lng: parseFloat(data?.lng) })
+                    });
+
+                    setStopageCoord(repeatedCoords);
 
                     let coords = [];
 
@@ -90,6 +188,8 @@ const VehicleRoute = () => {
             }).catch(err => console.log("error", err))
         }
     }, [form]);
+
+    console.log("marker", markerDetails);
 
     // const [arrayLocation, setArrayLocation] = useState(0);
     let arrayLocation = useRef(0);
@@ -144,21 +244,61 @@ const VehicleRoute = () => {
         return routeData.length < 1 ? '' : formattedDateTime;
     };
 
+    const convertCurrentDateTime = (originalDateTime) => {
+        const [datePart, timePart] = currentCoordDetails?.date === undefined ? '' : originalDateTime.split(' ');
+        const [year, day, month] = currentCoordDetails?.date === undefined ? '' : datePart.split('-');
+
+        const formattedDate = currentCoordDetails?.date === undefined ? '' : `${day}-${month}-${year}`;
+        const formattedDateTime = currentCoordDetails?.date === undefined ? '' : `${formattedDate} ${timePart}`;
+
+        return currentCoordDetails?.date === undefined ? '' : formattedDateTime;
+    };
+
+    const convertMarkerDateTime = (originalDateTime) => {
+        const [datePart, timePart] = selectedMarker === null ? '' : originalDateTime.split(' ');
+        const [year, day, month] = selectedMarker === null ? '' : datePart.split('-');
+
+        const formattedDate = selectedMarker === null ? '' : `${day}-${month}-${year}`;
+        const formattedDateTime = selectedMarker === null ? '' : `${formattedDate} ${timePart}`;
+
+        return selectedMarker === null ? '' : formattedDateTime;
+    };
+
 
     const [markerRotation, setMarkerRotation] = useState(0);
 
-    useEffect(() => {
-        if (coordinates.length > 1) {
-            const heading = new window.google.maps.geometry.spherical.computeHeading(
-                new window.google.maps.LatLng(coordinates[0]),
-                new window.google.maps.LatLng(coordinates[coordinates.length - 1])
-            );
+    // useEffect(() => {
+    //     if (coordinates.length > 1) {
+    //         const heading = new window.google.maps.geometry.spherical.computeHeading(
+    //             new window.google.maps.LatLng(coordinates[0]),
+    //             new window.google.maps.LatLng(coordinates[coordinates.length - 1])
+    //         );
 
-            setMarkerRotation(heading);
-        }
-    }, [coordinates]);
+    //         setMarkerRotation(heading);
+    //     }
+    // }, [coordinates]);
 
     const handleCenter = () => {
+        if (selectedMarker === null) {
+            if (coordinates.length > 0) {
+                if (currentCoordinates.lat === undefined) {
+                    return { lat: coordinates[0].lat, lng: coordinates[0].lng }
+                } else {
+                    if (currentCoordinates.lat === coordinates[coordinates.length - 1].lat) {
+                        return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
+                    } else {
+                        return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
+                    }
+                }
+            } else {
+                return { lat: 26.858192, lng: 75.669163 }
+            }
+        } else {
+            return center;
+        }
+    };
+
+    const vehicleCenter = () => {
         if (coordinates.length > 0) {
             if (currentCoordinates.lat === undefined) {
                 return { lat: coordinates[0].lat, lng: coordinates[0].lng }
@@ -173,6 +313,18 @@ const VehicleRoute = () => {
             return { lat: 26.858192, lng: 75.669163 }
         }
     };
+
+    const handleShowGeofence = (event) => {
+        setShowGeofenceOption(true);
+        // const lat = 
+        // console.log("event", event.latLng.lat());
+        setGeofencePosition({
+            lat: parseFloat((event.latLng.lat().toFixed(6))),
+            lng: parseFloat((event.latLng.lng().toFixed(6))),
+        })
+    };
+
+    console.log("postion", geofencePosition);
 
     const handleStartPosition = () => {
         if (coordinates.length > 0) {
@@ -202,15 +354,62 @@ const VehicleRoute = () => {
         return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
     };
 
+    const getBounds = () => {
+        const bounds = new window.google.maps.LatLngBounds();
+        stopageCoords.forEach((marker) => {
+            bounds.extend(marker.position);
+        });
+
+        return bounds;
+    };
+
+    const handleSelectMarker = (data, index) => {
+        setSelectedMarker(index);
+        setMarkerDetails(data);
+    };
+
+    const test = [
+        {
+            lat: "22.2345",
+            lng: "77.2399",
+            date: "2024-01-31 08:28:15"
+        },
+        {
+            lat: "22.2345",
+            lng: "77.2399",
+            date: "2024-01-31 08:28:15"
+        },
+        {
+            lat: "22.2345",
+            lng: "77.2399",
+            date: "2024-01-31 08:28:15"
+        },
+        {
+            lat: "22.2345",
+            lng: "77.2399",
+            date: "2024-01-31 08:28:15"
+        },
+        {
+            lat: "22.2345",
+            lng: "77.2399",
+            date: "2024-01-31 08:28:15"
+        },
+    ]
+
     return (
-        <Modal show={true} className='w-100 p-5' fullscreen centered onHide={() => navigate('/track')} size='xl'>
+        <Modal show={true} className='w-100 p-5' fullscreen centered onHide={() => {
+            localStorage.removeItem('vehicle');
+            localStorage.removeItem('vehicleExitDbID');
+            localStorage.removeItem('lastDbID');
+            navigate('/track');
+        }} size='xl'>
             <Modal.Header closeButton>
                 <div className='m-0 w-100 px-5 d-flex justify-content-between align-items-center'>
                     <h4>Vehicle Route</h4>
                     <div className='d-flex justify-content-between align-items-center'>
                         <div className='me-2'>
                             <span className='fw-bold me-1'>Vehicle : </span>
-                            <span>{vehicleData?.vehicleNo}</span>
+                            <span>{vehicleNo}</span>
                         </div>
 
                         <div className='ps-2' style={{ borderLeft: "2px solid #000" }}>
@@ -222,7 +421,6 @@ const VehicleRoute = () => {
                         </div>
                     </div>
                 </div>
-                {/* <Modal.Title className='thm-dark w-100 text-center'>Vehicle Route</Modal.Title> */}
             </Modal.Header>
 
             <Modal.Body>
@@ -232,9 +430,16 @@ const VehicleRoute = () => {
                             <LoadScript googleMapsApiKey={key}>
                                 <GoogleMap
                                     mapContainerStyle={mapContainerStyle}
+                                    onLoad={(map) => {
+                                        const bounds = selectedMarker !== null && getBounds();
+                                        selectedMarker !== null && map.fitBounds(bounds);
+
+                                        selectedMarker !== null && setCenter(map.getCenter());
+                                    }}
                                     center={handleCenter()}
                                     zoom={11}
                                     options={{ gestureHandling: 'greedy' }}
+                                    onClick={handleShowGeofence}
                                 >
                                     <PolylineF
                                         path={coordinatesBeforeMarker}
@@ -256,20 +461,19 @@ const VehicleRoute = () => {
 
                                     {
                                         coordinates.length > 0 && (
-                                            <MarkerF
-                                                icon={{
-                                                    url: truck,
-                                                    scaledSize: new window.google.maps.Size(40, 40),
-                                                    anchor: new window.google.maps.Point(30, 25),
-                                                    // rotation: 150,
-                                                    // path: new window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW
-                                                    // rotation: new window.google.maps.geometry.spherical.computeHeading(
-                                                    //     { lat: coordinates[0].lat, lng: coordinates[0].lng },
-                                                    //     { lat: coordinates[1].lat, lng: coordinates[1].lng },
-                                                    // )
-                                                }}
-                                                position={handleCenter()}
-                                            />
+                                            <div className='marker-container'>
+                                                <MarkerF
+                                                    icon={{
+                                                        // path: "M150 0 L75 200 L225 200 Z",
+                                                        url: truck,
+                                                        scaledSize: new window.google.maps.Size(40, 40),
+                                                        anchor: new window.google.maps.Point(30, 25),
+                                                        rotation: -30
+                                                    }}
+                                                    position={vehicleCenter()}
+                                                    className='marker-container'
+                                                />
+                                            </div>
                                         )
                                     }
 
@@ -282,6 +486,49 @@ const VehicleRoute = () => {
                                         label="End"
                                         position={handleEndPosition()}
                                     />
+
+                                    {
+                                        stoppage.map((data, index) => (
+                                            <MarkerF
+                                                label={`${index + 1}`}
+                                                position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.lng) }}
+                                                onClick={() => handleSelectMarker(data, index)}
+                                            />
+
+                                        ))
+                                    }
+
+                                    {selectedMarker !== null && (
+                                        <InfoWindowF
+                                            position={{ lat: parseFloat(stoppage[selectedMarker]?.lat), lng: parseFloat(stoppage[selectedMarker]?.lng) }}
+                                            onCloseClick={() => setSelectedMarker(null)}
+                                        >
+                                            <div>
+                                                <div>
+                                                    <span className='fw-bold'>Arrival Time :</span>
+                                                    <span className='ps-1 fw-400'>{convertMarkerDateTime(markerDetails?.arrival)}</span>
+                                                </div>
+
+                                                <div className='mt-1'>
+                                                    <span className='fw-bold'>Exit Time :</span>
+                                                    <span className='ps-1 fw-400'>{convertMarkerDateTime(markerDetails?.exit)}</span>
+                                                </div>
+                                            </div>
+                                        </InfoWindowF>
+                                    )}
+
+                                    {
+                                        showGeofenceOption && (
+                                            <InfoWindowF
+                                                position={geofencePosition}
+                                                onCloseClick={() => setShowGeofenceOption(false)}
+                                            >
+                                                <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' state={geofencePosition}>
+                                                    <div>Create Geofence</div>
+                                                </Link>
+                                            </InfoWindowF>
+                                        )
+                                    }
 
                                 </GoogleMap>
                             </LoadScript>
@@ -314,6 +561,11 @@ const VehicleRoute = () => {
                             </div>
                         ))
                     } */}
+
+                            <div className='text-center text-white'>
+                                <p className='m-0 p-0'>{convertCurrentDateTime(currentCoordDetails?.date)}</p>
+                                <p className='m-0 p-0 fw-bold text-uppercase'>Date/Time</p>
+                            </div>
 
                             <div className='text-center text-white'>
                                 <p className='m-0 p-0'>{handleGetCoveredDistance()}</p>

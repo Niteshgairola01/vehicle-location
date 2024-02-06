@@ -3,7 +3,7 @@ import banner1 from './banner/banner1.jpg';
 import banner2 from './banner/banner2.jpg';
 import banner3 from './banner/banner3.jpg';
 import banner4 from './banner/banner4.jpg';
-import truck from './truck.png';
+import truck from './truck.svg';
 import warning from './gif/warning.gif';
 import Circle from './circle.png';
 import trailer from './banner/trailer.png';

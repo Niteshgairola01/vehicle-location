@@ -186,6 +186,10 @@ p {
     font-weight: 300;
 }
 
+.fw-400 {
+    font-weight: 400;
+}
+
 .fw-700 {
     font-weight: 700;
 }
@@ -1083,4 +1087,11 @@ input[type="range"]:active::-moz-range-progress {
 
 input[type="range"]:disabled::-moz-range-thumb {
     cursor: not-allowed;
+}
+
+
+
+
+.marker-container{
+    transform: rotate(150deg) !important;
 }

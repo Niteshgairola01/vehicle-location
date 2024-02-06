@@ -41,6 +41,20 @@ const Signin = () => {
         localStorage.setItem("reload", "true");
     }, []);
 
+
+    useEffect(() => {
+        if (storedTimestamp) {
+            const storedTime = parseInt(storedTimestamp, 10);
+            const currentTime = new Date().getTime();
+            const timeDifference = currentTime - storedTime;
+            if (timeDifference > 10 * 30 * 1000) {
+                localStorage.clear();
+                navigate('/');
+            }
+        }
+    }, [storedTimestamp]);
+
+
     useEffect(() => {
         if (loggedInUser === null) {
             navigate('/');
