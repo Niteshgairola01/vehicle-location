@@ -26,6 +26,7 @@ import { getAllPartiesList } from '../../hooks/clientMasterHooks';
 
 
 const UpdatePolygon = () => {
+    const [prevoiusValues, setPreviousValues] = useState({});
     const [form, setForm] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
@@ -71,9 +72,11 @@ const UpdatePolygon = () => {
         }).catch(() => setPartiesList([]));
     }, []);
 
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
     const fullScreen = useRef(null);
+
+    console.log("form", form);
 
     useEffect(() => {
         if (editData === null) {
@@ -237,19 +240,32 @@ const UpdatePolygon = () => {
             geofenceType: selectedCategory?.value,
             coordinates: coordinates
         });
-
     }, [selectedCoordinates, geoName, placeName, selectedCategory]);
+
+    // console.log("edit data", polygonData);
+
+    useEffect(() => {
+        setPreviousValues({
+            ...form,
+            geoName: geoName,
+            placeName: placeName,
+            geofenceType: selectedCategory?.value,
+            // coordinates: coordinates,
+        });
+    }, []);
 
     const handleUpdate = () => {
         if (selectedCategory?.value === null) {
             ErrorToast("Select Category")
         } else {
             if (selectedCategory?.value === 'Reach Point' || selectedCategory?.value === 'Parking') {
+
+                const arraysAreEqual = polygonData?.coordinates.every(coord => coords.includes(coord));
+
                 const form = {
-                    geoName: '',
-                    placeName: placeName,
-                    geofenceType: selectedCategory?.value,
-                    coordinates: coords
+                    ...(placeName !== polygonData?.placeName && { placeName: placeName }),
+                    ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
+                    ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
                 };
 
                 updatePolygonArea(form).then((response) => {
@@ -261,12 +277,15 @@ const UpdatePolygon = () => {
                     }
                 }).catch((err) => ErrorToast(err?.message));
             } else if (geoName.length > 0) {
+
+                const arraysAreEqual = polygonData?.coordinates.every(coord => coords.includes(coord));
+
                 const form = {
-                    geoName: geoName,
-                    placeName: placeName,
-                    geofenceType: selectedCategory?.value,
-                    coordinates: coords,
-                    ...(selectedCategory?.value === 'Dealer' && { dealerOEM: selectedParty?.value })
+                    ...(geoName !== polygonData?.geoName && { geoName: geoName }),
+                    ...(placeName !== polygonData?.placeName && { placeName: placeName }),
+                    ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
+                    ...((((selectedCategory?.value === 'Dealer') && (selectedParty?.value !== polygonData?.dealerOEM))) && { dealerOEM: selectedParty?.value }),
+                    ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
                 };
 
                 updatePolygonArea(form).then((response) => {

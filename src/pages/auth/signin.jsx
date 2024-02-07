@@ -47,20 +47,28 @@ const Signin = () => {
             const storedTime = parseInt(storedTimestamp, 10);
             const currentTime = new Date().getTime();
             const timeDifference = currentTime - storedTime;
-            if (timeDifference > 10 * 30 * 1000) {
-                localStorage.clear();
-                navigate('/');
+            if (timeDifference > 10 * 60 * 1000) {
+                const form = { userId: loggedInUser };
+
+                signOutUser(form).then((response) => {
+                    if (response?.status === 200) {
+                        localStorage.clear();
+                        navigate('/')
+                    }
+                }).catch(() => console.log("Unable to log out user"));
             }
         }
     }, [storedTimestamp]);
 
 
     useEffect(() => {
-        if (loggedInUser === null) {
-            navigate('/');
-        } else if (loggedInUser.length > 0) {
-            navigate('/track');
-        }
+        setTimeout(() => {
+            if (loggedInUser === null) {
+                navigate('/');
+            } else if (loggedInUser.length > 0) {
+                navigate('/track');
+            }
+        }, 1000);
     }, [loggedInUser]);
 
     // if (storedTimestamp) {

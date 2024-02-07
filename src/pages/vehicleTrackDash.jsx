@@ -24,8 +24,8 @@ import '../assets/styles/home.css';
 
 const VehicleTrackDash = () => {
 
-    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    const key = "ABC";
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    // const key = "ABC";
 
     const [showMap, setShowMap] = useState(false);
 
@@ -1225,7 +1225,7 @@ const VehicleTrackDash = () => {
 
     const handleHideOptions = () => {
         !isHovered && setShowHideToggle(false);
-    }
+    };
 
     return (
         <div className='m-0 p-0 position-relative' onClick={() => handleHideOptions()}>
@@ -1449,6 +1449,7 @@ const VehicleTrackDash = () => {
                                 </div>
                             ) : null
                         }
+                        
                         {
                             currentTrips.length > 0 ? (
                                 <div className='my-5'>

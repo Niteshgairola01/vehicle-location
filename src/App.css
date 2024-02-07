@@ -20,7 +20,8 @@
 body {
     /* font-family: sans-serif; */
     overflow-x: hidden;
-    font-size: 16px;
+    /* font-size: 16px; */
+    font-size: 1rem;
     background-color: #e8e8e847;
     /* color: var(--thm-dark); */
 }
@@ -296,6 +297,26 @@ p {
     opacity: 0.6;
 }
 
+/* #676b778c */
+.disabled-button {
+    display: inline-block;
+    font-weight: 600 !important;
+    font-size: 1rem;
+    color: white;
+    border: 3px solid transparent;
+    border-radius: 5px;
+    position: relative;
+    background-color: #676b778c;
+    text-decoration: none;
+    overflow: hidden;
+    z-index: 1;
+    font-family: inherit;
+}
+
+.disabled-button:hover {
+    cursor: not-allowed
+}
+
 @keyframes shine {
     0% {
         left: -260px;
@@ -437,12 +458,24 @@ table thead {
 
 /* Loader */
 /* Spin Loader */
+.main-loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* height: 50%;
+    width: 50%; */
+    background: #f7f7f7a9;
+    z-index: 2;
+    top: 0;
+    left: 0
+}
+
 .loader-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
     background: #f7f7f7a9;
     z-index: 2
 }
@@ -1092,6 +1125,6 @@ input[type="range"]:disabled::-moz-range-thumb {
 
 
 
-.marker-container{
+.marker-container {
     transform: rotate(150deg) !important;
 }

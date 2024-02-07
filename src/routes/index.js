@@ -84,7 +84,6 @@ const AllRoutes = () => {
 
     useEffect(() => {
         const handleActivity = debounce(() => {
-            console.log('Activity detected');
             setTabClosed('false');
             localStorage.setItem("tabClosed", 'false');
 
