@@ -1228,34 +1228,7 @@ const VehicleTrackDash = () => {
     }
 
     return (
-        <div className='m-0 p-0 position-relative'
-            onClick={() => handleHideOptions()}
-        >
-            {/* {
-                showMap ? (
-                    <div className='bg-white mx-5 pb-3' style={{ width: "93vw", height: "100%", position: "absolute", zIndex: 2, left: 0, top: 0 }}>
-                        <div className='py-2 pt-3 px-3 w-100 d-flex justify-content-between align-items-center'>
-                            <h5 className='w-100 text-center'>Vehicle Location</h5>
-                            <RxCross1 className='cursor-pointer' onClick={() => {
-                                setSelectedVehicle({});
-                                setShowLocationOption(false);
-                                setShowMap(false);
-                            }} />
-                        </div>
-                        <LoadScript googleMapsApiKey={key}>
-                            <GoogleMap
-                                mapContainerStyle={mapContainerStyle}
-                                center={center}
-                                zoom={11}
-                            >
-                                <MarkerF
-                                    // icon={image}
-                                    position={center} />
-                            </GoogleMap>
-                        </LoadScript>
-                    </div>
-                ) : null
-            } */}
+        <div className='m-0 p-0 position-relative' onClick={() => handleHideOptions()}>
             <Loader show={showLoader} />
             <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>

@@ -25,8 +25,8 @@ const PolygonList = () => {
     const [searchPolygon, setSearchPolygon] = useState('');
     const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
 
     useEffect(() => {
         getPolygonCategories().then((response) => {
@@ -35,7 +35,6 @@ const PolygonList = () => {
     }, []);
 
     useEffect(() => {
-
         getAllPolygonAreas().then((response) => {
             if (response.status === 200) {
                 const filteredAreas = response?.data.filter(data => data?.geofenceType === 'Dealer');
@@ -60,7 +59,6 @@ const PolygonList = () => {
             }
         }).catch(() => setAllPolygonAreas([]))
     }, []);
-
 
     useEffect(() => {
         const filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === selectedCategory);

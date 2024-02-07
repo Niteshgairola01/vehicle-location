@@ -22,6 +22,10 @@ const NavBar = () => {
     {
       title: "Polygon",
       path: '/polygon'
+    },
+    {
+      title: "Route Report",
+      path: '/route-report'
     }
   ];
 
