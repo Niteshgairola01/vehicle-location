@@ -1079,13 +1079,23 @@ const VehicleTrackDash = () => {
 
         const order = sortOrder === 'asc' ? 'desc' : 'asc';
 
+        // filteredTrips.map((data) => {
+        //     console.log("data", data?.vehicleNo === "RJ14GR0865" && data);
+        //     // console.log("data", data?.routeKM === "0");
+        // });
+
         const sorted = [...filteredTrips].sort((a, b) => {
             const valueA = a[columnName];
             const valueB = b[columnName];
 
+
             if (columnName !== 'vehicleNo') {
                 if (valueA === null || valueA === undefined || valueA === '') return 1;
                 if (valueB === null || valueB === undefined || valueB === '') return -1;
+            }
+
+            if (valueA === '0' || valueB === '0') {
+                return order === 'asc' ? (valueA.localeCompare(valueB)) : (valueB.localeCompare(valueA));
             }
 
             const dateValueA = Date.parse(valueA);
@@ -1099,6 +1109,9 @@ const VehicleTrackDash = () => {
             const numericValueB = parseFloat(valueB);
 
             if (!isNaN(numericValueA) && !isNaN(numericValueB)) {
+
+                console.log("valueA", numericValueA, numericValueB);
+
                 return order === 'asc' ? numericValueA - numericValueB : numericValueB - numericValueA;
             }
 
@@ -1140,9 +1153,12 @@ const VehicleTrackDash = () => {
             return <td key={colIndex} className=''>{data?.unloadingReachDate === "" || data?.unloadingReachDate === null ? '' : handleFormatDate(data?.unloadingReachDate)}</td>
         } else if (column?.label === "Unloading End Date") {
             return <td key={colIndex}>{data?.unloadingDate === "" || data?.unloadingDate === null ? '' : handleFormatDate(data?.unloadingDate)}</td>
-        } else if (column?.label === 'KM Covered' || column?.label === 'Difference (Km)' || column?.label === 'Route (KM)') {
+        } else if (column?.label === 'Difference (Km)' || column?.label === 'Route (KM)') {
             return <td key={colIndex} className='text-center'>{Math.floor(value)}</td>
-        } else if (column?.label === 'Location') {
+        } else if (column?.label === 'KM Covered') {
+            return <td key={colIndex} className='text-center'>{data?.runningKMs}</td>
+        }
+        else if (column?.label === 'Location') {
             return <td key={colIndex} className='cursor-pointer position-relative'
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
@@ -1449,7 +1465,7 @@ const VehicleTrackDash = () => {
                                 </div>
                             ) : null
                         }
-                        
+
                         {
                             currentTrips.length > 0 ? (
                                 <div className='my-5'>

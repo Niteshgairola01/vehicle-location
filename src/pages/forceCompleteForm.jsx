@@ -10,6 +10,7 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
     const [unloadingReachDate, setUnloadingReachDate] = useState('');
     const [unloadingDate, setUnloadingDate] = useState('');
     const [remark, setRemark] = useState('');
+    const [showLoader, setShowLoader] = useState(false);
 
     const handleForceCompleteTrip = (form) => {
         forceCompleteTrip(form).then((response) => {
@@ -26,7 +27,7 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
             } else {
                 ErrorToast("Unable to force complete trip");
                 setShow(false);
-
+                setShowLoader(false);
                 setUnloadingDate('');
                 setUnloadingReachDate('');
                 setRemark('');
@@ -44,6 +45,7 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
                 setUnloadingReachDate('');
                 setRemark('');
                 setShow(false);
+                setShowLoader(false);
             } else if (response?.data === "Please Wait! Another Program is executing now. ") {
                 setTimeout(() => deleteVehicleOnTripCompleteWithRetry(deleteVehiclePayLoad), 1000);
                 ErrorToast(response?.data);
@@ -61,6 +63,7 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
             } else {
                 ErrorToast("Something went wrong");
                 setShow(false);
+                setShowLoader(false);
             }
         });
     };
@@ -102,9 +105,7 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
                 ErrorToast("Unloading Date must be euqal or greater than Unaloding Reach Date");
             }
             else if (form.length === 4) {
-                // setTimeout(() => {
-                //     setShow(false);
-                // }, 1500);
+                setShowLoader(true);
                 handleForceCompleteTrip(form);
             } else {
                 WarningToast("Fill all the required fields ! ! ! !");
@@ -128,9 +129,10 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
     return (
         <Modal show={show} centered onHide={() => {
             setShow(false);
+            setShowLoader(false);
             setUnloadingReachDate('')
         }} size='lg'>
-            <Form onSubmit={handleSubmit}>
+            <Form className='position-relative' onSubmit={handleSubmit}>
                 <Modal.Header closeButton>
                     <Modal.Title>
                         <h5 className='thm-dark'>Force Complete</h5>
@@ -199,6 +201,21 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
                     <Button type="submit" className="px-3">Update</Button>
                 </Modal.Footer>
             </Form>
+
+            <div className={`position-absolute ${!showLoader && 'd-none'}`} style={{ width: "100%", height: "90%", top: "10%", zIndex: 2 }}>
+                <div className={`main-loader-container h-100`}>
+                    <div className="dot-spinner">
+                        <div className="dot-spinner__dot"></div>
+                        <div className="dot-spinner__dot"></div>
+                        <div className="dot-spinner__dot"></div>
+                        <div className="dot-spinner__dot"></div>
+                        <div className="dot-spinner__dot"></div>
+                        <div className="dot-spinner__dot"></div>
+                        <div className="dot-spinner__dot"></div>
+                        <div className="dot-spinner__dot"></div>
+                    </div>
+                </div>
+            </div>
         </Modal>
     )
 }
