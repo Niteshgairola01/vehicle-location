@@ -41,13 +41,12 @@ const Signin = () => {
         localStorage.setItem("reload", "true");
     }, []);
 
-
     useEffect(() => {
         if (storedTimestamp) {
             const storedTime = parseInt(storedTimestamp, 10);
             const currentTime = new Date().getTime();
             const timeDifference = currentTime - storedTime;
-            if (timeDifference > 10 * 60 * 1000) {
+            if (timeDifference > 30 * 60 * 1000) {
                 const form = { userId: loggedInUser };
 
                 signOutUser(form).then((response) => {

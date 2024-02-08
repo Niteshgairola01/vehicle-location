@@ -27,7 +27,7 @@ const AutoLogout = () => {
                 window.removeEventListener(item, resetTimer);
             });
             logoutAction();
-        }, 10 * 60 * 1000);
+        }, 30 * 60 * 1000);
     };
 
     const resetTimer = () => {
