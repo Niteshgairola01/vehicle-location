@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Select from 'react-select';
 import '../../assets/styles/polygon.css';
 import { Col, Row } from 'react-bootstrap';
 import { Tooltip } from '@mui/material';
@@ -10,6 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getAllPolygonAreas, getPolygonCategories } from '../../hooks/polygonHooks';
 import DashHead from '../../components/dashboardHead';
 import { SearchField } from '../../components/form/Input';
+import { getAllPartiesList } from '../../hooks/clientMasterHooks';
 
 const PolygonList = () => {
 
@@ -22,10 +24,13 @@ const PolygonList = () => {
     const [selectedPolygon, setSelectedPolygon] = useState({});
     const [searchPolygon, setSearchPolygon] = useState('');
     const [searchOEM, setSearchOEM] = useState('');
+    const [selectedParty, setSelectedParty] = useState('');
 
     const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
     const loggedInUser = localStorage.getItem('userId');
     const navigate = useNavigate();
+
+    const [partiesList, setPartiesList] = useState([]);
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
@@ -35,6 +40,27 @@ const PolygonList = () => {
             localStorage.clear();
             navigate('/');
         }
+    }, []);
+
+
+    useEffect(() => {
+        getAllPartiesList().then((response) => {
+            if (response.status === 200) {
+                if (response?.data.length > 0) {
+                    const filteredData = response?.data.map(data => ({
+                        ...data,
+                        label: data?.clientName,
+                        value: data?.clientName
+                    }));
+
+                    setPartiesList(filteredData);
+                } else {
+                    setPartiesList([]);
+                }
+            } else {
+                setPartiesList([]);
+            }
+        }).catch(() => setPartiesList([]));
     }, []);
 
     useEffect(() => {
@@ -103,6 +129,32 @@ const PolygonList = () => {
         setFilteredPolygons(filtereds);
     };
 
+    const handleChangeParty = (party) => {
+        setSelectedParty(party);
+
+        const searchValue = party?.value;
+
+        if (searchValue) {
+            setSearchOEM(searchValue);
+            const filteredByOEM = allPolygonAreas.filter(data =>
+                ((data?.dealerOEM && data?.dealerOEM.toLowerCase().includes(searchValue.toLowerCase())))
+            );
+
+            setCategoryPolygons(filteredByOEM);
+            setFilteredPolygons(filteredByOEM);
+        } else {
+            const filteredByOEM = allPolygonAreas.filter(data =>
+                ((data?.dealerOEM && data?.dealerOEM.toLowerCase().includes(''.toLowerCase())))
+            );
+
+            setCategoryPolygons(filteredByOEM);
+            setFilteredPolygons(filteredByOEM);
+        }
+
+
+
+    }
+
     const handleSearchOEM = (e) => {
         const searchValue = e.target.value;
         setSearchOEM(searchValue);
@@ -127,6 +179,19 @@ const PolygonList = () => {
     const handleMapCenter = () => {
         return selectedCoordinates.length > 0 ? selectedCoordinates[0] : center;
     };
+
+
+    const selectStyles = {
+        control: (provided) => ({
+            ...provided,
+            fontSize: '0.9rem',
+        }),
+        option: (provided) => ({
+            ...provided,
+            fontSize: '0.9rem',
+        }),
+    };
+
 
     return (
         <div className='m-0 p-0 position-relative'>
@@ -180,7 +245,17 @@ const PolygonList = () => {
                                         {
                                             selectedCategory === 'Dealer' ? (
                                                 <>
-                                                    <SearchField onChange={handleSearchOEM} value={searchOEM} type='search' className="w-50 me-2" placeholder="Search OEM" />
+                                                    <div className='w-50 me-2'>
+                                                        <Select
+                                                            options={partiesList}
+                                                            value={selectedParty}
+                                                            onChange={handleChangeParty}
+                                                            isClearable={true}
+                                                            styles={selectStyles}
+                                                            placeholder="Search OEM"
+                                                        />
+                                                    </div>
+                                                    {/* <SearchField onChange={handleSearchOEM} value={searchOEM} type='search' className="w-50 me-2" placeholder="Search OEM" /> */}
                                                     <SearchField onChange={handleSearchPolygon} value={searchPolygon} type='search' className="w-50" placeholder="Search Polygon" />
                                                 </>
                                             ) : null
