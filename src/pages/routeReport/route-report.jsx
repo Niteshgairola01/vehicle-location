@@ -14,7 +14,26 @@ import { IoMdPause } from 'react-icons/io';
 import Loader from '../../components/loader/loader';
 import { DisabledButton } from '../../components/Button/Button';
 
+// MUI
+
+import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles({
+    input: {
+        '& input': {
+            padding: '0.3rem !important',
+        },
+        overflow: 'hidden',
+        padding: '0',
+    },
+});
+
 const RouteReport = () => {
+    const classes = useStyles();
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
@@ -23,6 +42,8 @@ const RouteReport = () => {
     const [vehicleList, setVehiclesList] = useState([]);
     const [selectedVehicle, setSelectedVehicle] = useState('');
     const [form, setForm] = useState({});
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     const [routeData, setRouteData] = useState([]);
     const [stoppage, setStoppage] = useState([]);
@@ -223,136 +244,151 @@ const RouteReport = () => {
         });
     };
 
+
+    const handleStartDateChange = (dateTime) => {
+        setStartDate(dateTime);
+
+        const day = dateTime?.$D;
+        const month = dateTime?.$M + 1;
+        const year = dateTime?.$y;
+        const hours = dateTime?.$H;
+        const minute = dateTime?.$m;
+        const seconds = dateTime?.$s;
+
+        const formattedDate = `${year}-${month}-${day} ${hours}:${minute}:${seconds}`;
+        setForm({
+            ...form,
+            startDate: formattedDate
+        });
+    };
+
+    const handleEndDateChange = (dateTime) => {
+        setEndDate(dateTime);
+
+        const day = dateTime?.$D;
+        const month = dateTime?.$M + 1;
+        const year = dateTime?.$y;
+        const hours = dateTime?.$H;
+        const minute = dateTime?.$m;
+        const seconds = dateTime?.$s;
+
+        const formattedDate = `${year}-${month}-${day} ${hours}:${minute}:${seconds}`;
+        setForm({
+            ...form,
+            endDate: formattedDate
+        });
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
         setShowLoader(true);
         setBtnDisabled(true);
 
-        const startDate = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
-        const endDate = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
+        const payload = [form?.vehicle, form?.startDate, form?.endDate];
 
-        if (!form?.startDate.match(startDate)) {
-            ErrorToast("Check format of start date");
-        } else {
-            if (!form?.endDate.match(endDate)) {
-                ErrorToast("Check format of end date");
-            } else {
-                const formatDate = (dateString) => {
-                    const [datePart, timePart] = dateString.split(' ');
-                    const [day, month, year] = datePart.split('/');
-                    const dateObject = new Date(`${year}-${month}-${day}T${timePart}Z`);
-                    const formattedDate = dateObject.toISOString().slice(0, 19).replace('T', ' ');
+        if (form?.vehicle) {
+            getVehicleRoute(payload).then((response) => {
+                if (response.status === 200) {
+                    setBtnDisabled(false);
+                    setShowLoader(false);
 
-                    return formattedDate;
-                };
+                    const allData = response?.data;
+                    let coords = [];
 
-                const payload = [form?.vehicle, formatDate(form?.startDate), formatDate(form?.endDate)];
+                    setRouteCoords(coords);
+                    setRouteData(response?.data);
 
-                if (form?.vehicle) {
-                    getVehicleRoute(payload).then((response) => {
-                        if (response.status === 200) {
-                            setBtnDisabled(false);
-                            setShowLoader(false);
+                    allData.map((data) => {
+                        coords.push(
+                            {
+                                lat: parseFloat(data?.lat),
+                                lng: parseFloat(data?.long)
+                            }
+                        )
+                    });
 
-                            const allData = response?.data;
+                    // Stop Time 
+
+                    if (form?.time) {
+                        if (includeTime && form?.time.length > 0) {
+                            const latitudesMap = new Map();
+                            const repeatedLatitudes = [];
+
                             let coords = [];
 
-                            setRouteCoords(coords);
-                            setRouteData(response?.data);
-
-                            allData.map((data) => {
-                                coords.push(
-                                    {
-                                        lat: parseFloat(data?.lat),
-                                        lng: parseFloat(data?.long)
-                                    }
-                                )
+                            allData.forEach(obj => {
+                                if (!latitudesMap.has(obj.lat)) {
+                                    latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
+                                } else {
+                                    const existingLatData = latitudesMap.get(obj.lat);
+                                    latitudesMap.set(obj.lat, {
+                                        count: existingLatData.count + 1,
+                                        arrival: existingLatData.arrival,
+                                        exit: obj.date,
+                                        lng: obj.long
+                                    });
+                                }
                             });
 
-                            // Stop Time 
-
-                            if (form?.time) {
-                                if (includeTime && form?.time.length > 0) {
-                                    const latitudesMap = new Map();
-                                    const repeatedLatitudes = [];
-
-                                    let coords = [];
-
-                                    allData.forEach(obj => {
-                                        if (!latitudesMap.has(obj.lat)) {
-                                            latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
-                                        } else {
-                                            const existingLatData = latitudesMap.get(obj.lat);
-                                            latitudesMap.set(obj.lat, {
-                                                count: existingLatData.count + 1,
-                                                arrival: existingLatData.arrival,
-                                                exit: obj.date,
-                                                lng: obj.long
-                                            });
-                                        }
+                            latitudesMap.forEach((value, key) => {
+                                if (value.count > 1) {
+                                    repeatedLatitudes.push({
+                                        lat: key,
+                                        lng: value.lng,
+                                        arrival: value.arrival,
+                                        exit: value.exit
                                     });
-
-                                    latitudesMap.forEach((value, key) => {
-                                        if (value.count > 1) {
-                                            repeatedLatitudes.push({
-                                                lat: key,
-                                                lng: value.lng,
-                                                arrival: value.arrival,
-                                                exit: value.exit
-                                            });
-                                        }
-                                    });
-
-                                    const filteredTest = repeatedLatitudes.filter(item => {
-                                        const arrivalTime = new Date(item.arrival);
-                                        const exitTime = new Date(item.exit);
-                                        const timeDifferenceInMinutes = (exitTime - arrivalTime) / (1000 * 60); // Convert milliseconds to minutes
-                                        return timeDifferenceInMinutes > form?.time;
-                                    });
-
-                                    filteredTest.map(data => {
-                                        coords.push({
-                                            lat: parseFloat(data?.lat),
-                                            lng: parseFloat(data?.lng)
-                                        })
-                                    })
-
-                                    setStoppage(filteredTest);
-                                    setStoppageCoords(coords);
                                 }
-                            }
+                            });
 
-                            // Over Speed
+                            const filteredTest = repeatedLatitudes.filter(item => {
+                                const arrivalTime = new Date(item.arrival);
+                                const exitTime = new Date(item.exit);
+                                const timeDifferenceInMinutes = (exitTime - arrivalTime) / (1000 * 60); // Convert milliseconds to minutes
+                                return timeDifferenceInMinutes > form?.time;
+                            });
 
-                            if (form?.speed) {
-                                if (includeSpeed && form?.speed.length >= 0) {
-                                    const overSpeeded = allData.filter(data => parseFloat(data?.speed) > form?.speed);
-                                    let coordinates = [];
+                            filteredTest.map(data => {
+                                coords.push({
+                                    lat: parseFloat(data?.lat),
+                                    lng: parseFloat(data?.lng)
+                                })
+                            })
 
-                                    overSpeeded.map((data) => {
-                                        coordinates.push({
-                                            lat: parseFloat(data?.lat),
-                                            lng: parseFloat(data?.long)
-                                        });
-                                    });
+                            setStoppage(filteredTest);
+                            setStoppageCoords(coords);
+                        }
+                    }
 
-                                    setSpeedMarkerData(overSpeeded);
-                                    setOverSpeedMarkers(coordinates);
-                                }
-                            }
+                    // Over Speed
 
-                        } else {
-                            setRouteData([])
-                        };
-                    }).catch((err) => {
-                        setRouteData([]);
-                    })
+                    if (form?.speed) {
+                        if (includeSpeed && form?.speed.length >= 0) {
+                            const overSpeeded = allData.filter(data => parseFloat(data?.speed) > form?.speed);
+                            let coordinates = [];
+
+                            overSpeeded.map((data) => {
+                                coordinates.push({
+                                    lat: parseFloat(data?.lat),
+                                    lng: parseFloat(data?.long)
+                                });
+                            });
+
+                            setSpeedMarkerData(overSpeeded);
+                            setOverSpeedMarkers(coordinates);
+                        }
+                    }
+
                 } else {
-                    ErrorToast("Select Vehicle")
-                }
-            }
-        }
+                    setRouteData([])
+                };
+            }).catch((err) => {
+                setRouteData([]);
+            })
+        } else {
+            ErrorToast("Select Vehicle")
+        };
     };
 
     const selectStyles = {
@@ -510,7 +546,22 @@ const RouteReport = () => {
                                         <Form.Label className='fw-400 thm-dark'>Start Date</Form.Label>
                                     </Col>
                                     <Col>
-                                        <Form.Control type='text' name="startDate" onChange={handleChange} className='inputfield p-1' placeholder='DD/MM/YYYY HH:MM:SS' required />
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DemoContainer components={['DateTimePicker', 'DateTimePicker', 'DateTimePicker']}>
+                                                <DemoItem>
+                                                    <DateTimePicker
+                                                        views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+                                                        format="DD/MM/YYYY HH:mm:ss"
+                                                        ampm={false}
+                                                        value={startDate}
+                                                        onChange={handleStartDateChange}
+                                                        // style={{ height: '10px' }}
+                                                        className={classes.input}
+                                                    />
+                                                </DemoItem>
+                                            </DemoContainer>
+                                        </LocalizationProvider>
+                                        {/* <Form.Control type='text' name="startDate" onChange={handleChange} className='inputfield p-1' placeholder='DD/MM/YYYY HH:MM:SS' required /> */}
                                     </Col>
                                 </Row>
                             </Form.Group>
@@ -520,8 +571,23 @@ const RouteReport = () => {
                                     <Col sm={4}>
                                         <Form.Label className='fw-400 thm-dark'>End Date</Form.Label>
                                     </Col>
-                                    <Col>
-                                        <Form.Control type='text' name="endDate" onChange={handleChange} className='inputfield p-1' placeholder='DD/MM/YYYY HH:MM:SS' required />
+                                    <Col className='mt-0 pt-0'>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DemoContainer components={['DateTimePicker', 'DateTimePicker', 'DateTimePicker']}>
+                                                <DemoItem>
+                                                    <DateTimePicker
+                                                        views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+                                                        format="DD/MM/YYYY HH:mm:ss"
+                                                        ampm={false}
+                                                        value={endDate}
+                                                        onChange={handleEndDateChange}
+                                                        className={classes.input}
+                                                    />
+                                                </DemoItem>
+                                            </DemoContainer>
+                                        </LocalizationProvider>
+
+                                        {/* <Form.Control type='text' name="endDate" onChange={handleChange} className='inputfield p-1' placeholder='DD/MM/YYYY HH:MM:SS' required /> */}
                                     </Col>
                                 </Row>
                             </Form.Group>
@@ -583,7 +649,7 @@ const RouteReport = () => {
                                         {/* Route History */}
 
                                         {
-                                            coordinatesAfterMarker.length > 0 ? (
+                                            coordinatesAfterMarker.length > 0 && (
                                                 <PolylineF
                                                     path={coordinatesBeforeMarker}
                                                     options={{
@@ -592,11 +658,11 @@ const RouteReport = () => {
                                                         strokeWeight: 2
                                                     }}
                                                 />
-                                            ) : null
+                                            )
                                         }
 
                                         {
-                                            coordinatesAfterMarker.length > 0 ? (
+                                            coordinatesAfterMarker.length > 0 && (
                                                 <PolylineF
                                                     path={coordinatesAfterMarker}
                                                     options={{
@@ -605,7 +671,7 @@ const RouteReport = () => {
                                                         strokeWeight: 2
                                                     }}
                                                 />
-                                            ) : null
+                                            )
                                         }
 
                                         {

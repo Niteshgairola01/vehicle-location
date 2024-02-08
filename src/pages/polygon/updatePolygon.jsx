@@ -262,11 +262,14 @@ const UpdatePolygon = () => {
 
                 const arraysAreEqual = polygonData?.coordinates.every(coord => coords.includes(coord));
 
-                const form = {
-                    ...(placeName !== polygonData?.placeName && { placeName: placeName }),
-                    ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
-                    ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
-                };
+                const form = [
+                    polygonData,
+                    {
+                        ...(placeName !== polygonData?.placeName && { placeName: placeName }),
+                        ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
+                        ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
+                    }
+                ];
 
                 updatePolygonArea(form).then((response) => {
                     if (response?.status === 200) {
@@ -280,13 +283,16 @@ const UpdatePolygon = () => {
 
                 const arraysAreEqual = polygonData?.coordinates.every(coord => coords.includes(coord));
 
-                const form = {
-                    ...(geoName !== polygonData?.geoName && { geoName: geoName }),
-                    ...(placeName !== polygonData?.placeName && { placeName: placeName }),
-                    ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
-                    ...((((selectedCategory?.value === 'Dealer') && (selectedParty?.value !== polygonData?.dealerOEM))) && { dealerOEM: selectedParty?.value }),
-                    ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
-                };
+                const form = [
+                    polygonData,
+                    {
+                        ...(geoName !== polygonData?.geoName && { geoName: geoName }),
+                        ...(placeName !== polygonData?.placeName && { placeName: placeName }),
+                        ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
+                        ...((((selectedCategory?.value === 'Dealer') && (selectedParty?.value !== polygonData?.dealerOEM))) && { dealerOEM: selectedParty?.value }),
+                        ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
+                    }
+                ];
 
                 updatePolygonArea(form).then((response) => {
                     if (response?.status === 200) {
