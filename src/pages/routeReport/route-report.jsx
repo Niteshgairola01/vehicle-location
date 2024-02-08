@@ -35,8 +35,8 @@ const useStyles = makeStyles({
 const RouteReport = () => {
     const classes = useStyles();
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
-    // const key = "ABC";
+    // const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
+    const key = "ABC";
     let arrayLocation = useRef(0);
 
     const [vehicleList, setVehiclesList] = useState([]);
@@ -70,60 +70,13 @@ const RouteReport = () => {
     const [rangeValue, setRangeValue] = useState(0);
     const [playbackSpeed, setPlayBackSpeed] = useState(1000);
 
-    const coveredCoordinates = routeData.slice(0, arrayLocation.current + 1)
+    const coveredCoordinates = routeCoords.slice(0, arrayLocation.current + 1)
     const coordinatesBeforeMarker = routeCoords.slice(0, arrayLocation.current + 1);
     const coordinatesAfterMarker = routeCoords.slice(arrayLocation.current);
 
     const [showLoader, setShowLoader] = useState(false)
     const [boundCenter, setBoundCenter] = useState(false);
     const [btnDisabled, setBtnDisabled] = useState(false);
-
-    const [polygonAreas, setPolygonAreas] = useState([]);
-    const [polygonCoords, setPolygonCoords] = useState([]);
-
-
-    const test = [
-        { coords: ["22.8988, 77.9878"] },
-        { coords: ["23.999, 77.0999"] },
-        {
-            coords: ["22.9998, 77.9847", "22.9837, 77.3987", "22.3997, 77.3982"]
-        }
-    ];
-
-    const output = [
-        {
-            coords: [
-                {
-                    lat: "22.8988",
-                    lng: '77.9878'
-                }
-            ]
-        },
-        {
-            coords: [
-                {
-                    lat: "23.999",
-                    lng: '77.0999'
-                }
-            ]
-        },
-        {
-            coords: [
-                {
-                    lat: "22.9998",
-                    lng: '77.9847'
-                },
-                {
-                    lat: "22.9837",
-                    lng: '77.3987'
-                },
-                {
-                    lat: "22.3997",
-                    lng: '77.3982'
-                }
-            ]
-        }
-    ]
 
     useEffect(() => {
         getAllVehiclesList().then((response) => {
@@ -143,33 +96,6 @@ const RouteReport = () => {
                 setVehiclesList([]);
             }
         }).catch(() => setVehiclesList([]));
-    }, []);
-
-    useEffect(() => {
-        getAllPolygonAreas().then((response) => {
-            if (response.status === 200) {
-                const allData = response?.data;
-
-                const coords = allData.map(item => {
-                    return {
-                        coordinates: item.coordinates.map(coord => {
-                            const [lat, lng] = coord.split(',').map(parseFloat);
-                            return { lat: lat, lng: lng };
-                        })
-                    };
-                });
-
-                setPolygonCoords(coords);
-                setPolygonAreas(allData);
-
-            } else {
-                setPolygonCoords([]);
-                setPolygonAreas([]);
-            }
-        }).catch((err) => {
-            setPolygonCoords([]);
-            setPolygonAreas([]);
-        })
     }, []);
 
     useEffect(() => {
@@ -405,7 +331,7 @@ const RouteReport = () => {
 
     const mapContainerStyle = {
         width: '100%',
-        height: '60vh',
+        // height: "60vh"
     };
 
     const getBounds = () => {
@@ -461,6 +387,11 @@ const RouteReport = () => {
         setSelectedSpeedMarker(index);
         setSpeedMarkerDetails(data);
         setBoundCenter(true);
+    };
+
+
+    const handleGetCoveredDistance = () => {
+        return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
     };
 
     const convertMarkerDateTime = (originalDateTime) => {
@@ -645,6 +576,7 @@ const RouteReport = () => {
                                         center={handleCenter()}
                                         zoom={11}
                                         options={{ gestureHandling: 'greedy' }}
+                                        mapContainerClassName='side-map-container'
                                     >
                                         {/* Route History */}
 
@@ -799,37 +731,6 @@ const RouteReport = () => {
                                                 </div>
                                             </InfoWindowF>
                                         )}
-
-
-                                        {/* Polygon Area / Geofence */}
-                                        {
-                                            polygonCoords.length > 0 ? (
-                                                <>
-                                                    {
-                                                        polygonCoords.map((data, index) => (
-                                                            <div key={index}>
-                                                                {
-                                                                    data?.coordinates?.length > 1 ? (
-                                                                        <>
-                                                                            <PolygonF
-                                                                                path={data?.coordinates}
-                                                                                options={{
-                                                                                    fillColor: 'rgba(255, 0, 0, 0.5)',
-                                                                                    strokeColor: 'red',
-                                                                                    strokeOpacity: 0.8,
-                                                                                    strokeWeight: 2,
-                                                                                }}
-                                                                            />
-                                                                        </>
-                                                                    ) : null
-                                                                }
-                                                            </div>
-                                                        ))
-                                                    }
-                                                </>
-                                            ) : null
-                                        }
-
                                     </GoogleMap>
                                 </LoadScript>
                             </div>
@@ -868,8 +769,8 @@ const RouteReport = () => {
                                 </div>
 
                                 <div className='text-center text-white'>
-                                    <p className='m-0 p-0'>{100}</p>
-                                    {/* <p className='m-0 p-0'>{handleGetCoveredDistance()}</p> */}
+                                    {/* <p className='m-0 p-0'>{100}</p> */}
+                                    <p className='m-0 p-0'>{handleGetCoveredDistance()}</p>
                                     <p className='m-0 p-0 fw-bold text-uppercase'>Km Run</p>
                                 </div>
 

@@ -32,9 +32,9 @@
 }
 
 .login-trailer {
-    margin-top: -15%;
-    max-width: 60rem;
-    height: 23rem;
+    /* margin-top: -20%; */
+    max-width: 50rem;
+    height: 18rem;
     margin-top: 10%;
     rotate: 2deg;
 }
@@ -185,4 +185,10 @@
 
 .create-user-inner-container {
     width: 60%;
+}
+
+
+/* Media query */
+@media screen and (max-width: 1024px) {
+
 }

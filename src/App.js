@@ -4,6 +4,7 @@ import Default from './routes/default';
 import AutoLogout from './components/autoLogout';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './assets/styles/maps.css'
 
 function App() {
 

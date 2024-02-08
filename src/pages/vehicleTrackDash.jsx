@@ -82,7 +82,7 @@ const VehicleTrackDash = () => {
             { label: 'KM Covered', value: 'runningKMs', hidden: false },
             { label: 'Difference (Km)', value: 'kmDifference', hidden: false },
             { label: 'Report Unloading', value: 'unloadingReachDate', hidden: false },
-            { label: 'Unloading End Date', value: 'unloadingData', hidden: false },
+            { label: 'Unloading End Date', value: 'unloadingDate', hidden: false },
             { label: 'Location', value: 'location', hidden: false },
             { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
             { label: 'Final Status', value: 'finalStatus', hidden: false },
@@ -434,7 +434,6 @@ const VehicleTrackDash = () => {
 
                                     } else if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
                                         if (selectedFilter.includes('Mild Delayed')) {
-                                            console.log("oem ontime delayed");
                                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                                 const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                                 let delayedArr2 = [];
@@ -464,8 +463,6 @@ const VehicleTrackDash = () => {
                                                         }
                                                     }
                                                 });
-
-                                                console.log("delayed arr", delayedArr2);
 
                                                 delayedArr2.forEach(data => {
                                                     const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
@@ -517,7 +514,6 @@ const VehicleTrackDash = () => {
                                         }
 
                                         if (selectedFilter.includes('Critical Delayed')) {
-                                            console.log("oem ontime delayed");
                                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                                 const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                                 let delayedArr2 = [];
@@ -547,8 +543,6 @@ const VehicleTrackDash = () => {
                                                         }
                                                     }
                                                 });
-
-                                                console.log("delayed arr", delayedArr2);
 
                                                 delayedArr2.forEach(data => {
                                                     const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
@@ -610,8 +604,6 @@ const VehicleTrackDash = () => {
                                                     }
                                                 });
 
-                                                console.log("delayed arr", delayedArr2);
-
                                                 delayedArr2.forEach(data => {
                                                     const testData = (data?.oemFinalStatus === 'Delayed');
                                                     if (testData === true) {
@@ -662,7 +654,6 @@ const VehicleTrackDash = () => {
                                         }
 
                                         if (selectedFilter.includes('Critical Delayed')) {
-                                            console.log("oem ontime delayed");
                                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                                 const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
                                                 let delayedArr2 = [];
@@ -692,8 +683,6 @@ const VehicleTrackDash = () => {
                                                         }
                                                     }
                                                 });
-
-                                                console.log("delayed arr", delayedArr2);
 
                                                 delayedArr2.forEach(data => {
                                                     const testData = (data?.oemFinalStatus === 'Delayed');
@@ -1077,6 +1066,8 @@ const VehicleTrackDash = () => {
 
     const handleSortData = (columnName) => {
 
+        console.log("sorting");
+
         const order = sortOrder === 'asc' ? 'desc' : 'asc';
 
         // filteredTrips.map((data) => {
@@ -1088,33 +1079,34 @@ const VehicleTrackDash = () => {
             const valueA = a[columnName];
             const valueB = b[columnName];
 
-
             if (columnName !== 'vehicleNo') {
                 if (valueA === null || valueA === undefined || valueA === '') return 1;
                 if (valueB === null || valueB === undefined || valueB === '') return -1;
             }
 
+            // Sort 0
             if (valueA === '0' || valueB === '0') {
                 return order === 'asc' ? (valueA.localeCompare(valueB)) : (valueB.localeCompare(valueA));
             }
 
-            const dateValueA = Date.parse(valueA);
-            const dateValueB = Date.parse(valueB);
+            // Sort date / time
+            const dateValueA = new Date(valueA);
+            const dateValueB = new Date(valueB);
 
-            if (!isNaN(dateValueA) && !isNaN(dateValueB)) {
+            if (!isNaN(dateValueA.getTime()) && !isNaN(dateValueB.getTime())) {
                 return order === 'asc' ? dateValueA - dateValueB : dateValueB - dateValueA;
             }
+
+            // Sort numeric value which are considred as string
 
             const numericValueA = parseFloat(valueA);
             const numericValueB = parseFloat(valueB);
 
             if (!isNaN(numericValueA) && !isNaN(numericValueB)) {
-
-                console.log("valueA", numericValueA, numericValueB);
-
                 return order === 'asc' ? numericValueA - numericValueB : numericValueB - numericValueA;
             }
 
+            // Set string values
             const stringA = String(valueA);
             const stringB = String(valueB);
 
@@ -1122,14 +1114,8 @@ const VehicleTrackDash = () => {
         });
 
         setSortOrder(order);
-
         setFilteredTrips(sorted);
     };
-
-    const handleHideRow = (vehicle) => {
-        const nonHiddenRows = filteredTrips.filter(data => data?.vehicleNo !== vehicle?.vehicleNo);
-        setFilteredTrips(nonHiddenRows);
-    }
 
     const handleHideColumns = (index) => {
         setTableColumns((prevColumns) => {
@@ -1153,9 +1139,12 @@ const VehicleTrackDash = () => {
             return <td key={colIndex} className=''>{data?.unloadingReachDate === "" || data?.unloadingReachDate === null ? '' : handleFormatDate(data?.unloadingReachDate)}</td>
         } else if (column?.label === "Unloading End Date") {
             return <td key={colIndex}>{data?.unloadingDate === "" || data?.unloadingDate === null ? '' : handleFormatDate(data?.unloadingDate)}</td>
-        } else if (column?.label === 'Difference (Km)' || column?.label === 'Route (KM)') {
+        } else if (column?.label === 'Difference (Km)') {
             return <td key={colIndex} className='text-center'>{Math.floor(value)}</td>
-        } else if (column?.label === 'KM Covered') {
+        } else if (column?.label === 'Route (KM)') {
+            return <td key={colIndex} className='text-center'>{data?.routeKM !== "" ? Math.floor(value) : ""}</td>
+        }
+        else if (column?.label === 'KM Covered') {
             return <td key={colIndex} className='text-center'>{data?.runningKMs}</td>
         }
         else if (column?.label === 'Location') {

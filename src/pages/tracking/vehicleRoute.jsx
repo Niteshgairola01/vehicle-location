@@ -41,6 +41,7 @@ const VehicleRoute = () => {
     const [boundCenter, setBoundCenter] = useState(false);
 
     const navigate = useNavigate();
+
     const mapContainerStyle = {
         width: '100%',
         height: '95%',
@@ -54,6 +55,25 @@ const VehicleRoute = () => {
     const lastId = localStorage.getItem('lastDbID');
 
     const markerRef = useRef(null);
+    const geofenceLat = localStorage.getItem('lat');
+    const geofenceLng = localStorage.getItem('lng');
+
+
+    useEffect(() => {
+        if (geofenceLat === null) {
+            setGeofencePosition({ lat: 26.858192, lng: 75.669163 })
+        } else {
+            setShowGeofenceOption(true);
+            setBoundCenter(true);
+            setGeofencePosition({ lat: parseFloat(geofenceLat), lng: parseFloat(geofenceLng) });
+        }
+    }, []);
+
+    useEffect(() => {
+        setTimeout(() => {
+            localStorage.removeItem("geofence");
+        }, 500);
+    }, []);
 
     useEffect(() => {
         if (markerRef.current) {
@@ -289,18 +309,25 @@ const VehicleRoute = () => {
     const handleCenter = () => {
 
         if (!boundCenter) {
-            if (coordinates.length > 0) {
-                if (currentCoordinates.lat === undefined) {
-                    return { lat: coordinates[0].lat, lng: coordinates[0].lng }
-                } else {
-                    if (currentCoordinates.lat === coordinates[coordinates.length - 1].lat) {
-                        return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
-                    } else {
-                        return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
-                    }
-                }
+
+            const geofence = localStorage.getItem("geofence");
+
+            if (geofence !== null && geofence === 'false') {
+                return { lat: parseFloat(geofenceLat), lng: parseFloat(geofenceLng) }
             } else {
-                return { lat: 26.858192, lng: 75.669163 }
+                if (coordinates.length > 0) {
+                    if (currentCoordinates.lat === undefined) {
+                        return { lat: coordinates[0].lat, lng: coordinates[0].lng }
+                    } else {
+                        if (currentCoordinates.lat === coordinates[coordinates.length - 1].lat) {
+                            return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
+                        } else {
+                            return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
+                        }
+                    }
+                } else {
+                    return { lat: 26.858192, lng: 75.669163 }
+                }
             }
         }
     };
@@ -329,6 +356,9 @@ const VehicleRoute = () => {
             lat: parseFloat((event.latLng.lat().toFixed(6))),
             lng: parseFloat((event.latLng.lng().toFixed(6))),
         });
+
+        localStorage.setItem('lat', parseFloat((event.latLng.lat().toFixed(6))));
+        localStorage.setItem('lng', parseFloat((event.latLng.lng().toFixed(6))));
 
         setBoundCenter(true);
     };
@@ -383,6 +413,8 @@ const VehicleRoute = () => {
             localStorage.removeItem('vehicle');
             localStorage.removeItem('vehicleExitDbID');
             localStorage.removeItem('lastDbID');
+            localStorage.removeItem('lat');
+            localStorage.removeItem('lng');
             navigate('/track');
         }} size='xl'>
             <Modal.Header closeButton>
@@ -408,7 +440,7 @@ const VehicleRoute = () => {
             <Modal.Body>
                 <div className='thm-dark mx-5'>
                     <Card>
-                        <div style={{ height: "60vh" }}>
+                        <div className='side-map-container'>
                             <LoadScript googleMapsApiKey={key}>
                                 <GoogleMap
                                     mapContainerStyle={mapContainerStyle}
@@ -419,9 +451,10 @@ const VehicleRoute = () => {
                                         boundCenter && setCenter(map.getCenter());
                                     }}
                                     center={handleCenter()}
-                                    zoom={11}
+                                    zoom={9}
                                     options={{ gestureHandling: 'greedy' }}
                                     onClick={handleShowGeofence}
+                                    // mapContainerClassName='side-map-container'
                                 >
                                     <PolylineF
                                         path={coordinatesBeforeMarker}
@@ -504,7 +537,7 @@ const VehicleRoute = () => {
                                                 position={geofencePosition}
                                                 onCloseClick={() => setShowGeofenceOption(false)}
                                             >
-                                                <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' state={geofencePosition}>
+                                                <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => localStorage.setItem("geofence", 'true')} state={geofencePosition}>
                                                     <div>Create Geofence</div>
                                                 </Link>
                                             </InfoWindowF>

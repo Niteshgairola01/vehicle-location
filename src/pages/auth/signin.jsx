@@ -187,7 +187,6 @@ const Signin = () => {
                             <>
                                 <h2 className='thm-dark mt-5'>Reset Password</h2>
                                 <Form className='w-50 mt-5' onSubmit={handleResetPassword} style={{ zIndex: 2 }}>
-                                    {/* <Input label="UserId" type="text" className="bg-white" value={resetId} autocomplete="off" disabled={true} /> */}
                                     <div className='m-0 p-0 position-relative'>
                                         <Input label="New Password" type={showNewPass ? 'text' : 'password'} onChange={(e) => setNewPassword(e.target.value)} name="newPassword" className="bg-white" placeholder="new password" autocomplete="off" />
                                         {
