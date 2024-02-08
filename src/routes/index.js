@@ -15,12 +15,7 @@ const AllRoutes = () => {
     const loggedInUser = localStorage.getItem('userId');
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (loggedInUser === null) {
-            localStorage.clear();
-            navigate('/');
-        }
-    }, [loggedInUser]);
+    // console.log("logged", loggedInUser);
 
     // const [shown, setShown] = useState(false);
 

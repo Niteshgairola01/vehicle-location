@@ -6,7 +6,7 @@ import Card from '../../components/Card/card';
 import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton';
 import { CiEdit } from "react-icons/ci";
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getAllPolygonAreas, getPolygonCategories } from '../../hooks/polygonHooks';
 import DashHead from '../../components/dashboardHead';
 import { SearchField } from '../../components/form/Input';
@@ -23,10 +23,21 @@ const PolygonList = () => {
     const [selectedCoordinates, setSelectedCoordinates] = useState([]);
     const [selectedPolygon, setSelectedPolygon] = useState({});
     const [searchPolygon, setSearchPolygon] = useState('');
+    const [searchOEM, setSearchOEM] = useState('');
+
     const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
+    const loggedInUser = localStorage.getItem('userId');
+    const navigate = useNavigate();
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
+
+    useEffect(() => {
+        if (!loggedInUser) {
+            localStorage.clear();
+            navigate('/');
+        }
+    }, []);
 
     useEffect(() => {
         getPolygonCategories().then((response) => {
@@ -41,18 +52,7 @@ const PolygonList = () => {
 
                 setCategoryPolygons(filteredAreas);
                 setFilteredPolygons(filteredAreas);
-                // filteredAreas?.length > 0 ? setSelectedPolygon(filteredAreas[0]) : setSelectedPolygon({});
                 setAllPolygonAreas(response?.data);
-
-                // const formattedCoordinates = filteredAreas[0].coordinates.map(coord => {
-                //     const [lat, long] = coord.split(', ');
-                //     return {
-                //         lat: parseFloat(lat),
-                //         lng: parseFloat(long)
-                //     };
-                // });
-
-                // setSelectedCoordinates(formattedCoordinates);
             }
             else {
                 setAllPolygonAreas([]);
@@ -61,10 +61,17 @@ const PolygonList = () => {
     }, []);
 
     useEffect(() => {
-        const filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === selectedCategory);
+        let filteredAreas = [];
+        if (searchOEM && searchOEM.length > 0) {
+            const filteredByOEM = allPolygonAreas.filter(data => data?.dealerOEM === searchOEM);
+            filteredAreas = filteredByOEM.filter(data => data?.geofenceType === selectedCategory);
+        } else {
+            filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === selectedCategory);
+        }
+
         setCategoryPolygons(filteredAreas);
         setFilteredPolygons(filteredAreas);
-    }, [selectedCategory]);
+    }, [selectedCategory, searchOEM]);
 
     const mapContainerStyle = {
         width: '100%',
@@ -99,7 +106,18 @@ const PolygonList = () => {
         ((data?.geoName && data?.geoName.toLowerCase().includes(searchValue.toLowerCase())) ||
             (data?.placeName && data?.placeName.toLowerCase().includes(searchValue.toLowerCase())))
         );
+
         setFilteredPolygons(filtereds);
+    };
+
+    const handleSearchOEM = (e) => {
+        const searchValue = e.target.value;
+        setSearchOEM(searchValue);
+        const filteredByOEM = allPolygonAreas.filter(data =>
+            ((data?.dealerOEM && data?.dealerOEM.toLowerCase().includes(searchValue.toLowerCase())))
+        );
+
+        setCategoryPolygons(filteredByOEM)
     };
 
     const getBounds = () => {
@@ -155,8 +173,25 @@ const PolygonList = () => {
                                 <Card>
                                     <div className='w-100 d-flex justify-content-start align-items-center'>
                                         <h6 className='thm-dark w-25'>Polygons</h6>
-                                        <SearchField onChange={handleSearchPolygon} value={searchPolygon} type='search' className="w-75" placeholder="Search Polygon" />
+                                        {
+                                            selectedCategory !== 'Dealer' ? (
+                                                <SearchField onChange={handleSearchPolygon} value={searchPolygon} type='search' className="w-75" placeholder="Search Polygon" />
+                                            ) : null
+                                        }
                                     </div>
+
+
+                                    <div className='w-100 d-flex justify-content-start align-items-center'>
+                                        {
+                                            selectedCategory === 'Dealer' ? (
+                                                <>
+                                                    <SearchField onChange={handleSearchOEM} value={searchPolygon} type='search' className="w-50 me-2" placeholder="Search OEM" />
+                                                    <SearchField onChange={handleSearchPolygon} value={searchOEM} type='search' className="w-50" placeholder="Search Polygon" />
+                                                </>
+                                            ) : null
+                                        }
+                                    </div>
+
                                     <hr />
                                     <div className='mt-2 polygons-list'>
                                         {

@@ -10,6 +10,7 @@ import { ErrorToast, SuccessToast } from '../../components/toast/toast';
 import { BiSolidHide } from "react-icons/bi";
 import { BiSolidShow } from "react-icons/bi";
 import { createNewUser, getUserId, getUsersList, updateUser } from '../../hooks/authHooks'
+import { useNavigate } from 'react-router-dom'
 
 const CreateUser = () => {
 
@@ -35,6 +36,14 @@ const CreateUser = () => {
     const [newUserId, setNewUserId] = useState('');
 
     const loggedInUser = localStorage.getItem('userId');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!loggedInUser) {
+            localStorage.clear();
+            navigate('/');
+        }
+    }, []);
 
     // useEffect(() => {
     //     getUserId().then(response => {

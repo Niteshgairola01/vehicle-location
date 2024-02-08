@@ -21,6 +21,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { makeStyles } from '@mui/styles';
+import { useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles({
     input: {
@@ -77,6 +78,16 @@ const RouteReport = () => {
     const [showLoader, setShowLoader] = useState(false)
     const [boundCenter, setBoundCenter] = useState(false);
     const [btnDisabled, setBtnDisabled] = useState(false);
+
+    const loggedInUser = localStorage.getItem('userId');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!loggedInUser) {
+            localStorage.clear();
+            navigate('/');
+        }
+    }, []);
 
     useEffect(() => {
         getAllVehiclesList().then((response) => {

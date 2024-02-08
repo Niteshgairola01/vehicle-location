@@ -43,10 +43,19 @@ const UpdatePolygon = () => {
     const [isPolygonClosed, setIsPolygonClosed] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
 
+    const loggedInUser = localStorage.getItem('userId');
+
     const navigate = useNavigate();
     const location = useLocation();
     const polygonData = location?.state;
     let editData;
+
+    useEffect(() => {
+        if (!loggedInUser) {
+            localStorage.clear();
+            navigate('/');
+        }
+    }, []);
 
     useEffect(() => {
         editData = polygonData;

@@ -47,6 +47,7 @@ const CreatePolygon = () => {
     const location = useLocation();
     const geofencePosition = location.state;
 
+    const loggedInUser = localStorage.getItem('userId');
     const navigate = useNavigate();
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
@@ -90,6 +91,13 @@ const CreatePolygon = () => {
     const handleSelectParty = (party) => {
         setSelectedParty(party);
     };
+
+    useEffect(() => {
+        if (!loggedInUser) {
+            localStorage.clear();
+            navigate('/');
+        }
+    }, []);
 
     useEffect(() => {
         if (geofencePosition !== null) {

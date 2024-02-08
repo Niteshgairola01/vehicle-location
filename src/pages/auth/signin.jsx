@@ -255,11 +255,13 @@ const Signin = () => {
                 </div>
             </Col >
             <Col className='login-side-container' style={{ overflow: 'hidden' }} sm={12} lg={8}>
-                <div className='mt-5 d-flex justify-content-start align-items-start flex-column mx-3 px-5'>
-                    <h1 className='text-white text-start'>Navigating Routes, Delivering Trust</h1>
-                    <p className='text-start pt-2 px-3 text-white home-desc'>
-                        <Typewriter onInit={(typewriter) => typewriter.typeString(text).pauseFor(100).start()} />
-                    </p>
+                <div className='h-100 mt-5 d-flex justify-content-between align-items-start flex-column mx-3 px-5'>
+                    <div>
+                        <h1 className='text-white text-start'>Navigating Routes, Delivering Trust</h1>
+                        <p className='text-start pt-2 px-3 text-white home-desc'>
+                            <Typewriter onInit={(typewriter) => typewriter.typeString(text).pauseFor(100).start()} />
+                        </p>
+                    </div>
                     <div data-aos="fade-left">
                         <div className='position-relative w-100'>
                             <img src={trailer} alt='trailer' className='login-trailer' />

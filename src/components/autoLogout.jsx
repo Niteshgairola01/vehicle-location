@@ -69,7 +69,9 @@ const AutoLogout = () => {
     const handleUnload = () => {
         const timestamp = new Date().getTime();
         localStorage.setItem('unloadTimestamp', timestamp.toString());
-        autoSignOutUser([loggedInUser, formattedDateTime]);
+        if (loggedInUser !== null) {
+            autoSignOutUser([loggedInUser, formattedDateTime]);
+        }
         localStorage.setItem("tabClosed", 'true');
     };
 

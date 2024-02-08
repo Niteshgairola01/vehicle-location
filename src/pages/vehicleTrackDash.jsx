@@ -12,7 +12,7 @@ import { ErrorToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
 import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
@@ -26,6 +26,9 @@ const VehicleTrackDash = () => {
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
+
+    const loggedInUser = localStorage.getItem('userId');
+    const navigate = useNavigate();
 
     const [showMap, setShowMap] = useState(false);
 
@@ -101,6 +104,14 @@ const VehicleTrackDash = () => {
     // useEffect(() => {
     //     localStorage.setItem('tabClosed', 'false');
     // }, []);
+
+
+    useEffect(() => {
+        if (!loggedInUser) {
+            localStorage.clear();
+            navigate('/');
+        }
+    }, []);
 
     useEffect(() => {
         if (closed === 'true') {
@@ -1354,18 +1365,16 @@ const VehicleTrackDash = () => {
                                             <div className='column-items'>
                                                 {
                                                     tableColumns.map((data, index) => (
-                                                        <>
-                                                            <div key={index}
-                                                                onMouseOver={() => setIsHovered(true)}
-                                                                onMouseOut={() => setIsHovered(false)}
-                                                                onClick={() => handleHideColumns(index)}
-                                                                className='hide-colums-item py-2 ps-3 d-flex justify-content-start align-items-start cursor-pointer'>
-                                                                <input className="switch" type="checkbox"
-                                                                    checked={data?.hidden === true}
-                                                                />
-                                                                <span className='ms-3'>{data?.label}</span>
-                                                            </div>
-                                                        </>
+                                                        <div key={index}
+                                                            onMouseOver={() => setIsHovered(true)}
+                                                            onMouseOut={() => setIsHovered(false)}
+                                                            onClick={() => handleHideColumns(index)}
+                                                            className='hide-colums-item py-2 ps-3 d-flex justify-content-start align-items-start cursor-pointer'>
+                                                            <input className="switch" type="checkbox"
+                                                                checked={data?.hidden === true}
+                                                            />
+                                                            <span className='ms-3'>{data?.label}</span>
+                                                        </div>
                                                     ))
                                                 }
                                             </div>
