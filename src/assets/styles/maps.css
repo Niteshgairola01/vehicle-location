@@ -1,9 +1,9 @@
 .side-map-container {
-    height: 60vh;
+    height: 50vh;
 }
 
-@media screen and (max-width: 1400px) {
+/* @media screen and (max-width: 1400px) {
     .side-map-container {
-        height: 55vh;
+        height: 50vh;
     }
-}
+} */
