@@ -76,8 +76,6 @@ const UpdatePolygon = () => {
     // const key = "ABC";
     const fullScreen = useRef(null);
 
-    console.log("form", form);
-
     useEffect(() => {
         if (editData === null) {
             setSelectedCategory('');
@@ -290,7 +288,7 @@ const UpdatePolygon = () => {
                         ...(placeName !== polygonData?.placeName && { placeName: placeName }),
                         ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
                         ...((((selectedCategory?.value === 'Dealer') && (selectedParty?.value !== polygonData?.dealerOEM))) && { dealerOEM: selectedParty?.value }),
-                        ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
+                        ...((!arraysAreEqual) && { coordinates: coords })
                     }
                 ];
 

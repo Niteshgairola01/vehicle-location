@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import VehicleTrackDash from '../pages/vehicleTrackDash';
 import PolygonList from '../pages/polygon/polygonList';
 import CreatePolygon from '../pages/polygon/createPolygon';
@@ -13,8 +13,15 @@ import RouteReport from '../pages/routeReport/route-report';
 const AllRoutes = () => {
     const location = useLocation();
     const loggedInUser = localStorage.getItem('userId');
+    const navigate = useNavigate();
 
-    const hasFunctionExecuted = useRef(false);
+    useEffect(() => {
+        if (loggedInUser === null) {
+            localStorage.clear();
+            navigate('/');
+        }
+    }, [loggedInUser]);
+
     // const [shown, setShown] = useState(false);
 
     // useEffect(() => {
