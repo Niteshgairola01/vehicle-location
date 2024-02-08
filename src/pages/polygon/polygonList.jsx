@@ -6,12 +6,10 @@ import Card from '../../components/Card/card';
 import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton';
 import { CiEdit } from "react-icons/ci";
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAllPolygonAreas, getPolygonCategories } from '../../hooks/polygonHooks';
 import DashHead from '../../components/dashboardHead';
 import { SearchField } from '../../components/form/Input';
-import { RxEnterFullScreen, RxCross1 } from "react-icons/rx";
-import { autoSignOutUser } from '../../hooks/authHooks';
 
 const PolygonList = () => {
 
@@ -62,16 +60,10 @@ const PolygonList = () => {
 
     useEffect(() => {
         let filteredAreas = [];
-        if (searchOEM && searchOEM.length > 0) {
-            const filteredByOEM = allPolygonAreas.filter(data => data?.dealerOEM === searchOEM);
-            filteredAreas = filteredByOEM.filter(data => data?.geofenceType === selectedCategory);
-        } else {
-            filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === selectedCategory);
-        }
+        filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === selectedCategory);
 
-        setCategoryPolygons(filteredAreas);
         setFilteredPolygons(filteredAreas);
-    }, [selectedCategory, searchOEM]);
+    }, [selectedCategory]);
 
     const mapContainerStyle = {
         width: '100%',
@@ -81,6 +73,7 @@ const PolygonList = () => {
     const handleSelectCategory = (category) => {
         setSelectedCategory(category);
         setSearchPolygon('');
+        setSearchOEM('');
         const polygonAreas = allPolygonAreas.filter(data => data?.geoName === category);
         setCategoryPolygons(polygonAreas);
         setFilteredPolygons(polygonAreas);
@@ -117,8 +110,10 @@ const PolygonList = () => {
             ((data?.dealerOEM && data?.dealerOEM.toLowerCase().includes(searchValue.toLowerCase())))
         );
 
-        setCategoryPolygons(filteredByOEM)
+        setCategoryPolygons(filteredByOEM);
+        setFilteredPolygons(filteredByOEM);
     };
+
 
     const getBounds = () => {
         const bounds = new window.google.maps.LatLngBounds();
@@ -185,8 +180,8 @@ const PolygonList = () => {
                                         {
                                             selectedCategory === 'Dealer' ? (
                                                 <>
-                                                    <SearchField onChange={handleSearchOEM} value={searchPolygon} type='search' className="w-50 me-2" placeholder="Search OEM" />
-                                                    <SearchField onChange={handleSearchPolygon} value={searchOEM} type='search' className="w-50" placeholder="Search Polygon" />
+                                                    <SearchField onChange={handleSearchOEM} value={searchOEM} type='search' className="w-50 me-2" placeholder="Search OEM" />
+                                                    <SearchField onChange={handleSearchPolygon} value={searchPolygon} type='search' className="w-50" placeholder="Search Polygon" />
                                                 </>
                                             ) : null
                                         }
