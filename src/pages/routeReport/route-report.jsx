@@ -71,7 +71,7 @@ const RouteReport = () => {
     const [rangeValue, setRangeValue] = useState(0);
     const [playbackSpeed, setPlayBackSpeed] = useState(1000);
 
-    const coveredCoordinates = routeCoords.slice(0, arrayLocation.current + 1)
+    const coveredCoordinates = routeData.slice(0, arrayLocation.current + 1)
     const coordinatesBeforeMarker = routeCoords.slice(0, arrayLocation.current + 1);
     const coordinatesAfterMarker = routeCoords.slice(arrayLocation.current);
 
@@ -402,6 +402,11 @@ const RouteReport = () => {
 
 
     const handleGetCoveredDistance = () => {
+        console.log("covered", coordinatesBeforeMarker);
+        coveredCoordinates.map((data) => {
+            console.log("km", data?.latLongDistance);
+        });
+
         return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
     };
 
@@ -812,7 +817,7 @@ const RouteReport = () => {
                             </div>
                         </div>
 
-                        <div className={`position-absolute ${!showLoader && 'd-none'}`} style={{ width: "61%", height: "63%", top: 162 }}>
+                        <div className={`position-absolute ${!showLoader && 'd-none'}`} style={{ width: "61%", height: "67%", top: 162 }}>
                             <div className={`main-loader-container h-100`}>
                                 <div className="dot-spinner">
                                     <div className="dot-spinner__dot"></div>

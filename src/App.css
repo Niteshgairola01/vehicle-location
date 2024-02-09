@@ -816,29 +816,32 @@ table thead {
 }
 
 .blink {
-    animation: blink 0.9s linear infinite;
+    animation: blink 0.8s infinite;
+    border-radius: 5px;
 }
 
 @keyframes blink {
     0% {
-        opacity: 0;
-        transform: scale(0.7);
-    }
-
-    25% {
-        opacity: 0.5;
+        background-color: white;
+        /* Change to white after 1 second */
+        color: red;
+        border: 2px solid red;
+        /* Change text color to red */
     }
 
     50% {
-        opacity: .8;
-    }
-
-    75% {
-        opacity: 1;
+        background-color: white;
+        /* Stay white for half the animation */
+        color: red;
+        border: 2px solid white;
     }
 
     100% {
-        opacity: 0.5;
+        background-color: red;
+        border: 2px solid red;
+        /* Change back to red after 1 second */
+        color: white;
+        /* Change text color back to white */
     }
 }
 

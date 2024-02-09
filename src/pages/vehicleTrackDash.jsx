@@ -575,7 +575,9 @@ const VehicleTrackDash = () => {
                                 }
 
                                 if (selectedFilter.includes('Delayed (As per OEM)')) {
-                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                    if (((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) && (selectedFilter.includes('Delayed (As per OEM)')))
+                                        && (!selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
+                                    ) {
                                         allFilteredTrip.forEach(data => {
                                             const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
                                             if (testData === true) {
@@ -583,7 +585,20 @@ const VehicleTrackDash = () => {
                                             }
                                         })
 
-                                    } else if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
+                                    }
+
+                                    // if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') && (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)'))) &&
+                                    //     (!selectedFilter.includes('On Time & Early (As per OEM)') && !selectedFilter.includes('Delayed (As per OEM)'))) {
+                                    //     allFilteredTrip.forEach(data => {
+                                    //         const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
+                                    //         if (testData === true) {
+                                    //             finalStatusTrips.push(data)
+                                    //         }
+                                    //     })
+
+                                    // }
+
+                                    if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
                                         if (selectedFilter.includes('Mild Delayed')) {
                                             if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                                 const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
@@ -603,6 +618,7 @@ const VehicleTrackDash = () => {
                                                         finalStatusTrips.push(data)
                                                     }
                                                 })
+
                                             } else {
                                                 const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
                                                 let delayedArr2 = [];
@@ -1081,11 +1097,6 @@ const VehicleTrackDash = () => {
 
         const order = sortOrder === 'asc' ? 'desc' : 'asc';
 
-        // filteredTrips.map((data) => {
-        //     console.log("data", data?.vehicleNo === "RJ14GR0865" && data);
-        //     // console.log("data", data?.routeKM === "0");
-        // });
-
         const sorted = [...filteredTrips].sort((a, b) => {
             const valueA = a[columnName];
             const valueB = b[columnName];
@@ -1262,7 +1273,7 @@ const VehicleTrackDash = () => {
                                 <span>Moderate Delayed: </span>
                                 <span>{allTripsModerate}</span>
                             </div>
-                            <div className='mx-1 px-2 bg-danger fw-bold text-white blink'>
+                            <div className='mx-1 px-2 fw-bold blink'>
                                 <span>Critical Delayed: </span>
                                 <span>{allTripsCritical}</span>
                             </div>
