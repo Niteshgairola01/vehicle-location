@@ -235,7 +235,26 @@ const UpdatePolygon = () => {
     useEffect(() => {
         let coordinates = [];
         selectedCoordinates.map((data) => {
-            coordinates.push(`${data?.lat.toFixed(6)}, ${data?.lng.toFixed(6)}`)
+            const lat = data?.lat.toFixed(6).split('.');
+            const lng = data?.lng.toFixed(6).split('.');
+
+            let finalLat = 0;
+            let finalLong = 0;
+
+            if (parseInt(lat[0]) < 10) {
+                finalLat = `0${lat[0]}.${lat[1]}`;
+            } else {
+                finalLat = `${lat[0]}.${lat[1]}`;
+            };
+
+            if (parseInt(lng[0]) < 10) {
+                finalLat = `0${lng[0]}.${lng[1]}`;
+            } else {
+                finalLong = `${lng[0]}.${lng[1]}`;
+            };
+
+            coordinates.push(`${finalLat}, ${finalLong}`);
+            // coordinates.push(`${data?.lat.toFixed(6)}, ${data?.lng.toFixed(6)}`)
         });
 
         setCoords(coordinates);
@@ -249,7 +268,6 @@ const UpdatePolygon = () => {
         });
     }, [selectedCoordinates, geoName, placeName, selectedCategory]);
 
-    // console.log("edit data", polygonData);
 
     useEffect(() => {
         setPreviousValues({
@@ -272,6 +290,7 @@ const UpdatePolygon = () => {
                 const form = [
                     polygonData,
                     {
+                        createdByUserId: loggedInUser,
                         ...(placeName !== polygonData?.placeName && { placeName: placeName }),
                         ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
                         ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
@@ -293,6 +312,7 @@ const UpdatePolygon = () => {
                 const form = [
                     polygonData,
                     {
+                        createdByUserId: loggedInUser,
                         ...(geoName !== polygonData?.geoName && { geoName: geoName }),
                         ...(placeName !== polygonData?.placeName && { placeName: placeName }),
                         ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),

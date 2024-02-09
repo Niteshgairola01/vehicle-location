@@ -171,7 +171,25 @@ const CreatePolygon = () => {
     useEffect(() => {
         let coordinates = [];
         selectedCoordinates.map((data) => {
-            coordinates.push(`${data?.lat.toFixed(6)}, ${data?.lng.toFixed(6)}`)
+            const lat = data?.lat.toFixed(6).split('.');
+            const lng = data?.lng.toFixed(6).split('.');
+
+            let finalLat = 0;
+            let finalLong = 0;
+
+            if (parseInt(lat[0]) < 10) {
+                finalLat = `0${lat[0]}.${lat[1]}`;
+            } else {
+                finalLat = `${lat[0]}.${lat[1]}`;
+            };
+
+            if (parseInt(lng[0]) < 10) {
+                finalLat = `0${lng[0]}.${lng[1]}`;
+            } else {
+                finalLong = `${lng[0]}.${lng[1]}`;
+            };
+
+            coordinates.push(`${finalLat}, ${finalLong}`)
         });
 
         setCoords(coordinates);
@@ -196,7 +214,8 @@ const CreatePolygon = () => {
                     geoName: '',
                     placeName: placeName,
                     geofenceType: selectedCategory?.value,
-                    coordinates: coords
+                    coordinates: coords,
+                    createdByUserId: loggedInUser,
                 };
 
                 createNewPolygonArea(form).then((response) => {
@@ -213,6 +232,7 @@ const CreatePolygon = () => {
                     placeName: placeName,
                     geofenceType: selectedCategory?.value,
                     coordinates: coords,
+                    createdByUserId: loggedInUser,
                     ...(selectedCategory?.value === 'Dealer' && { dealerOEM: selectedParty?.value })
                 }
 
