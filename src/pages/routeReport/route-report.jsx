@@ -141,6 +141,7 @@ const RouteReport = () => {
         const setNextCoordinate = (index) => {
             if (index < routeCoords.length) {
                 setCurrentCoordinates(routeCoords[index]);
+
                 index < routeCoords.length ? setNextCoordinates(routeCoords[index + 1]) : setNextCoordinates(routeCoords[0]);
                 arrayLocation.current = index;
                 timeoutIds.push(setTimeout(() => setNextCoordinate(index + 1), playbackSpeed));
@@ -167,6 +168,7 @@ const RouteReport = () => {
                     setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
                 }
                 setCurrentCoordsDetails(routeData[arrayLocation.current]);
+                setCurrentCoordinates(routeCoords[arrayLocation.current]);
             }
 
             if (routeCoords.length > 0 && currentCoordDetails.lat !== undefined) {
@@ -176,13 +178,14 @@ const RouteReport = () => {
                     setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
                 }
                 setCurrentCoordsDetails(routeData[arrayLocation.current]);
+                setCurrentCoordinates(routeCoords[arrayLocation.current]);
             }
         }
 
         return () => {
             timeoutIds.forEach(clearTimeout);
         };
-    }, [pause, playbackSpeed, rangeValue, routeData]);
+    }, [pause, playbackSpeed, rangeValue, routeData,]);
 
     const handleChangeVehicle = (selectedValue) => {
         setSelectedVehicle(selectedValue);
@@ -248,7 +251,8 @@ const RouteReport = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+        arrayLocation.current = 0;
+        setCurrentCoordinates({ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng })
         setShowLoader(true);
         setBtnDisabled(true);
 
