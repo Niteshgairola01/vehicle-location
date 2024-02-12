@@ -2,13 +2,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import Select from 'react-select';
 import Card from '../../components/Card/card'
 import { Col, Form, Row } from 'react-bootstrap'
+import { Input, SearchField } from '../../components/form/Input'
 import { getAllVehiclesList, getVehicleRoute } from '../../hooks/vehicleMasterHooks';
 import Button from '../../components/Button/coloredButton';
-import { GoogleMap, InfoWindowF, LoadScript, MarkerF, PolylineF } from '@react-google-maps/api';
+import { GoogleMap, InfoWindowF, LoadScript, MarkerF, PolygonF, PolylineF } from '@react-google-maps/api';
+import { getAllPolygonAreas } from '../../hooks/polygonHooks';
 import { ErrorToast } from '../../components/toast/toast';
 import { truck } from '../../assets/images';
 import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
+import Loader from '../../components/loader/loader';
 import { DisabledButton } from '../../components/Button/Button';
 
 // MUI
@@ -70,12 +73,9 @@ const RouteReport = () => {
     const [rangeValue, setRangeValue] = useState(0);
     const [playbackSpeed, setPlayBackSpeed] = useState(1000);
 
-    const [speedCoords, setSpeedCoords] = useState([]);
-    const [speedCoordData, setSpeedCoordData] = useState([]);
-
     const coveredCoordinates = routeData.slice(0, arrayLocation.current + 1)
-    const coordinatesBeforeMarker = speedCoords.slice(0, arrayLocation.current + 1);
-    const coordinatesAfterMarker = speedCoords.slice(arrayLocation.current);
+    const coordinatesBeforeMarker = routeCoords.slice(0, arrayLocation.current + 1);
+    const coordinatesAfterMarker = routeCoords.slice(arrayLocation.current);
 
     const [showLoader, setShowLoader] = useState(false)
     const [boundCenter, setBoundCenter] = useState(false);
@@ -97,7 +97,7 @@ const RouteReport = () => {
         const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
         const brng = Math.atan2(y, x);
         const angle = (brng * 180) / Math.PI;
-        setAngle(angle - 92.1);
+        lat1 === lat2 ? setAngle(180) : setAngle(angle - 92.1);
     };
 
     useEffect(() => {
@@ -139,17 +139,17 @@ const RouteReport = () => {
         setBoundCenter(false);
 
         const setNextCoordinate = (index) => {
-            if (index < speedCoords.length) {
-                setCurrentCoordinates(speedCoords[index]);
-                index < speedCoords.length ? setNextCoordinates(speedCoords[index + 1]) : setNextCoordinates(speedCoords[0]);
+            if (index < routeCoords.length) {
+                setCurrentCoordinates(routeCoords[index]);
+                index < routeCoords.length ? setNextCoordinates(routeCoords[index + 1]) : setNextCoordinates(routeCoords[0]);
                 arrayLocation.current = index;
                 timeoutIds.push(setTimeout(() => setNextCoordinate(index + 1), playbackSpeed));
             }
         };
 
         const setNextCoord = (index) => {
-            if (index < speedCoordData.length) {
-                setCurrentCoordsDetails(speedCoordData[index]);
+            if (index < routeData.length) {
+                setCurrentCoordsDetails(routeData[index]);
                 timeoutIds.push(setTimeout(() => setNextCoord(index + 1), playbackSpeed));
             }
         };
@@ -160,24 +160,22 @@ const RouteReport = () => {
             setNextCoordinate(arrayLocation.current);
         } else {
             timeoutIds.forEach(clearTimeout);
-            if (speedCoords.length > 0 && currentCoordDetails.lat === undefined) {
-                if (arrayLocation.current < speedCoords.length - 1) {
-                    setNextCoordinates({ lat: speedCoords[arrayLocation.current + 1].lat, lng: speedCoords[arrayLocation.current + 1].lng });
+            if (routeCoords.length > 0 && currentCoordDetails.lat === undefined) {
+                if (arrayLocation.current < routeCoords.length - 1) {
+                    setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
                 } else {
-                    setNextCoordinates({ lat: speedCoords[0].lat, lng: speedCoords[0].lng });
+                    setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
                 }
-                setCurrentCoordinates({ lat: speedCoords[arrayLocation.current].lat, lng: speedCoords[arrayLocation.current].lng });
-                setCurrentCoordsDetails(speedCoordData[arrayLocation.current]);
+                setCurrentCoordsDetails(routeData[arrayLocation.current]);
             }
 
-            if (speedCoords.length > 0 && currentCoordDetails.lat !== undefined) {
-                if (arrayLocation.current < speedCoords.length - 1) {
-                    setNextCoordinates({ lat: speedCoords[arrayLocation.current + 1].lat, lng: speedCoords[arrayLocation.current + 1].lng });
+            if (routeCoords.length > 0 && currentCoordDetails.lat !== undefined) {
+                if (arrayLocation.current < routeCoords.length - 1) {
+                    setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
                 } else {
-                    setNextCoordinates({ lat: speedCoords[0].lat, lng: speedCoords[0].lng });
+                    setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
                 }
-                setCurrentCoordinates({ lat: speedCoords[arrayLocation.current].lat, lng: speedCoords[arrayLocation.current].lng });
-                setCurrentCoordsDetails(speedCoordData[arrayLocation.current]);
+                setCurrentCoordsDetails(routeData[arrayLocation.current]);
             }
         }
 
@@ -267,8 +265,6 @@ const RouteReport = () => {
 
                     setRouteCoords(coords);
                     setRouteData(response?.data);
-                    const latitudesMap = new Map();
-                    const repeatedLatitudes = [];
 
                     allData.map((data) => {
                         coords.push(
@@ -278,57 +274,6 @@ const RouteReport = () => {
                             }
                         )
                     });
-
-                    allData.forEach(obj => {
-                        if (!latitudesMap.has(obj.lat)) {
-                            latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
-                        } else {
-                            const existingLatData = latitudesMap.get(obj.lat);
-                            latitudesMap.set(obj.lat, {
-                                id: obj?.id,
-                                latLongDistance: obj?.latLongDistance,
-                                vehicleNo: obj?.vehicleNo,
-                                date: obj?.date,
-                                speed: obj?.speed,
-                                count: existingLatData.count + 1,
-                                arrival: existingLatData.arrival,
-                                exit: obj.date,
-                                lng: obj.long
-                            });
-                        }
-                    });
-
-                    latitudesMap.forEach((value, key) => {
-                        if (value.count > 1) {
-                            repeatedLatitudes.push({
-                                id: value?.id,
-                                latLongDistance: value?.latLongDistance,
-                                vehicleNo: value?.vehicleNo,
-                                date: value?.date,
-                                speed: value?.speed,
-                                lat: key,
-                                lng: value.lng,
-                                arrival: value.arrival,
-                                exit: value.exit
-                            });
-                        }
-                    });
-
-
-                    const testArr = allData.filter(item => (
-                        parseFloat(item?.latLongDistance) > 0
-                    ));
-
-                    let testArrCoords = [];
-
-                    testArr.map(data => {
-                        testArrCoords.push({
-                            lat: parseFloat(data?.lat),
-                            lng: parseFloat(data?.long)
-                        })
-                    });
-                    setSpeedCoords(testArrCoords);
-                    setSpeedCoordData(testArr);
 
                     // Stop Time 
 
@@ -345,11 +290,6 @@ const RouteReport = () => {
                                 } else {
                                     const existingLatData = latitudesMap.get(obj.lat);
                                     latitudesMap.set(obj.lat, {
-                                        id: obj?.id,
-                                        latLongDistance: obj?.latLongDistance,
-                                        vehicleNo: obj?.vehicleNo,
-                                        date: obj?.date,
-                                        speed: obj?.speed,
                                         count: existingLatData.count + 1,
                                         arrival: existingLatData.arrival,
                                         exit: obj.date,
@@ -361,11 +301,6 @@ const RouteReport = () => {
                             latitudesMap.forEach((value, key) => {
                                 if (value.count > 1) {
                                     repeatedLatitudes.push({
-                                        id: value?.id,
-                                        latLongDistance: value?.latLongDistance,
-                                        vehicleNo: value?.vehicleNo,
-                                        date: value?.date,
-                                        speed: value?.speed,
                                         lat: key,
                                         lng: value.lng,
                                         arrival: value.arrival,
@@ -373,22 +308,6 @@ const RouteReport = () => {
                                     });
                                 }
                             });
-
-
-                            const testArr = allData.filter(item => (
-                                parseFloat(item?.latLongDistance) > 1
-                            ));
-
-                            let testArrCoords = [];
-
-                            testArr.map(data => {
-                                testArrCoords.push({
-                                    lat: parseFloat(data?.lat),
-                                    lng: parseFloat(data?.long)
-                                })
-                            });
-                            setSpeedCoords(testArrCoords);
-                            setSpeedCoordData(testArr);
 
                             const filteredTest = repeatedLatitudes.filter(item => {
                                 const arrivalTime = new Date(item.arrival);
@@ -484,12 +403,12 @@ const RouteReport = () => {
     };
 
     const vehicleCenter = () => {
-        if (speedCoords.length > 0) {
+        if (routeCoords.length > 0) {
             if (currentCoordinates.lat === undefined) {
-                return { lat: speedCoords[0].lat, lng: speedCoords[0].lng }
+                return { lat: routeCoords[0].lat, lng: routeCoords[0].lng }
             } else {
-                if (currentCoordinates.lat === speedCoords[speedCoords.length - 1].lat) {
-                    return { lat: speedCoords[speedCoords.length - 1].lat, lng: routeCoords[routeCoords.length - 1].lng }
+                if (currentCoordinates.lat === routeCoords[routeCoords.length - 1].lat) {
+                    return { lat: routeCoords[routeCoords.length - 1].lat, lng: routeCoords[routeCoords.length - 1].lng }
                 } else {
                     return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
                 }
@@ -513,11 +432,6 @@ const RouteReport = () => {
 
 
     const handleGetCoveredDistance = () => {
-        console.log("covered", coordinatesBeforeMarker);
-        coveredCoordinates.map((data) => {
-            console.log("km", data?.latLongDistance);
-        });
-
         return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
     };
 
@@ -714,7 +628,7 @@ const RouteReport = () => {
                                                     options={{
                                                         strokeColor: '#000',
                                                         strokeOpacity: 1.0,
-                                                        strokeWeight: 2
+                                                        strokeWeight: 4
                                                     }}
                                                 />
                                             )
@@ -727,14 +641,14 @@ const RouteReport = () => {
                                                     options={{
                                                         strokeColor: '#f75f54',
                                                         strokeOpacity: 1.0,
-                                                        strokeWeight: 2
+                                                        strokeWeight: 4
                                                     }}
                                                 />
                                             )
                                         }
 
                                         {
-                                            speedCoords.length > 0 && (
+                                            routeCoords.length > 0 && (
                                                 <div className='marker-container'>
                                                     <MarkerF
                                                         key={angle}
@@ -864,9 +778,9 @@ const RouteReport = () => {
 
                             <div className='w-100 mt-2'>
                                 <input type="range"
-                                    min={0} max={speedCoords.length - 1}
-                                    // value={rangeValue}
-                                    value={arrayLocation?.current}
+                                    min={0} max={routeCoords.length - 1}
+
+                                    value={arrayLocation?.current} // value={arrayLocation?.current}
                                     onChange={handleChangeRange}
                                     className='w-100' />
                             </div>

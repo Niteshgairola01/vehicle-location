@@ -45,10 +45,6 @@ const VehicleRoute = () => {
 
     const [boundCenter, setBoundCenter] = useState(false);
 
-    const [speedCoords, setSpeedCoords] = useState([]);
-    const [speedCoordData, setSpeedCoordData] = useState([]);
-
-
     const navigate = useNavigate();
 
     const mapContainerStyle = {
@@ -83,6 +79,8 @@ const VehicleRoute = () => {
         const angle = (brng * 180) / Math.PI;
         setAngle(angle - 92.1);
     };
+
+    console.log("angle", angle);
 
     useEffect(() => {
 
@@ -150,16 +148,20 @@ const VehicleRoute = () => {
     }, [currentCoordDetails]);
 
     const handleSVGCallback = (svgContent) => {
+        // console.log("contnet", svgContent);
         try {
             const parser = new DOMParser();
             const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+            // console.log(doc); // Log parsed document for inspection
 
             const groups = doc.querySelectorAll('g');
+            // console.log(groups); // Log groups for inspection
 
             groups.forEach((group) => {
                 const paths = group.querySelectorAll('path');
                 paths.forEach((path) => {
                     const pathData = path.getAttribute('d');
+                    // console.log(pathData);
                 });
             });
         } catch (error) {
@@ -174,20 +176,31 @@ const VehicleRoute = () => {
                     const allData = response?.data;
                     setRouteData(response?.data);
 
+                    // const latitudesMap = new Map();
+                    // const repeatedLatitudes = [];
+
+                    // allData.forEach(obj => {
+                    //     if (!latitudesMap.has(obj.lat)) {
+                    //         latitudesMap.set(obj.lat, 1);
+                    //     } else {
+                    //         if (latitudesMap.get(obj.lat) === 1) {
+                    //             repeatedLatitudes.push(obj);
+                    //         }
+                    //         latitudesMap.set(obj.lat, latitudesMap.get(obj.lat) + 1);
+                    //     }
+                    // });
+
                     const latitudesMap = new Map(); // To store seen latitudes
                     const repeatedLatitudes = [];
 
                     allData.forEach(obj => {
+                        // If the latitude has not been encountered yet, add it to the latitudes map
                         if (!latitudesMap.has(obj.lat)) {
                             latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
                         } else {
+                            // Increase the count for the latitude in the map
                             const existingLatData = latitudesMap.get(obj.lat);
                             latitudesMap.set(obj.lat, {
-                                id: obj?.id,
-                                latLongDistance: obj?.latLongDistance,
-                                vehicleNo: obj?.vehicleNo,
-                                date: obj?.date,
-                                speed: obj?.speed,
                                 count: existingLatData.count + 1,
                                 arrival: existingLatData.arrival,
                                 exit: obj.date,
@@ -196,14 +209,10 @@ const VehicleRoute = () => {
                         }
                     });
 
+                    // Filter latitudes that are repeated
                     latitudesMap.forEach((value, key) => {
                         if (value.count > 1) {
                             repeatedLatitudes.push({
-                                id: value?.id,
-                                latLongDistance: value?.latLongDistance,
-                                vehicleNo: value?.vehicleNo,
-                                date: value?.date,
-                                speed: value?.speed,
                                 lat: key,
                                 lng: value.lng,
                                 arrival: value.arrival,
@@ -211,21 +220,6 @@ const VehicleRoute = () => {
                             });
                         }
                     });
-
-                    const testArr = allData.filter(item => (
-                        parseFloat(item?.latLongDistance) > 0
-                    ));
-
-                    let testArrCoords = [];
-
-                    testArr.map(data => {
-                        testArrCoords.push({
-                            lat: parseFloat(data?.lat),
-                            lng: parseFloat(data?.long)
-                        })
-                    });
-                    setSpeedCoords(testArrCoords);
-                    setSpeedCoordData(testArr);
 
                     setStoppage(repeatedLatitudes);
 
@@ -255,6 +249,9 @@ const VehicleRoute = () => {
         }
     }, [form]);
 
+    console.log("marker", markerDetails);
+
+    // const [arrayLocation, setArrayLocation] = useState(0);
     let arrayLocation = useRef(0);
 
     useEffect(() => {
@@ -262,17 +259,17 @@ const VehicleRoute = () => {
         setBoundCenter(false);
 
         const setNextCoordinate = (index) => {
-            if (index < speedCoords.length) {
-                setCurrentCoordinates(speedCoords[index]);
-                index < speedCoords.length ? setNextCoordinates(speedCoords[index + 1]) : setNextCoordinates(speedCoords[0]);
+            if (index < coordinates.length) {
+                setCurrentCoordinates(coordinates[index]);
+                index < coordinates.length ? setNextCoordinates(coordinates[index + 1]) : setNextCoordinates(coordinates[0]);
                 arrayLocation.current = index;
                 timeoutIds.push(setTimeout(() => setNextCoordinate(index + 1), playbackSpeed));
             }
         };
 
         const setNextCoord = (index) => {
-            if (index < speedCoordData.length) {
-                setCurrentCoordsDetails(speedCoordData[index]);
+            if (index < routeData.length) {
+                setCurrentCoordsDetails(routeData[index]);
                 timeoutIds.push(setTimeout(() => setNextCoord(index + 1), playbackSpeed));
             }
         };
@@ -283,25 +280,22 @@ const VehicleRoute = () => {
             setNextCoordinate(arrayLocation.current);
         } else {
             timeoutIds.forEach(clearTimeout);
-            if (speedCoords.length > 0 && currentCoordDetails.lat === undefined) {
-                if (arrayLocation.current < speedCoords.length - 1) {
-                    setNextCoordinates({ lat: speedCoords[arrayLocation.current + 1].lat, lng: speedCoords[arrayLocation.current + 1].lng });
+            if (coordinates.length > 0 && currentCoordDetails.lat === undefined) {
+                if (arrayLocation.current < coordinates.length - 1) {
+                    setNextCoordinates({ lat: coordinates[arrayLocation.current + 1].lat, lng: coordinates[arrayLocation.current + 1].lng });
                 } else {
-                    setNextCoordinates({ lat: speedCoords[0].lat, lng: speedCoords[0].lng });
+                    setNextCoordinates({ lat: coordinates[0].lat, lng: coordinates[0].lng });
                 }
-
-                setCurrentCoordinates({ lat: speedCoords[arrayLocation.current].lat, lng: speedCoords[arrayLocation.current].lng });
-                setCurrentCoordsDetails(speedCoordData[arrayLocation.current]);
+                setCurrentCoordsDetails(routeData[arrayLocation.current]);
             }
 
-            if (speedCoords.length > 0 && currentCoordDetails.lat !== undefined) {
-                if (arrayLocation.current < speedCoords.length - 1) {
-                    setNextCoordinates({ lat: speedCoords[arrayLocation.current + 1].lat, lng: speedCoords[arrayLocation.current + 1].lng });
+            if (coordinates.length > 0 && currentCoordDetails.lat !== undefined) {
+                if (arrayLocation.current < coordinates.length - 1) {
+                    setNextCoordinates({ lat: coordinates[arrayLocation.current + 1].lat, lng: coordinates[arrayLocation.current + 1].lng });
                 } else {
-                    setNextCoordinates({ lat: speedCoords[0].lat, lng: speedCoords[0].lng });
+                    setNextCoordinates({ lat: coordinates[0].lat, lng: coordinates[0].lng });
                 }
-                setCurrentCoordinates({ lat: speedCoords[arrayLocation.current].lat, lng: speedCoords[arrayLocation.current].lng });
-                setCurrentCoordsDetails(speedCoordData[arrayLocation.current]);
+                setCurrentCoordsDetails(routeData[arrayLocation.current]);
             }
         }
 
@@ -383,10 +377,10 @@ const VehicleRoute = () => {
     const vehicleCenter = () => {
         if (coordinates.length > 0) {
             if (currentCoordinates.lat === undefined) {
-                return { lat: speedCoords[0].lat, lng: speedCoords[0].lng }
+                return { lat: coordinates[0].lat, lng: coordinates[0].lng }
             } else {
-                if (currentCoordinates.lat === speedCoords[speedCoords.length - 1].lat) {
-                    return { lat: speedCoords[speedCoords.length - 1].lat, lng: speedCoords[speedCoords.length - 1].lng }
+                if (currentCoordinates.lat === coordinates[coordinates.length - 1].lat) {
+                    return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
                 } else {
                     return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
                 }
@@ -398,6 +392,8 @@ const VehicleRoute = () => {
 
     const handleShowGeofence = (event) => {
         setShowGeofenceOption(true);
+        // const lat = 
+        // console.log("event", event.latLng.lat());
         setGeofencePosition({
             lat: parseFloat((event.latLng.lat().toFixed(6))),
             lng: parseFloat((event.latLng.lng().toFixed(6))),
@@ -408,6 +404,8 @@ const VehicleRoute = () => {
 
         setBoundCenter(true);
     };
+
+    console.log("postion", geofencePosition);
 
     const handleStartPosition = () => {
         if (coordinates.length > 0) {
@@ -430,8 +428,8 @@ const VehicleRoute = () => {
     };
 
     const coveredCoordinates = routeData.slice(0, arrayLocation.current + 1)
-    const coordinatesBeforeMarker = speedCoords.slice(0, arrayLocation.current + 1);
-    const coordinatesAfterMarker = speedCoords.slice(arrayLocation.current);
+    const coordinatesBeforeMarker = coordinates.slice(0, arrayLocation.current + 1);
+    const coordinatesAfterMarker = coordinates.slice(arrayLocation.current);
 
     const handleGetCoveredDistance = () => {
         return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
@@ -505,7 +503,7 @@ const VehicleRoute = () => {
                                         options={{
                                             strokeColor: '#000',
                                             strokeOpacity: 1.0,
-                                            strokeWeight: 2
+                                            strokeWeight: 4
                                         }}
                                     />
 
@@ -514,17 +512,16 @@ const VehicleRoute = () => {
                                         options={{
                                             strokeColor: '#f75f54',
                                             strokeOpacity: 1.0,
-                                            strokeWeight: 2
+                                            strokeWeight: 4
                                         }}
                                     />
 
                                     {
-                                        speedCoords.length > 0 && (
+                                        coordinates.length > 0 && (
                                             <MarkerF
                                                 key={angle} // Force re-render when angle changes
                                                 icon={{
                                                     path: "M 0,-4 L 8,0 L 0,4 L 2,0 Z",
-                                                    // url: truck,
                                                     scale: 2,
                                                     rotation: angle
                                                 }}
@@ -592,7 +589,7 @@ const VehicleRoute = () => {
 
                         <div className='w-100'>
                             <input type="range"
-                                min={0} max={speedCoords.length - 1}
+                                min={0} max={coordinates.length - 1}
                                 value={arrayLocation?.current}
                                 onChange={handleChange}
                                 className='w-100' />
