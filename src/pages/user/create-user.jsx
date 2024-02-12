@@ -75,7 +75,7 @@ const CreateUser = () => {
     }, []);
 
     useEffect(() => {
-        selectedUser?.userName === undefined ? setNewUserId(parseInt(splittedUserId[1]) + 1 <= 10 ? `PAPL-0${parseInt(splittedUserId[1]) + 1}` : `PAPL-${parseInt(splittedUserId[1]) + 1}`)
+        selectedUser?.userName === undefined ? setNewUserId(parseInt(splittedUserId[1]) + 1 < 10 ? `PAPL-0${parseInt(splittedUserId[1]) + 1}` : `PAPL-${parseInt(splittedUserId[1]) + 1}`)
             : setNewUserId(selectedUser?.userId);
     }, [lastUserId, selectedUser]);
 
@@ -197,7 +197,6 @@ const CreateUser = () => {
         } else {
             ErrorToast("Select a valid office");
         }
-
     };
 
     return (

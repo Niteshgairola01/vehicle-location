@@ -688,8 +688,8 @@ table thead {
 
 
 #warn-icon {
-    transition: transform 1s ease-out infinite;
-    animation: bounce 1s ease-out forwards infinite;
+    transition: transform 2s ease-out infinite;
+    animation: bounce 2s ease-out forwards infinite;
 }
 
 @keyframes bounce {

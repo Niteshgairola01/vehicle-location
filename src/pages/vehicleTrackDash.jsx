@@ -1093,8 +1093,6 @@ const VehicleTrackDash = () => {
 
     const handleSortData = (columnName) => {
 
-        console.log("sorting");
-
         const order = sortOrder === 'asc' ? 'desc' : 'asc';
 
         const sorted = [...filteredTrips].sort((a, b) => {
@@ -1107,17 +1105,17 @@ const VehicleTrackDash = () => {
             }
 
             // Sort 0
-            if (valueA === '0' || valueB === '0') {
-                return order === 'asc' ? (valueA.localeCompare(valueB)) : (valueB.localeCompare(valueA));
-            }
+            // if (valueA === '0' || valueB === '0') {
+            //     return order === 'asc' ? (valueA.localeCompare(valueB)) : (valueB.localeCompare(valueA));
+            // }
 
-            // Sort date / time
-            const dateValueA = new Date(valueA);
-            const dateValueB = new Date(valueB);
+            // // Sort date / time
+            // const dateValueA = new Date(valueA);
+            // const dateValueB = new Date(valueB);
 
-            if (!isNaN(dateValueA.getTime()) && !isNaN(dateValueB.getTime())) {
-                return order === 'asc' ? dateValueA - dateValueB : dateValueB - dateValueA;
-            }
+            // if (!isNaN(dateValueA.getTime()) && !isNaN(dateValueB.getTime())) {
+            //     return order === 'asc' ? dateValueA - dateValueB : dateValueB - dateValueA;
+            // }
 
             // Sort numeric value which are considred as string
 
@@ -1165,11 +1163,9 @@ const VehicleTrackDash = () => {
             return <td key={colIndex} className='text-center'>{Math.floor(value)}</td>
         } else if (column?.label === 'Route (KM)') {
             return <td key={colIndex} className='text-center'>{data?.routeKM !== "" ? Math.floor(value) : ""}</td>
-        }
-        else if (column?.label === 'KM Covered') {
+        } else if (column?.label === 'KM Covered') {
             return <td key={colIndex} className='text-center'>{data?.runningKMs}</td>
-        }
-        else if (column?.label === 'Location') {
+        } else if (column?.label === 'Location') {
             return <td key={colIndex} className='cursor-pointer position-relative'
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
