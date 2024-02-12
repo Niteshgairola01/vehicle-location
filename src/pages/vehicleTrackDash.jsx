@@ -1105,25 +1105,28 @@ const VehicleTrackDash = () => {
             }
 
             // Sort 0
-            // if (valueA === '0' || valueB === '0') {
-            //     return order === 'asc' ? (valueA.localeCompare(valueB)) : (valueB.localeCompare(valueA));
-            // }
+            if (valueA === '0' || valueB === '0') {
+                return order === 'asc' ? (valueA.localeCompare(valueB)) : (valueB.localeCompare(valueA));
+            }
 
             // // Sort date / time
-            // const dateValueA = new Date(valueA);
-            // const dateValueB = new Date(valueB);
+            const [dayA, monthA, yearA, timeA] = valueA.split(/[\/\s:]/);
+            const [dayB, monthB, yearB, timeB] = valueB.split(/[\/\s:]/);
 
-            // if (!isNaN(dateValueA.getTime()) && !isNaN(dateValueB.getTime())) {
-            //     return order === 'asc' ? dateValueA - dateValueB : dateValueB - dateValueA;
-            // }
-
-            // Sort numeric value which are considred as string
+            const dateValueA = new Date(yearA, monthA - 1, dayA, timeA);
+            const dateValueB = new Date(yearB, monthB - 1, dayB, timeB);
 
             const numericValueA = parseFloat(valueA);
             const numericValueB = parseFloat(valueB);
 
-            if (!isNaN(numericValueA) && !isNaN(numericValueB)) {
-                return order === 'asc' ? numericValueA - numericValueB : numericValueB - numericValueA;
+            if (valueA.length > 10) {
+                if (!isNaN(dateValueA.getTime()) && !isNaN(dateValueB.getTime())) {
+                    return order === 'asc' ? dateValueA - dateValueB : dateValueB - dateValueA;
+                }
+            } else {
+                if (!isNaN(numericValueA) && !isNaN(numericValueB)) {
+                    return order === 'asc' ? numericValueA - numericValueB : numericValueB - numericValueA;
+                }
             }
 
             // Set string values

@@ -59,12 +59,13 @@ const Signin = () => {
         }
     }, [storedTimestamp]);
 
+    // console.log("reset", showResetPasswordForm);
 
     useEffect(() => {
         setTimeout(() => {
             if (loggedInUser === null) {
                 navigate('/');
-            } else if (loggedInUser.length > 0) {
+            } else if (loggedInUser.length > 0 && !showResetPasswordForm) {
                 navigate('/track');
             }
         }, 1000);
@@ -114,6 +115,7 @@ const Signin = () => {
         singInUser(form).then((response) => {
             if (response.status === 200) {
                 const userData = response?.data;
+
                 localStorage.setItem("userId", userData?.userId);
                 localStorage.setItem("role", userData?.role);
 
@@ -204,7 +206,7 @@ const Signin = () => {
                                         }
                                     </div>
                                     <div className='m-0 p-0 position-relative'>
-                                        <Input label="Confirm Password" type={showConfirmPass ? 'text' : 'password'} onChange={(e) => setConfirmPassWord(e.target.value)} name="confirmPassword" className="bg-white" placeholder="confirm password" autocomplete="off" />
+                                        <Input label="Confirm Password" type={showConfirmPass ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassWord(e.target.value)} name="confirmPassword" className="bg-white" placeholder="confirm password" autocomplete="off" />
                                         {
                                             confirmPassword.length > 0 ? (
                                                 <span className='pe-2 ps-1 bg-white thm-dark position-absolute' style={{ top: 37, right: 2 }}>
@@ -228,9 +230,9 @@ const Signin = () => {
                             <>
                                 <h2 className='thm-dark mt-5'>Sign in</h2>
                                 <Form className='w-50 mt-5' onSubmit={handleSubmit} style={{ zIndex: 2 }}>
-                                    <Input label="UserId" type="text" onChange={handleChange} name="userId" className="bg-white" placeholder="UserId" autocomplete="off" />
+                                    <Input label="UserId" type="text" onChange={handleChange} name="userId" className="bg-white" placeholder="" autocomplete="off" />
                                     <div className='m-0 p-0 position-relative'>
-                                        <Input label="Password" type={showPass ? 'text' : 'password'} onChange={(e) => setPass(e.target.value)} name="password" className="bg-white" placeholder="password" autocomplete="off" />
+                                        <Input label="Password" type={showPass ? 'text' : 'password'} onChange={(e) => setPass(e.target.value)} name="password" className="bg-white" placeholder="" autocomplete="off" />
                                         {
                                             pass.length > 0 ? (
                                                 <span className='pe-2 ps-1 bg-white thm-dark position-absolute' style={{ top: 37, right: 2 }}>
@@ -265,10 +267,6 @@ const Signin = () => {
                     <div data-aos="fade-left">
                         <div className='position-relative w-100'>
                             <img src={trailer} alt='trailer' className='login-trailer' />
-                            {/* <span className='animatedBorder animated-border-top'></span>
-                            <span className='animatedBorder animated-border-right'></span>
-                            <span className='animatedBorder animated-border-bottom'></span>
-                            <span className='animatedBorder animated-border-left'></span> */}
                         </div>
                     </div>
                 </div>
