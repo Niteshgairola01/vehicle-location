@@ -249,10 +249,15 @@ const RouteReport = () => {
         });
     };
 
+
+
     const handleSubmit = (e) => {
         e.preventDefault();
+
         arrayLocation.current = 0;
-        setCurrentCoordinates({ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng })
+        setPause(true);
+        routeCoords.length > 0 && setCurrentCoordinates({ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng });
+        routeCoords.length > 0 && setCurrentCoordsDetails(routeData[0]);
         setShowLoader(true);
         setBtnDisabled(true);
 
