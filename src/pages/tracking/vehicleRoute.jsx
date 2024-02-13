@@ -80,8 +80,6 @@ const VehicleRoute = () => {
         setAngle(angle - 92.1);
     };
 
-    console.log("angle", angle);
-
     useEffect(() => {
 
         const lat1 = currentCoordinates?.lat * Math.PI / 180;
@@ -174,21 +172,26 @@ const VehicleRoute = () => {
             getVehicleRoute(form).then((response) => {
                 if (response.status === 200) {
                     const allData = response?.data;
-                    setRouteData(response?.data);
+                    // setRouteData(response?.data);
 
-                    // const latitudesMap = new Map();
-                    // const repeatedLatitudes = [];
+                    let finalCoords = [];
+                    let finalRouteData = [];
 
-                    // allData.forEach(obj => {
-                    //     if (!latitudesMap.has(obj.lat)) {
-                    //         latitudesMap.set(obj.lat, 1);
-                    //     } else {
-                    //         if (latitudesMap.get(obj.lat) === 1) {
-                    //             repeatedLatitudes.push(obj);
-                    //         }
-                    //         latitudesMap.set(obj.lat, latitudesMap.get(obj.lat) + 1);
-                    //     }
-                    // });
+                    allData.map((data, index) => {
+                        if (index < allData?.length - 1) {
+                            if (data?.lat !== allData[index + 1]?.lat) {
+                                finalCoords.push({
+                                    lat: parseFloat(data?.lat),
+                                    lng: parseFloat(data?.long)
+                                });
+
+                                finalRouteData.push(data);
+                            };
+                        };
+                    });
+
+                    setRouteData(finalRouteData);
+                    setCoordinates(finalCoords);
 
                     const latitudesMap = new Map(); // To store seen latitudes
                     const repeatedLatitudes = [];
@@ -230,19 +233,6 @@ const VehicleRoute = () => {
                     });
 
                     setStopageCoord(repeatedCoords);
-
-                    let coords = [];
-
-                    allData.map((data) => {
-                        coords.push(
-                            {
-                                lat: parseFloat(data?.lat),
-                                lng: parseFloat(data?.long)
-                            }
-                        )
-                    });
-
-                    setCoordinates(coords)
 
                 } else setRouteData([]);
             }).catch(err => console.log("error", err))

@@ -272,8 +272,24 @@ const RouteReport = () => {
                     const allData = response?.data;
                     let coords = [];
 
-                    setRouteCoords(coords);
-                    setRouteData(response?.data);
+                    let finalCoords = [];
+                    let finalRouteData = [];
+
+                    allData.map((data, index) => {
+                        if (index < allData?.length - 1) {
+                            if (data?.lat !== allData[index + 1]?.lat) {
+                                finalCoords.push({
+                                    lat: parseFloat(data?.lat),
+                                    lng: parseFloat(data?.long)
+                                });
+
+                                finalRouteData.push(data);
+                            };
+                        };
+                    });
+
+                    setRouteData(finalRouteData);
+                    setRouteCoords(finalCoords);
 
                     allData.map((data) => {
                         coords.push(
