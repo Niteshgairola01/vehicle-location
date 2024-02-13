@@ -463,8 +463,9 @@ const CreatePolygon = () => {
 
     return (
         <Modal show={true} fullscreen centered onHide={() => {
-            geofencePosition === null ? navigate('/polygon') : navigate('/vehicle-route');
-            localStorage.setItem("geofence", "false")
+            geofencePosition === null ? navigate('/polygon') : navigate(localStorage.getItem('path'));
+            localStorage.setItem("geofence", "false");
+            localStorage.removeItem('path');
         }} size='xl'
             className='w-100 p-5'>
             <Modal.Header closeButton>

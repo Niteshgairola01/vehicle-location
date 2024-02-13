@@ -21,7 +21,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { makeStyles } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles({
     input: {
@@ -81,14 +81,38 @@ const RouteReport = () => {
     const [boundCenter, setBoundCenter] = useState(false);
     const [btnDisabled, setBtnDisabled] = useState(false);
 
+    const [showGeofenceOption, setShowGeofenceOption] = useState(false);
+    const [geofencePosition, setGeofencePosition] = useState({ lat: 26.858192, lng: 75.669163 })
+
     const loggedInUser = localStorage.getItem('userId');
     const navigate = useNavigate();
+
+    const geofenceLat = localStorage.getItem('lat');
+    const geofenceLng = localStorage.getItem('lng');
 
     useEffect(() => {
         if (!loggedInUser) {
             localStorage.clear();
             navigate('/');
         }
+    }, []);
+
+
+    useEffect(() => {
+        if (geofenceLat === null) {
+            setGeofencePosition({ lat: 26.858192, lng: 75.669163 })
+        } else {
+            setShowGeofenceOption(true);
+            setBoundCenter(true);
+            setGeofencePosition({ lat: parseFloat(geofenceLat), lng: parseFloat(geofenceLng) });
+        }
+    }, []);
+
+
+    useEffect(() => {
+        setTimeout(() => {
+            localStorage.removeItem("geofence");
+        }, 500);
     }, []);
 
     const calculateAngle = (lat1, lon1, lat2, lon2) => {
@@ -441,7 +465,23 @@ const RouteReport = () => {
         } else {
             return { lat: 26.858192, lng: 75.669163 }
         }
-    }
+    };
+
+
+    const handleShowGeofence = (event) => {
+        setShowGeofenceOption(true);
+        // const lat = 
+        // console.log("event", event.latLng.lat());
+        setGeofencePosition({
+            lat: parseFloat((event.latLng.lat().toFixed(6))),
+            lng: parseFloat((event.latLng.lng().toFixed(6))),
+        });
+
+        localStorage.setItem('lat', parseFloat((event.latLng.lat().toFixed(6))));
+        localStorage.setItem('lng', parseFloat((event.latLng.lng().toFixed(6))));
+
+        setBoundCenter(true);
+    };
 
     const handleClickTimeMarker = (data, index) => {
         setSelectedTimeMarker(index);
@@ -449,12 +489,13 @@ const RouteReport = () => {
         setBoundCenter(true);
     };
 
+    const [currentPlace, setCurrentPlace] = useState(null);
+
     const handleClickSpeedMarker = (data, index) => {
         setSelectedSpeedMarker(index);
         setSpeedMarkerDetails(data);
         setBoundCenter(true);
     };
-
 
     const handleGetCoveredDistance = () => {
         return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
@@ -493,20 +534,24 @@ const RouteReport = () => {
     const getTimeDifferece = (arrival, exit) => {
         const arrivalTime = new Date(arrival);
         const exitTime = new Date(exit);
-        const timeDifferenceInMinutes = (exitTime - arrivalTime) / (1000 * 60); // Convert milliseconds to minutes
 
-        const hours = timeDifferenceInMinutes < 60 ? Math.floor(timeDifferenceInMinutes) : parseFloat((Math.floor(timeDifferenceInMinutes) / 60).toFixed(2));
+        const differenceMs = exitTime - arrivalTime;
 
-        // console.log("hours", hours, timeDifferenceInMinutes);
+        let seconds = Math.floor(differenceMs / 1000);
+        let minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
 
-        const hourArr = Number.isInteger(hours) ? hours : hours.toString().split('.');
-        const minutes = Number.isInteger(hours) ? 0 : parseInt((hourArr[1]));
-        const finalHours = minutes > 60 ? parseInt(hourArr[0]) + 1 : parseInt(hourArr[0]);
-        const timeDiffereceInHours = `${finalHours}:${minutes > 60 ? minutes - 60 : minutes === 60 ? '00' : minutes}`
+        seconds = seconds % 60;
+        minutes = minutes % 60;
 
-        return `${Number.isInteger(hours) ? `${timeDifferenceInMinutes < 60 ? `00:${hours}` : `${hours}:00`}` : timeDiffereceInHours} ${timeDiffereceInHours < 60 ? 'mins' : 'hrs'}`;
+        const formattedHours = hours < 10 ? "0" + hours : hours;
+        const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
+        const formattedSeconds = seconds < 10 ? "0" + seconds : seconds;
 
-    }
+        const formattedDifference = `${formattedHours}:${formattedMinutes}:${formattedSeconds} hrs`;
+
+        return formattedDifference;
+    };
 
     return (
         <div className='thm-dark m-0 p-0 p-5 pt-3'>
@@ -643,6 +688,7 @@ const RouteReport = () => {
                                         zoom={11}
                                         options={{ gestureHandling: 'greedy' }}
                                         mapContainerClassName='side-map-container'
+                                        onClick={handleShowGeofence}
                                     >
                                         {/* Route History */}
 
@@ -786,17 +832,34 @@ const RouteReport = () => {
                                             >
                                                 <div>
                                                     <div>
-                                                        <span className='fw-bold'>Date/Time :</span>
+                                                        <span className='fw-bold'>Date / Time :</span>
                                                         <span className='ps-1 fw-400'>{convertSpeedMarkerDateTime(speedMarkerDetails?.date)}</span>
                                                     </div>
 
                                                     <div>
                                                         <span className='fw-bold'>Speed :</span>
-                                                        <span className='ps-1 fw-400'>{speedMarkerDetails?.speed} (KM/P)</span>
+                                                        <span className='ps-1 fw-400'>{speedMarkerDetails?.speed} (KM/H)</span>
                                                     </div>
                                                 </div>
                                             </InfoWindowF>
                                         )}
+
+                                        {
+                                            showGeofenceOption && (
+                                                <InfoWindowF
+                                                    position={geofencePosition}
+                                                    onCloseClick={() => setShowGeofenceOption(false)}
+                                                >
+                                                    <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => {
+                                                        localStorage.setItem("geofence", 'true');
+                                                        localStorage.setItem("path", '/route-report')
+                                                    }} state={geofencePosition}>
+                                                        <div>Create Geofence</div>
+                                                    </Link>
+                                                </InfoWindowF>
+                                            )
+                                        }
+
                                     </GoogleMap>
                                 </LoadScript>
                             </div>

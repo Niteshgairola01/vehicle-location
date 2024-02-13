@@ -310,9 +310,6 @@ const VehicleTrackDash = () => {
             if (response.status === 200) {
                 setShowLoader(false);
                 const allData = response?.data;
-                const sortedDetails = vehiclesList.map((vehicle) =>
-                    allData.find((detail) => detail?.vehicleNo === vehicle?.vehicleNo)
-                );
 
                 const allFilteredTrip = allData.filter(test => {
                     for (const key in form) {
@@ -819,25 +816,6 @@ const VehicleTrackDash = () => {
         isOpenParty && setIsOpenParty(false);
         isOpenOffice && setIsOpenOffice(false);
         isOpenVehicle && setIsOpenVehicle(false);
-    };
-
-    const getFinalStatus = (data) => {
-        if (data?.finalStatus === 'Early' || data?.finalStatus === 'On Time' || data?.finalStatus === '') {
-            return data?.finalStatus;
-        } else if (data?.finalStatus === 'Delayed') {
-            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                const delayedHours = parseInt(data?.delayedHours);
-                if (delayedHours >= 0 && delayedHours <= 18) {
-                    return 'Mild Delayed'
-                } else if (delayedHours >= 19 && delayedHours <= 35) {
-                    return 'Moderate Delayed'
-                } else if (delayedHours >= 36) {
-                    return 'Critical Delayed'
-                }
-            } else {
-                return '';
-            }
-        }
     };
 
     const showDelayedIcon = (data, index, colIndex) => {

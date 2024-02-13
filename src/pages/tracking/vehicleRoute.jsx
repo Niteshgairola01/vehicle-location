@@ -566,13 +566,15 @@ const VehicleRoute = () => {
                                                 position={geofencePosition}
                                                 onCloseClick={() => setShowGeofenceOption(false)}
                                             >
-                                                <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => localStorage.setItem("geofence", 'true')} state={geofencePosition}>
+                                                <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => {
+                                                    localStorage.setItem("geofence", 'true');
+                                                    localStorage.setItem("path", '/vehicle-route')
+                                                }} state={geofencePosition}>
                                                     <div>Create Geofence</div>
                                                 </Link>
                                             </InfoWindowF>
                                         )
                                     }
-
                                 </GoogleMap>
                             </LoadScript>
                         </div>
