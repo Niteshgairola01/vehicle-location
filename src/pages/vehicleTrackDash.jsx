@@ -101,11 +101,6 @@ const VehicleTrackDash = () => {
 
     const closed = localStorage.getItem('reload');
 
-    // useEffect(() => {
-    //     localStorage.setItem('tabClosed', 'false');
-    // }, []);
-
-
     useEffect(() => {
         if (!loggedInUser) {
             localStorage.clear();
@@ -118,7 +113,6 @@ const VehicleTrackDash = () => {
             window.location.reload();
             localStorage.setItem("reload", "false");
         }
-        // closed === 'true' && 
     }, []);
 
 
@@ -1132,7 +1126,7 @@ const VehicleTrackDash = () => {
     const handleTableColumns = (data, column, value, index, colIndex) => {
         if (column.label === 'Loading (Date / Time)' || column.label === "Estimated Arrival Date") {
             return <td key={colIndex}>{handleFormateISTDate(value)}</td>;
-        } else if (value === "delayedHours") {
+        } else if (value === "Delayed Hours") {
             return <td key={colIndex}>{getDelayedHours(value)}</td>;
         } else if (column?.label === "Vehicle Exit (Date / Time)" || column?.label === "GPS (Date / Time)" || column?.label === "Estimated Arrival Date") {
             return <td key={colIndex}>{handleFormatDate(value)}</td>;

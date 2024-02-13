@@ -26,7 +26,11 @@ const NavBar = () => {
     {
       title: "Route Report",
       path: '/route-report'
-    }
+    },
+    // {
+    //   title: "Reports",
+    //   path: '/reports'
+    // }
   ];
 
   const handleLogOutUser = () => {

@@ -9,6 +9,7 @@ import { autoSignOutUser } from '../hooks/authHooks';
 import { debounce } from 'lodash';
 import VehicleRoute from '../pages/tracking/vehicleRoute';
 import RouteReport from '../pages/routeReport/route-report';
+import Reports from '../pages/reports/reports';
 
 const AllRoutes = () => {
     const location = useLocation();
@@ -167,6 +168,8 @@ const AllRoutes = () => {
                 {/* Route Report */}
                 <Route path="/route-report" element={<RouteReport />} />
 
+                {/* Reports */}
+                <Route path="/reports" element={<Reports />} />
             </Routes>
         </>
     )

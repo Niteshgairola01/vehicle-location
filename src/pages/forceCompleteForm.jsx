@@ -32,7 +32,14 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
                 setUnloadingReachDate('');
                 setRemark('');
             }
-        }).catch(() => ErrorToast("Something went wrong"));
+        }).catch((err) => {
+            setShow(false);
+            setShowLoader(false);
+            setUnloadingDate('');
+            setUnloadingReachDate('');
+            setRemark('');
+            ErrorToast(err?.response?.data);
+        });
     }
 
     const deleteVehicleOnTripCompleteWithRetry = async (deleteVehiclePayLoad) => {

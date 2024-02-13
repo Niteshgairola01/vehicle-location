@@ -191,6 +191,7 @@ const RouteReport = () => {
                 } else {
                     setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
                 }
+
                 setCurrentCoordsDetails(routeData[arrayLocation.current]);
                 setCurrentCoordinates(routeCoords[arrayLocation.current]);
             }
@@ -209,7 +210,7 @@ const RouteReport = () => {
         return () => {
             timeoutIds.forEach(clearTimeout);
         };
-    }, [pause, playbackSpeed, rangeValue, routeData,]);
+    }, [pause, playbackSpeed, rangeValue, routeData]);
 
     const handleChangeVehicle = (selectedValue) => {
         setSelectedVehicle(selectedValue);

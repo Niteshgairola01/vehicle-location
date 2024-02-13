@@ -239,10 +239,15 @@ const VehicleRoute = () => {
         }
     }, [form]);
 
-    console.log("marker", markerDetails);
+    // console.log("marker", markerDetails);
 
     // const [arrayLocation, setArrayLocation] = useState(0);
     let arrayLocation = useRef(0);
+
+    useEffect(() => {
+        arrayLocation.current = rangeValue;
+    }, [rangeValue]);
+
 
     useEffect(() => {
         let timeoutIds = [];
@@ -282,10 +287,12 @@ const VehicleRoute = () => {
             if (coordinates.length > 0 && currentCoordDetails.lat !== undefined) {
                 if (arrayLocation.current < coordinates.length - 1) {
                     setNextCoordinates({ lat: coordinates[arrayLocation.current + 1].lat, lng: coordinates[arrayLocation.current + 1].lng });
+                    setCurrentCoordinates(coordinates[arrayLocation.current]);
                 } else {
                     setNextCoordinates({ lat: coordinates[0].lat, lng: coordinates[0].lng });
                 }
                 setCurrentCoordsDetails(routeData[arrayLocation.current]);
+                setCurrentCoordinates(coordinates[arrayLocation.current]);
             }
         }
 
@@ -365,6 +372,20 @@ const VehicleRoute = () => {
     };
 
     const vehicleCenter = () => {
+        // if (coordinates.length > 0) {
+        //     if (currentCoordinates.lat === undefined) {
+        //         return { lat: coordinates[0].lat, lng: coordinates[0].lng }
+        //     } else {
+        //         if (currentCoordinates.lat === coordinates[coordinates.length - 1].lat) {
+        //             return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
+        //         } else {
+        //             return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
+        //         }
+        //     }
+        // } else {
+        //     return { lat: 26.858192, lng: 75.669163 }
+        // }
+
         if (coordinates.length > 0) {
             if (currentCoordinates.lat === undefined) {
                 return { lat: coordinates[0].lat, lng: coordinates[0].lng }
