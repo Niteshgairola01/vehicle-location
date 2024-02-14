@@ -27,10 +27,14 @@ const NavBar = () => {
       title: "Route Report",
       path: '/route-report'
     },
-    // {
-    //   title: "Reports",
-    //   path: '/reports'
-    // }
+    {
+      title: "Reports",
+      path: '/reports'
+    },
+    {
+      title: "Driver Forum",
+      path: '/driver-forum'
+    }
   ];
 
   const handleLogOutUser = () => {

@@ -891,7 +891,6 @@ const VehicleTrackDash = () => {
             return '';
         } else {
             const originalDate = new Date(date);
-
             const day = originalDate.getDate() >= 10 ? originalDate.getDate() : `0${originalDate.getDate()}`;
             const month = originalDate.getMonth() + 1 >= 10 ? originalDate.getMonth() + 1 : `0${originalDate.getMonth() + 1}`;
             const year = originalDate.getFullYear() >= 10 ? originalDate.getFullYear() : `0${originalDate.getFullYear()}`;
@@ -903,6 +902,44 @@ const VehicleTrackDash = () => {
             return formattedDate;
         }
     };
+
+    const convertTo24HourFormat = (timeString) => {
+        // Split the time string into its components
+
+        console.log("time string", timeString);
+
+        var timeComponents = timeString.split(" ");
+        var date = timeComponents[0];
+        var time = timeComponents[1];
+        var period = timeComponents[2];
+
+        // Split the time into hours, minutes, and seconds
+        var timeParts = time.split(":");
+        var hours = parseInt(timeParts[0]);
+        var minutes = parseInt(timeParts[1]);
+        var seconds = parseInt(timeParts[2]);
+
+        // Convert hours to 24-hour format if the period is PM
+        if (period === "PM" && hours < 12) {
+            hours += 12;
+        }
+
+        // Convert hours to 0 if the period is AM and hours are 12
+        if (period === "AM" && hours === 12) {
+            hours = 0;
+        }
+
+        // Format the hours, minutes, and seconds to have leading zeros if necessary
+        hours = String(hours).padStart(2, "0");
+        minutes = String(minutes).padStart(2, "0");
+        seconds = String(seconds).padStart(2, "0");
+
+        // Concatenate the time components in the 24-hour format
+        var time24Hour = hours + ":" + minutes + ":" + seconds;
+
+        return date + " " + time24Hour;
+    }
+
 
     const handleSplitStaticEta = (staticETA) => {
         if (staticETA !== null && staticETA.length > 0) {
@@ -1130,6 +1167,8 @@ const VehicleTrackDash = () => {
             return <td key={colIndex}>{getDelayedHours(value)}</td>;
         } else if (column?.label === "Vehicle Exit (Date / Time)" || column?.label === "GPS (Date / Time)" || column?.label === "Estimated Arrival Date") {
             return <td key={colIndex}>{handleFormatDate(value)}</td>;
+        } else if (column?.label === "Static ETA") {
+            return <td key={colIndex}>{(data?.staticETA === '' || data?.staticETA === null) ? ' ' : convertTo24HourFormat(data?.staticETA)}</td>;
         } else if (column?.label === "Report Unloading") {
             return <td key={colIndex} className=''>{data?.unloadingReachDate === "" || data?.unloadingReachDate === null ? '' : handleFormatDate(data?.unloadingReachDate)}</td>
         } else if (column?.label === "Unloading End Date") {

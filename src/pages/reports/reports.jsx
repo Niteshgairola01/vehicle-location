@@ -7,7 +7,7 @@ import Select from 'react-select';
 import { getRunningTrips } from '../../hooks/tripsHooks';
 import { Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { BsFileEarmarkExcelFill } from 'react-icons/bs';
+import { BsFileEarmarkPdfFill } from 'react-icons/bs';
 
 const Reports = () => {
 
@@ -17,15 +17,15 @@ const Reports = () => {
     const [selectedFilters, setSelectedFilters] = useState([]);
 
     // Trips
-
-    const [allTrips, setAllTrips] = useState([]);
     const [filteredTrips, setFilteredTrips] = useState([]);
+    const [finalTrips, setFinalTrips] = useState([]);
 
-    const allFilters = ['Trip Running', 'Early', 'On Time', 'Delayed'];
+    const allFilters = ['Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed'];
 
-    const attributes = ['vehicleNo', 'loadingDate', 'vehicleExitDate', 'origin', 'staticETA', 'locationTime', 'destination', 'routeKM', 'runningKMs',
-        'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'oemFinalStatus', 'tripStatus', 'delayedHours'
+    const attributes = ['vehicleNo', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'locationTime', 'routeKM', 'runningKMs',
+        'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'oemFinalStatus', 'delayedHours'
     ];
+
     const columnNames = ['Vehhicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA', 'GPS (Date / Time)',
         'Route (KM)', 'KM Covered', 'Difference (Km)', 'Location', 'Estimated Arrival Date', 'Final Status', 'OEM Final Status', 'Delayed Hours'
     ];
@@ -34,6 +34,49 @@ const Reports = () => {
         label: "Trips Report",
         value: "Trips Report"
     }];
+
+    const sortByDate = (data) => {
+        data.sort((a, b) => {
+            const dateA = new Date(a.loadingDate.split(' ')[0]);
+            const timeA = a.loadingDate.split(' ')[1];
+            const [hoursA, minutesA, secondsA] = timeA.split(':');
+
+            const dateB = new Date(b.loadingDate.split(' ')[0]);
+            const timeB = b.loadingDate.split(' ')[1];
+            const [hoursB, minutesB, secondsB] = timeB.split(':');
+
+            if (dateA > dateB) return -1;
+            if (dateA < dateB) return 1;
+
+            if (hoursA > hoursB) return -1;
+            if (hoursA < hoursB) return 1;
+            if (minutesA > minutesB) return -1;
+            if (minutesA < minutesB) return 1;
+            if (secondsA > secondsB) return -1;
+            if (secondsA < secondsB) return 1;
+            return 0;
+        });
+
+        return data;
+    };
+
+    useEffect(() => {
+        if (selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed')) {
+            let critical = filteredTrips.filter(data => parseInt(data?.delayedHours) >= 36);
+            let moderate = filteredTrips.filter(data => (parseInt(data?.delayedHours) >= 19 && parseInt(data?.delayedHours) <= 35));
+            let mild = filteredTrips.filter(data => parseInt(data?.delayedHours) <= 18);
+
+            let sortedCritical = sortByDate(critical);
+            let sortedModerate = sortByDate(moderate);
+            let sortedMild = sortByDate(mild);
+
+            let nonDelayed = filteredTrips.filter(data => data?.finalStatus !== 'Delayed');
+
+            setFinalTrips([...sortedCritical, ...sortedModerate, ...sortedMild, ...nonDelayed]);
+        } else {
+            setFinalTrips(filteredTrips);
+        }
+    }, [filteredTrips]);
 
     const handleChangeReportType = (report) => {
         // setSelectedReportType(report);
@@ -53,14 +96,8 @@ const Reports = () => {
         getRunningTrips().then((response) => {
             if (response.status === 200) {
                 const allData = response?.data;
-                let testArr = [];
 
                 const allTrips = allData?.filter(data => data?.tripStatus === 'Trip Running');
-                // allTrips.map(data => {
-
-                // })
-
-                setAllTrips(allTrips);
 
                 if (selectedFilters.length > 0) {
                     let tripsFilteredByTripStatus = [];
@@ -496,8 +533,6 @@ const Reports = () => {
         handleFilterTrips();
     }, [selectedFilters]);
 
-    console.log("filtered", filteredTrips);
-
     const handleSelectFilter = (data) => {
         if (selectedFilters.includes(data)) {
             const filterRemoved = selectedFilters.filter(filter => filter !== data);
@@ -572,24 +607,73 @@ const Reports = () => {
     };
 
 
+    const convertTo24HourFormat = (timeString) => {
+        if (timeString === null || timeString === '') {
+            return " "
+        } else {
+            var timeComponents = timeString.split(" ");
+            var date = timeComponents[0];
+            var time = timeComponents[1];
+            var period = timeComponents[2];
+
+            var timeParts = time.split(":");
+            var hours = parseInt(timeParts[0]);
+            var minutes = parseInt(timeParts[1]);
+            var seconds = parseInt(timeParts[2]);
+
+            if (period === "PM" && hours < 12) {
+                hours += 12;
+            }
+
+            if (period === "AM" && hours === 12) {
+                hours = 0;
+            }
+
+            hours = String(hours).padStart(2, "0");
+            minutes = String(minutes).padStart(2, "0");
+            seconds = String(seconds).padStart(2, "0");
+
+            var time24Hour = hours + ":" + minutes + ":" + seconds;
+
+            return date + " " + time24Hour;
+        }
+    };
+
+    const getDelayedType = (attr, hours) => {
+        if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
+            return attr;
+        } else if (attr === 'Delayed') {
+            if (parseInt(hours) <= 18) {
+                return 'Mild Dealyed';
+            } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
+                return 'Moderate Delayed';
+            } else if (parseInt(hours) >= 36) {
+                return 'Critical Delayed';
+            }
+        }
+    }
+
     const formatData = (rowData) => {
-        // Function to format specific attributes in each row
         const formattedData = rowData.map(item => {
             const formattedItem = {};
             attributes.forEach(attr => {
-                // Add custom formatting for specific attributes
-                if (attr === 'loadingDate') {
-                    // Format 'data' attribute to 'DD/MM/YYYY HH:mm:ss' format
-                    formattedItem[attr] = handleFormateISTDate(item[attr]);
-                }
-                if (attr === 'exit, reportunloading, unoadingend, ') {
-                    formattedItem[attr] = handleFormatDate(item[attr]);
-                }
-                if (attr === 'delayedHours') {
-                    formattedItem[attr] = getDelayedHours(item[attr]);
-                }
-                else {
-                    // Other attributes remain unchanged
+                if (attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'estimatedArrivalDate' || attr === 'finalStatus') {
+                    if (attr === 'loadingDate') {
+                        formattedItem[attr] = handleFormateISTDate(item[attr]);
+                    }
+                    if (attr === 'vehicleExitDate') {
+                        formattedItem[attr] = handleFormatDate(item[attr]);
+                    }
+                    if (attr === 'delayedHours') {
+                        formattedItem[attr] = getDelayedHours(item[attr]);
+                    }
+                    if (attr === 'staticETA' || attr === 'estimatedArrivalDate') {
+                        formattedItem[attr] = convertTo24HourFormat(item[attr]);
+                    }
+                    if (attr === 'finalStatus') {
+                        formattedItem[attr] = getDelayedType(item[attr], item['delayedHours']);
+                    }
+                } else {
                     formattedItem[attr] = item[attr];
                 }
             });
@@ -598,52 +682,31 @@ const Reports = () => {
         return formattedData;
     };
 
-
     const exportToPDF = () => {
-        // Create a new PDF document
         const doc = new jsPDF('landscape');
+        const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
 
-        // Set the document title
         doc.setFontSize(16);
         doc.text('Trips Report', 130, 10);
 
-        const formattedData = formatData(allTrips);
+        const formattedData = formatData(finalTrips);
 
-        // Define columns for the table
         const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
 
-        // Define rows for the table
-        // const rows = allTrips.map(item => {
-        //     const row = {};
-        //     attributes.forEach(attr => {
-        //         row[attr] = item[attr];
-        //     });
-        //     return row;
-        // });
-
-        // Add table to PDF
         doc.autoTable({
             columns,
             body: formattedData,
-            margin: { top: 20, right: 2, bottom: 0, left: 2 },
+            margin: firstPageMargin,
             styles: {
-                fontSize: 8 // Set the font size of the data to 12 points
-                // You can customize other styles here as well
+                fontSize: 8
             },
             columnStyles: {
-                // Adjust the width of each column as needed
-                // 9: { cellWidth: 13 }, // Example: Set the width of the first column to 40
-                10: { cellWidth: 40 }, // Example: Set the width of the first column to 40
-                // 1: { cellWidth: 60 }, // Example: Set the width of the second column to 60
-                // Add more column styles as needed
+                10: { cellWidth: 40 },
             }
         });
 
-        // Save the PDF
         doc.save('data.pdf');
     };
-
-
 
     const selectStyles = {
         control: (provided) => ({
@@ -704,28 +767,15 @@ const Reports = () => {
                     <Col sm={1} className='d-flex justify-content-end align-items-start'>
                         {
                             selectedFilters.length > 0 ? (
-                                <Tooltip title="Export To Excel">
+                                <Tooltip title="Export As PDF">
                                     <Link>
-                                        <BsFileEarmarkExcelFill className='ms-2 text-success cursor-pointer fs-3' onClick={exportToPDF} />
+                                        <BsFileEarmarkPdfFill className='ms-2 cursor-pointer fs-3' style={{ color: "#ed031b" }} onClick={exportToPDF} />
                                     </Link>
                                 </Tooltip>
                             ) : null
                         }
                     </Col>
-
-
                 </Row>
-                {/* <div className=''>
-                    <h5 className='m-0 p-0'>Trip Report</h5>
-
-                    <div className='mt-4 d-flex jsutify-content-start align-items-start flex-column'>
-                        <div className='pb-2 cursor-pointer'>Trip Running</div>
-                        <div className='pb-2 cursor-pointer'>Trip completed</div>
-                        <div className='pb-2 cursor-pointer'>Trip Early</div>
-                        <div className='pb-2 cursor-pointer'>Trip On Time</div>
-                        <div className='pb-2 cursor-pointer'>Trip Delayed</div>
-                    </div>
-                </div> */}
             </Card>
         </div>
     )
