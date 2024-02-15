@@ -10,6 +10,7 @@ import { debounce } from 'lodash';
 import VehicleRoute from '../pages/tracking/vehicleRoute';
 import RouteReport from '../pages/routeReport/route-report';
 import Reports from '../pages/reports/reports';
+import DriverForum from '../pages/driver-forum/driverForum';
 
 const AllRoutes = () => {
     const location = useLocation();
@@ -170,6 +171,9 @@ const AllRoutes = () => {
 
                 {/* Reports */}
                 <Route path="/reports" element={<Reports />} />
+
+                {/* Driver Forum */}
+                <Route path="/driver-forum" element={<DriverForum />} />
             </Routes>
         </>
     )

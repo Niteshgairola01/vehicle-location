@@ -705,7 +705,7 @@ const Reports = () => {
             }
         });
 
-        doc.save('data.pdf');
+        doc.save('Trips-report.pdf');
     };
 
     const selectStyles = {
@@ -718,7 +718,6 @@ const Reports = () => {
             fontSize: '0.9rem',
         }),
     };
-
 
     return (
         <div className='thm-dark m-0 p-0 p-5 pt-3'>

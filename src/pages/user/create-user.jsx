@@ -65,7 +65,7 @@ const CreateUser = () => {
                 setUsersList(response?.data);
 
                 const lastUser = allData?.length > 0 ? allData[allData?.length - 1] : {};
-                setLastuserId(lastUser?.userId);
+                setLastuserId(allData?.length > 0 ? lastUser?.userId : 'DVR-000');
             } else setUsersList([]);
         }).catch(() => setUsersList([]));
     }
