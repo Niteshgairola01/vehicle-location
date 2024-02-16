@@ -68,6 +68,11 @@ const DriverForum = () => {
     const [selfGuarantor, setSelfGuarantor] = useState(false);
     const [searchGuarantor, setSearchGuarantor] = useState('');
 
+    const [formattedDOB, setFormattedBOD] = useState('');
+    const [formattedApplicationDate, setFormattedApplicationDate] = useState('');
+    const [formattedIssueDate, setFormattedIssueDate] = useState('');
+    const [formattedExpiryDate, setFormattedExpiryDate] = useState('');
+
     const loggedInUser = localStorage.getItem('userId');
 
     useEffect(() => {
@@ -157,7 +162,6 @@ const DriverForum = () => {
 
     const handleChangeAppicationdate = (dateTime) => {
 
-
         const day = dateTime?.$D < 10 ? `0${dateTime?.$D}` : dateTime?.$D;
         const month = (dateTime?.$M + 1) < 10 ? `0${dateTime?.$M + 1}` : dateTime?.$M + 1;
         const year = dateTime?.$y < 10 ? `0${dateTime?.$y}` : dateTime?.$y;
@@ -167,11 +171,18 @@ const DriverForum = () => {
 
         const formattedDate = `${year}-${month}-${day} ${hours}:${minute}:${seconds}`;
         setApplicationDate(formattedDate);
+        setFormattedApplicationDate(formattedDate);
+
         setForm({
             ...form,
             applicationDate: formattedDate
         });
     };
+
+    // console.log("application", formattedApplicationDate);
+    // console.log("dob", formattedDOB);
+    // console.log("issue", formattedIssueDate);
+    // console.log("expiry", formattedExpiryDate);
 
     const handleSelectDriver = (driver) => {
         setSearchDriver(driver?.driverName);
@@ -198,6 +209,11 @@ const DriverForum = () => {
         setSelectedOffice({
             label: driver?.office,
             value: driver?.office,
+        });
+
+        setSelectedGuarantor({
+            label: driver?.driverGuarantorCode,
+            value: driver?.driverGuarantorCode,
         });
 
         setApplicationDate(dayjs(driver?.applicationDate));
@@ -235,6 +251,7 @@ const DriverForum = () => {
     useEffect(() => {
         setForm({
             ...form,
+            createdByUser: loggedInUser,
             driverName,
             fatherName,
             religion,
@@ -244,14 +261,15 @@ const DriverForum = () => {
             contactNumber,
             alternatePhoneNumber: alternativePhone,
             ...(selfGuarantor ? { driverGuarantor: 'Self Guarantor' } : { driverGuarantor: guarantor }),
-            ...(selfGuarantor ? { driverGuarantorCode: '' } : { driverGuarantorCode: guarantorCode }),
-            ...(selfGuarantor ? { guarantorPhoneNumber: '' } : { guarantorPhoneNumber: guarantorPhone }),
+            ...(selfGuarantor ? { driverGuarantorCode: ' ' } : { driverGuarantorCode: selectedGuarantor?.value }),
+            ...(selfGuarantor ? { guarantorPhoneNumber: ' ' } : { guarantorPhoneNumber: guarantorPhone }),
             address,
+            driverCode: newDriverId,
             emergencyContactPerson,
             emergencyContactPhoneNumber: contactPersonPhone,
             office: selectedOffice?.value
         })
-    }, [selectedGuarantor, selectedDriver, selectedOffice, driverName, fatherName, religion, aadharNo, licenceNo, licenceIssuedFrom, contactNumber, alternativePhone, guarantor, guarantorCode, guarantorPhone, address, emergencyContactPerson, contactPersonPhone]);
+    }, [newDriverId, selectedGuarantor, selectedDriver, selectedOffice, driverName, fatherName, religion, aadharNo, licenceNo, licenceIssuedFrom, contactNumber, alternativePhone, guarantor, guarantorCode, guarantorPhone, address, emergencyContactPerson, contactPersonPhone]);
 
     const handleChangeDob = (dateTime) => {
         setDob(dateTime);
@@ -261,6 +279,8 @@ const DriverForum = () => {
         const year = dateTime?.$y < 10 ? `0${dateTime?.$y}` : dateTime?.$y;
 
         const formattedDate = `${year}-${month}-${day}`;
+        setFormattedBOD(formattedDate);
+
         setForm({
             ...form,
             dateOfBirth: formattedDate
@@ -275,6 +295,7 @@ const DriverForum = () => {
         const year = dateTime?.$y < 10 ? `0${dateTime?.$y}` : dateTime?.$y;
 
         const formattedDate = `${year}-${month}-${day}`;
+        setFormattedIssueDate(formattedDate);
         setForm({
             ...form,
             licenceIssueDate: formattedDate
@@ -289,6 +310,7 @@ const DriverForum = () => {
         const year = dateTime?.$y < 10 ? `0${dateTime?.$y}` : dateTime?.$y;
 
         const formattedDate = `${year}-${month}-${day}`;
+        setFormattedExpiryDate(formattedDate);
         setForm({
             ...form,
             licenceExpiryDate: formattedDate
@@ -368,6 +390,12 @@ const DriverForum = () => {
                 });
             } else {
                 const newForm = {
+                    modifiedBy: loggedInUser,
+                    driverCode: newDriverId,
+                    dateOfBirth: formattedDOB,
+                    licenceIssueDate: formattedIssueDate,
+                    licenceExpiryDate: formattedExpiryDate,
+                    applicationDate: formattedApplicationDate,
                     ...(driverName !== selectedDriver?.driverName && { driverName }),
                     ...(fatherName !== selectedDriver?.fatherName && { fatherName }),
                     ...(religion !== selectedDriver?.religion && { religion }),
@@ -378,26 +406,19 @@ const DriverForum = () => {
                     ...(parseInt(contactNumber) !== selectedDriver?.contactNumber && { contactNumber }),
                     ...(parseInt(alternativePhone) !== selectedDriver?.alternatePhoneNumber && { alternatePhoneNumber: alternativePhone }),
                     ...(selfGuarantor ? { driverGuarantor: "Self Guarantor" } : guarantor !== selectedDriver?.driverGuarantor && { driverGuarantor: guarantor }),
-                    ...(selfGuarantor ? { driverGuarantorCode: "" } : selectedGuarantor?.value !== selectedDriver?.driverGuarantorCode && { driverGuarantorCode: selectedGuarantor?.value }),
-                    ...(selfGuarantor ? { guarantorPhoneNumber: "" } : parseInt(guarantorPhone) !== selectedDriver?.guarantorPhoneNumber && { guarantorPhoneNumber: guarantorPhone }),
+                    ...(selfGuarantor ? { driverGuarantorCode: " " } : selectedGuarantor?.value !== selectedDriver?.driverGuarantorCode && { driverGuarantorCode: selectedGuarantor?.value }),
+                    ...(selfGuarantor ? { guarantorPhoneNumber: " " } : parseInt(guarantorPhone) !== selectedDriver?.guarantorPhoneNumber && { guarantorPhoneNumber: selectedGuarantor?.guarantorPhoneNumber }),
                     ...(address !== selectedDriver?.address && { address }),
                     ...(emergencyContactPerson !== selectedDriver?.emergencyContactPerson && { emergencyContactPerson }),
                     ...(parseInt(contactPersonPhone) !== selectedDriver?.emergencyContactPhoneNumber && { emergencyContactPhoneNumber: contactPersonPhone }),
                     ...(selectedOffice?.value !== selectedDriver?.office && { office: selectedOffice?.value }),
+                    ...(selectedOffice?.value !== selectedDriver?.office && { office: selectedOffice?.value }),
                 };
 
-                const isObjectEmpty = (objectName) => {
-                    return (
-                        objectName &&
-                        Object.keys(objectName).length === 0 &&
-                        objectName.constructor === Object
-                    );
-                };
-
-                if (isObjectEmpty(newForm)) {
+                if (Object.keys(newForm).length === 1 && newForm.hasOwnProperty('modifiedByUser')) {
                     ErrorToast("Nothing to update");
                 } else {
-                    updateDriver(form).then(response => {
+                    updateDriver(newForm).then(response => {
                         if (response?.status === 200) {
                             SuccessToast("Driver Updated Successfully");
                         }
@@ -408,7 +429,6 @@ const DriverForum = () => {
             }
         }
     };
-
 
     const selectStyles = {
         control: (provided) => ({
@@ -429,7 +449,7 @@ const DriverForum = () => {
         <div className='thm-dark m-0 p-0 p-5 pt-3' onClick={() => handleShowOptions()}>
             <Card>
                 <div className='w-100 d-flex justify-content-between align-items-center'>
-                    <h5 className='m-0 p-0'>Driver Forum</h5>
+                    <h5 className='m-0 p-0'>Create Driver</h5>
                 </div>
             </Card>
 
@@ -448,7 +468,7 @@ const DriverForum = () => {
                                         {
                                             filteredDrivers.map((data, index) => (
                                                 <div className={`p-0 cursor-pointer ${selectedDriver?.driverName === data?.driverName ? 'active-category' : 'category'} d-flex justify-content-between align-items-center`} key={index}>
-                                                    <p className="m-0 p-0 py-2 ps-2 pe-5" onClick={() => handleSelectDriver(data)}>
+                                                    <p className="m-0 p-0 py-2 ps-2 w-100" onClick={() => handleSelectDriver(data)}>
                                                         {data?.driverName === null || data?.driverName === '' ? '' : `${data?.driverName}`}
                                                     </p>
                                                 </div>

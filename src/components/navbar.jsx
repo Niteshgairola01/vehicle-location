@@ -6,6 +6,7 @@ import CButton from './Button/coloredButton';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { signOutUser } from '../hooks/authHooks';
 import { ErrorToast, SuccessToast } from './toast/toast';
+import { NavDropdown } from 'react-bootstrap';
 
 const NavBar = () => {
   const location = useLocation();
@@ -31,10 +32,10 @@ const NavBar = () => {
       title: "Reports",
       path: '/reports'
     },
-    {
-      title: "Driver Forum",
-      path: '/driver-forum'
-    }
+    // {
+    //   title: "Driver Forum",
+    //   path: '/driver-forum'
+    // }
   ];
 
   const handleLogOutUser = () => {
@@ -67,6 +68,18 @@ const NavBar = () => {
                       <Link to={data?.path} key={index} className={`${location.pathname === data?.path ? 'active-menuItem' : 'menuItems'} me-3 text-center text-decoration-none cursor-pointer`}>{data?.title}</Link>
                     ))
                   }
+                  <NavDropdown title="Driver Forum" id="basic-nav-dropdown">
+                    <NavDropdown.Item className={`${location.pathname === '/driver-forum' ? 'bg-thm-dark text-white' : 'bg-white thm-dark'} w-100 text-decoration-none`}>
+                      <Link to='/driver-forum' className={`${location.pathname === '/driver-forum' ? 'text-white' : 'thm-dark'} w-100 text-decoration-none`}>
+                        Create Driver
+                      </Link>
+                    </NavDropdown.Item>
+                    <NavDropdown.Item className={`${location.pathname === '/driver-mapping' ? 'bg-thm-dark text-white' : 'bg-white thm-dark'} w-100 text-decoration-none`}>
+                      <Link to='/driver-mapping' className={`${location.pathname === '/driver-mapping' ? 'text-white' : 'thm-dark'} w-100 text-decoration-none`}>
+                        Driver Mapping
+                      </Link>
+                    </NavDropdown.Item>
+                  </NavDropdown>
                 </div>
               )
             }

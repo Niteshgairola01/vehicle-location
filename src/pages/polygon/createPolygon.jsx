@@ -646,7 +646,7 @@ const CreatePolygon = () => {
                                                     <>
                                                         <CircleF options={{
                                                             center: selectedCoordinates[0],
-                                                            radius: 500,
+                                                            radius: 1000,
                                                             fillColor: 'rgba(255, 0, 0, 0.2)',
                                                             strokeColor: 'red',
                                                             strokeOpacity: 0.8,

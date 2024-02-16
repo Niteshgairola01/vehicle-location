@@ -14,7 +14,8 @@ export const getAllDrivers = async () => {
 };
 
 
-export const createDriver = async ({ form }) => {
+export const createDriver = async (form ) => {
+    console.log("form", form);
     const url = `${APIPort2}/createNewDriver`;
     const config = {
         url: url,
@@ -27,7 +28,7 @@ export const createDriver = async ({ form }) => {
     return response;
 };
 
-export const updateDriver = async ({ form }) => {
+export const updateDriver = async ( form ) => {
     const url = `${APIPort2}/updateDriverData`;
     const config = {
         url: url,
