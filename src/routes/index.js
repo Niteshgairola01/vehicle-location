@@ -11,6 +11,7 @@ import VehicleRoute from '../pages/tracking/vehicleRoute';
 import RouteReport from '../pages/routeReport/route-report';
 import Reports from '../pages/reports/reports';
 import DriverForum from '../pages/driver-forum/driverForum';
+import DriverMapping from '../pages/driver-forum/driverMapping';
 
 const AllRoutes = () => {
     const location = useLocation();
@@ -173,7 +174,9 @@ const AllRoutes = () => {
                 <Route path="/reports" element={<Reports />} />
 
                 {/* Driver Forum */}
-                <Route path="/driver-forum" element={<DriverForum />} />
+                <Route path="/create-driver" element={<DriverForum />} />
+                <Route path="/driver-mapping" element={<DriverMapping />} />
+
             </Routes>
         </>
     )

@@ -84,11 +84,6 @@ const CreateUser = () => {
         setPassword(selectedUser?.password);
         setCreatedBy(selectedUser?.createdBy);
         selectedUser?.office ? setSelectedOffice(selectedUser?.office) : setSelectedOffice('');
-
-        // setForm({
-        //     ...form,
-        //     password: selectedUser?.password
-        // });
     }, [selectedUser]);
 
     useEffect(() => {

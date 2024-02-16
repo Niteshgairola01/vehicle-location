@@ -69,8 +69,8 @@ const NavBar = () => {
                     ))
                   }
                   <NavDropdown title="Driver Forum" id="basic-nav-dropdown">
-                    <NavDropdown.Item className={`${location.pathname === '/driver-forum' ? 'bg-thm-dark text-white' : 'bg-white thm-dark'} w-100 text-decoration-none`}>
-                      <Link to='/driver-forum' className={`${location.pathname === '/driver-forum' ? 'text-white' : 'thm-dark'} w-100 text-decoration-none`}>
+                    <NavDropdown.Item className={`${location.pathname === '/create-driver' ? 'bg-thm-dark text-white' : 'bg-white thm-dark'} w-100 text-decoration-none`}>
+                      <Link to='/create-driver' className={`${location.pathname === '/create-driver' ? 'text-white' : 'thm-dark'} w-100 text-decoration-none`}>
                         Create Driver
                       </Link>
                     </NavDropdown.Item>

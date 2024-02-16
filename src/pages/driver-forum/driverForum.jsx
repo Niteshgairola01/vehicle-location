@@ -3,6 +3,9 @@ import Card from '../../components/Card/card'
 import { Col, Form, Row } from 'react-bootstrap'
 import { Input } from '../../components/form/Input'
 import Button from '../../components/Button/coloredButton'
+import { getAllOfficesList } from '../../hooks/officeMasterHooks'
+import { ErrorToast, SuccessToast } from '../../components/toast/toast'
+import { createDriver, getAllDrivers, updateDriver } from '../../hooks/drivermasterHooks'
 import Select from 'react-select';
 
 // MUI
@@ -12,9 +15,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { makeStyles } from '@mui/styles';
-import { getAllOfficesList } from '../../hooks/officeMasterHooks'
-import { ErrorToast, SuccessToast } from '../../components/toast/toast'
-import { createDriver, getAllDrivers, updateDriver } from '../../hooks/drivermasterHooks'
 import dayjs from 'dayjs'
 
 const useStyles = makeStyles({
@@ -206,6 +206,11 @@ const DriverForum = () => {
         setEmergencyContactPerson(driver?.emergencyContactPerson);
         setContactPersonPhone(driver?.emergencyContactPhoneNumber);
 
+        setFormattedBOD(driver?.dateOfBirth);
+        setFormattedApplicationDate(driver?.applicationDate);
+        setFormattedExpiryDate(driver?.licenceExpiryDate);
+        setFormattedIssueDate(driver?.licenceIssueDate);
+
         setSelectedOffice({
             label: driver?.office,
             value: driver?.office,
@@ -239,6 +244,10 @@ const DriverForum = () => {
             setEmergencyContactPerson('');
             setContactPersonPhone('');
 
+            setFormattedBOD('');
+            setFormattedApplicationDate('');
+            setFormattedExpiryDate('');
+            setFormattedIssueDate('');
             setSelectedOffice('');
 
             setApplicationDate('');
@@ -383,7 +392,7 @@ const DriverForum = () => {
             if (searchDriver.length === 0) {
                 createDriver(form).then(response => {
                     if (response?.status === 200) {
-                        SuccessToast("Driver Updated Successfully");
+                        SuccessToast("Driver Created Successfully");
                     }
                 }).catch(err => {
                     err?.response?.data && ErrorToast(err?.response?.data);
@@ -392,10 +401,10 @@ const DriverForum = () => {
                 const newForm = {
                     modifiedBy: loggedInUser,
                     driverCode: newDriverId,
-                    dateOfBirth: formattedDOB,
-                    licenceIssueDate: formattedIssueDate,
-                    licenceExpiryDate: formattedExpiryDate,
-                    applicationDate: formattedApplicationDate,
+                    ...(formattedDOB !== selectedDriver?.dateOfBirth && { dateOfBirth: formattedDOB }),
+                    ...(formattedIssueDate !== selectedDriver?.licenceIssueDate && { dateOfBirth: formattedIssueDate }),
+                    ...(formattedExpiryDate !== selectedDriver?.licenceExpiryDate && { dateOfBirth: formattedExpiryDate }),
+                    ...(formattedApplicationDate !== selectedDriver?.applicationDate && { dateOfBirth: formattedApplicationDate }),
                     ...(driverName !== selectedDriver?.driverName && { driverName }),
                     ...(fatherName !== selectedDriver?.fatherName && { fatherName }),
                     ...(religion !== selectedDriver?.religion && { religion }),
@@ -406,8 +415,8 @@ const DriverForum = () => {
                     ...(parseInt(contactNumber) !== selectedDriver?.contactNumber && { contactNumber }),
                     ...(parseInt(alternativePhone) !== selectedDriver?.alternatePhoneNumber && { alternatePhoneNumber: alternativePhone }),
                     ...(selfGuarantor ? { driverGuarantor: "Self Guarantor" } : guarantor !== selectedDriver?.driverGuarantor && { driverGuarantor: guarantor }),
-                    ...(selfGuarantor ? { driverGuarantorCode: " " } : selectedGuarantor?.value !== selectedDriver?.driverGuarantorCode && { driverGuarantorCode: selectedGuarantor?.value }),
-                    ...(selfGuarantor ? { guarantorPhoneNumber: " " } : parseInt(guarantorPhone) !== selectedDriver?.guarantorPhoneNumber && { guarantorPhoneNumber: selectedGuarantor?.guarantorPhoneNumber }),
+                    ...(selfGuarantor ? { driverGuarantorCode: "" } : selectedGuarantor?.value !== selectedDriver?.driverGuarantorCode && { driverGuarantorCode: selectedGuarantor?.value }),
+                    ...(selfGuarantor ? { guarantorPhoneNumber: "" } : parseInt(guarantorPhone) !== selectedDriver?.guarantorPhoneNumber && { guarantorPhoneNumber: selectedGuarantor?.guarantorPhoneNumber }),
                     ...(address !== selectedDriver?.address && { address }),
                     ...(emergencyContactPerson !== selectedDriver?.emergencyContactPerson && { emergencyContactPerson }),
                     ...(parseInt(contactPersonPhone) !== selectedDriver?.emergencyContactPhoneNumber && { emergencyContactPhoneNumber: contactPersonPhone }),
