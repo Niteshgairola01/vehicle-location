@@ -274,8 +274,6 @@ const RouteReport = () => {
         });
     };
 
-
-
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -490,8 +488,6 @@ const RouteReport = () => {
         setBoundCenter(true);
     };
 
-    const [currentPlace, setCurrentPlace] = useState(null);
-
     const handleClickSpeedMarker = (data, index) => {
         setSelectedSpeedMarker(index);
         setSpeedMarkerDetails(data);
@@ -598,13 +594,11 @@ const RouteReport = () => {
                                                         ampm={false}
                                                         value={startDate}
                                                         onChange={handleStartDateChange}
-                                                        // style={{ height: '10px' }}
                                                         className={classes.input}
                                                     />
                                                 </DemoItem>
                                             </DemoContainer>
                                         </LocalizationProvider>
-                                        {/* <Form.Control type='text' name="startDate" onChange={handleChange} className='inputfield p-1' placeholder='DD/MM/YYYY HH:MM:SS' required /> */}
                                     </Col>
                                 </Row>
                             </Form.Group>
@@ -629,8 +623,6 @@ const RouteReport = () => {
                                                 </DemoItem>
                                             </DemoContainer>
                                         </LocalizationProvider>
-
-                                        {/* <Form.Control type='text' name="endDate" onChange={handleChange} className='inputfield p-1' placeholder='DD/MM/YYYY HH:MM:SS' required /> */}
                                     </Col>
                                 </Row>
                             </Form.Group>
@@ -868,8 +860,7 @@ const RouteReport = () => {
                             <div className='w-100 mt-2'>
                                 <input type="range"
                                     min={0} max={routeCoords.length - 1}
-
-                                    value={arrayLocation?.current} // value={arrayLocation?.current}
+                                    value={arrayLocation?.current} 
                                     onChange={handleChangeRange}
                                     className='w-100' />
                             </div>
@@ -884,15 +875,6 @@ const RouteReport = () => {
                                         )
                                     }
                                 </div>
-
-                                {/* {
-                        currentPosition.map((data, index) => (
-                            <div className='text-center text-white' key={index}>
-                                <p className='m-0 p-0'>{data?.value}</p>
-                                <p className='m-0 p-0 fw-bold text-uppercase'>{data?.title}</p>
-                            </div>
-                        ))
-                    } */}
 
                                 <div className='text-center text-white'>
                                     <p className='m-0 p-0'>{convertCurrentDateTime(currentCoordDetails?.date)}</p>
@@ -947,7 +929,6 @@ const RouteReport = () => {
                             </div>
                         </div>
                     </Col>
-
                 </Row>
             </Card>
         </div>

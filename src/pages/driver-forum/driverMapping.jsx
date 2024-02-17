@@ -15,8 +15,9 @@ import { Input } from '../../components/form/Input';
 import Button from '../../components/Button/coloredButton';
 import HoveredButton from '../../components/Button/hoveredButton';
 import { getAllVehiclesList } from '../../hooks/vehicleMasterHooks';
-import { createNewMapping, getAllDrivers, getAllMappings, getAvailableOptionForDriver } from '../../hooks/drivermasterHooks';
+import { createNewMapping, getAllDrivers, getAllMappings, getAvailableOptionForDriver, updateMapping } from '../../hooks/drivermasterHooks';
 import { ErrorToast, SuccessToast } from '../../components/toast/toast';
+import dayjs from 'dayjs';
 
 const useStyles = makeStyles({
     input: {
@@ -53,13 +54,49 @@ const DriverMapping = () => {
     const [vehiclesList, setVehiclesList] = useState([]);
     const [drivers, setDrivers] = useState([]);
     const [driverCodes, setDriverCodes] = useState([]);
+    const [remark, setRemark] = useState('');
 
     const [selectedDate, setSelectedDate] = useState('');
+    const [fomattedSelectedDate, setFormattedSelectedDate] = useState('');
     const [selectedDriver, setSelectedDriver] = useState('');
     const [selectedDriveCode, setSelectedDriverCode] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
     const [selectedVehicleNo, setSelectedVehicleNo] = useState('');
     const [selectedRole, setSelectedRole] = useState('');
+
+    // Update Mapping
+    const filteredDrvierArray = allMappings?.filter(driver => driver?.driverCode?.toLowerCase().includes(selectedDriveCode?.value?.toLowerCase()));
+    const lastStatus = filteredDrvierArray[filteredDrvierArray.length - 1];
+
+    useEffect(() => {
+        if (lastStatus === undefined) {
+            setSelectedDate('')
+            setSelectedVehicleNo('');
+            setSelectedRole('');
+        } else {
+            setSelectedDate(dayjs(lastStatus?.date))
+            setFormattedSelectedDate(lastStatus?.date);
+            setSelectedDriver({
+                label: lastStatus?.driverName,
+                value: lastStatus?.driverName,
+            });
+
+            setSelectedDriverCode({
+                label: lastStatus?.driverCode,
+                value: lastStatus?.driverCode,
+            });
+
+            setSelectedVehicleNo({
+                label: lastStatus?.vehicleNo,
+                value: lastStatus?.vehicleNo
+            });
+
+            setSelectedRole({
+                label: lastStatus?.role,
+                value: lastStatus?.role,
+            });
+        }
+    }, [lastStatus]);
 
     const [statuses, setStatuses] = useState([
         {
@@ -170,19 +207,33 @@ const DriverMapping = () => {
     }, []);
 
     useEffect(() => {
-        if (selectedDriver?.value === undefined) {
+        if (selectedDriver === null || selectedDriver?.value === undefined) {
             setFilterForm({
                 ...filterForm,
                 driverName: "",
             });
-        }
-        if (selectedVehicleNo?.value === undefined) {
+        } else {
             setFilterForm({
                 ...filterForm,
-                vehicleNo: ''
+                driverName: selectedDriver?.value,
             });
         }
-    }, [selectedDriver, selectedVehicleNo]);
+    }, [selectedDriver]);
+
+
+    useEffect(() => {
+        if (selectedVehicleNo === null || selectedVehicleNo?.value === undefined) {
+            setFilterForm({
+                ...filterForm,
+                vehicleNo: "",
+            });
+        } else {
+            setFilterForm({
+                ...filterForm,
+                vehicleNo: selectedVehicleNo?.value,
+            });
+        }
+    }, [selectedVehicleNo]);
 
     useEffect(() => {
         if (selectedDriveCode !== '') {
@@ -247,6 +298,7 @@ const DriverMapping = () => {
 
         const formattedDate = `${year}-${month}-${day} ${hours}:${minute}:${seconds}`;
         setSelectedDate(formattedDate);
+        setFormattedSelectedDate(formattedDate);
 
         setForm({
             ...form,
@@ -269,10 +321,10 @@ const DriverMapping = () => {
             driverCode: name?.driverCode
         });
 
-        setFilterForm({
-            ...filterForm,
-            driverName: name?.value,
-        })
+        // setFilterForm({
+        //     ...filterForm,
+        //     driverName: name?.value,
+        // })
     };
 
     const handleSelectDriverCode = (code) => {
@@ -290,10 +342,10 @@ const DriverMapping = () => {
             driverCode: code?.value
         });
 
-        setFilterForm({
-            ...filterForm,
-            driverName: code?.driverName,
-        });
+        // setFilterForm({
+        //     ...filterForm,
+        //     driverName: code?.driverName,
+        // });
     };
 
     const handleSelectStatus = (status) => {
@@ -313,10 +365,10 @@ const DriverMapping = () => {
             vehicleNo: vehicle?.value
         });
 
-        setFilterForm({
-            ...filterForm,
-            vehicleNo: vehicle?.value
-        });
+        // setFilterForm({
+        //     ...filterForm,
+        //     vehicleNo: vehicle?.value
+        // });
     };
 
     const handleSelectRole = (role) => {
@@ -359,22 +411,51 @@ const DriverMapping = () => {
             ErrorToast("Select Role");
         }
         else {
+            if (lastStatus === undefined) {
+                createNewMapping(form).then(response => {
+                    if (response?.status === 200) {
+                        SuccessToast(response?.data);
+                        setSelectedDate('');
+                        setSelectedDriver('');
+                        setSelectedDriverCode('');
+                        setSelectedStatus('');
+                        setSelectedVehicleNo('');
+                        setSelectedRole('');
+                    } else {
+                        ErrorToast("Unable to Map");
+                    }
+                }).catch(err => {
+                    ErrorToast(err?.response?.data);
+                });
+            } else {
 
-            createNewMapping(form).then(response => {
-                if (response?.status === 200) {
-                    SuccessToast(response?.data);
-                    setSelectedDate('');
-                    setSelectedDriver('');
-                    setSelectedDriverCode('');
-                    setSelectedStatus('');
-                    setSelectedVehicleNo('');
-                    setSelectedRole('');
-                } else {
-                    ErrorToast("Unable to Map");
-                }
-            }).catch(err => {
-                ErrorToast(err?.response?.data);
-            });
+                const newForm = {
+                    modifiedBy: loggedInUser,
+                    driverCode: selectedDriveCode?.value,
+                    ...(fomattedSelectedDate !== lastStatus?.date && { date: fomattedSelectedDate }),
+                    ...(selectedVehicleNo?.value !== lastStatus?.vehicleNo && { vehicleNo: selectedVehicleNo?.value }),
+                    ...(selectedRole?.value !== lastStatus?.role && { role: selectedRole?.value }),
+                    ...(remark !== lastStatus?.remark && { remarks: remark }),
+                };
+
+                console.log("new form", newForm);
+
+                // updateMapping(form).then(response => {
+                //     if (response?.status === 200) {
+                //         SuccessToast(response?.data);
+                //         // setSelectedDate('');
+                //         // setSelectedDriver('');
+                //         // setSelectedDriverCode('');
+                //         // setSelectedStatus('');
+                //         // setSelectedVehicleNo('');
+                //         // setSelectedRole('');
+                //     } else {
+                //         ErrorToast("Unable to Map");
+                //     }
+                // }).catch(err => {
+                //     ErrorToast(err?.response?.data);
+                // });
+            }
         }
     };
 
@@ -487,10 +568,15 @@ const DriverMapping = () => {
                             />
                         </Col>
                         <Col sm={3}>
-                            <Input label="Remark" placeholder="Add Remark" className="pb-2" onChange={(e) => setForm({ ...form, remarks: e.target.value })} />
+                            <Input label="Remark" placeholder="Add Remark" className="pb-2" onChange={(e) => {
+                                setForm({ ...form, remarks: e.target.value })
+                                setRemark(e.target.value)
+                            }} />
                         </Col>
                         <Col sm={3} className='px-0 pt-3 d-flex justify-content-center align-items-center'>
-                            <Button type='submit' className="px-4 py-0">Add</Button>
+                            <Button type='submit' className="px-4 py-0">
+                                {lastStatus === undefined ? 'Add' : 'Update'}
+                            </Button>
                             <HoveredButton type='button' className="px-4 py-0 ms-2" onClick={() => handleShowFilteredMappings()}>Show</HoveredButton>
                         </Col>
                     </Row>
@@ -507,6 +593,7 @@ const DriverMapping = () => {
                                 <th className=''>Driver Name</th>
                                 <th className=''>Role</th>
                                 <th className=''>Status</th>
+                                <th className=''>Vehicle No.</th>
                                 <th className=''>Date</th>
                             </tr>
                         </thead>
@@ -519,6 +606,7 @@ const DriverMapping = () => {
                                         <td>{data?.driverName}</td>
                                         <td>{data?.role}</td>
                                         <td>{data?.status}</td>
+                                        <td>{data?.vehicleNo}</td>
                                         <td>{handleFormatDate(data?.date)}</td>
                                     </tr>
                                 ))

@@ -179,11 +179,6 @@ const DriverForum = () => {
         });
     };
 
-    // console.log("application", formattedApplicationDate);
-    // console.log("dob", formattedDOB);
-    // console.log("issue", formattedIssueDate);
-    // console.log("expiry", formattedExpiryDate);
-
     const handleSelectDriver = (driver) => {
         setSearchDriver(driver?.driverName);
         setSearchDriverCode(driver?.driverCode);

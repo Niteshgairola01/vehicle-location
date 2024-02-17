@@ -904,37 +904,29 @@ const VehicleTrackDash = () => {
     };
 
     const convertTo24HourFormat = (timeString) => {
-        // Split the time string into its components
-
-        console.log("time string", timeString);
 
         var timeComponents = timeString.split(" ");
         var date = timeComponents[0];
         var time = timeComponents[1];
         var period = timeComponents[2];
 
-        // Split the time into hours, minutes, and seconds
         var timeParts = time.split(":");
         var hours = parseInt(timeParts[0]);
         var minutes = parseInt(timeParts[1]);
         var seconds = parseInt(timeParts[2]);
 
-        // Convert hours to 24-hour format if the period is PM
         if (period === "PM" && hours < 12) {
             hours += 12;
         }
 
-        // Convert hours to 0 if the period is AM and hours are 12
         if (period === "AM" && hours === 12) {
             hours = 0;
         }
 
-        // Format the hours, minutes, and seconds to have leading zeros if necessary
         hours = String(hours).padStart(2, "0");
         minutes = String(minutes).padStart(2, "0");
         seconds = String(seconds).padStart(2, "0");
 
-        // Concatenate the time components in the 24-hour format
         var time24Hour = hours + ":" + minutes + ":" + seconds;
 
         return date + " " + time24Hour;
@@ -1004,7 +996,6 @@ const VehicleTrackDash = () => {
         }
     };
 
-
     const handleChangeParty = (selectedValue) => {
         setSelectedParty(selectedValue);
 
@@ -1020,8 +1011,6 @@ const VehicleTrackDash = () => {
             });
         }
     };
-
-
 
     const handleChangeVehicle = (selectedValue) => {
         setSelectedVehicleNo(selectedValue);
@@ -1194,18 +1183,6 @@ const VehicleTrackDash = () => {
                                 <p className='thm-dark mt-2 mb-0'>{data?.location}</p>
                                 <p className='' style={{ fontSize: "0.8rem" }}>{handleFormatDate(data?.locationTime)}</p>
                                 <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
-                                    {/* {
-                                        locationOptionsBtns.map((location, i) => (
-                                            <Link to={location.path} state={data} className='text-decoration-none'>
-                                                <div className={`${location?.color} ${location?.cursor} mx-2`} key={i}
-                                                    onClick={location.handleClick(data, i)}
-                                                >
-                                                    {location?.icon}
-                                                    <span className='fw-bold fs-6 mx-2'>{location.title}</span>
-                                                </div>
-                                            </Link>
-                                        ))
-                                    } */}
                                     <Link to={'/vehicle-route'} state={data}
                                         onClick={() => {
                                             localStorage.setItem("vehicle", data?.vehicleNo);
@@ -1523,7 +1500,6 @@ const VehicleTrackDash = () => {
                             }
                         </Modal.Body>
                     </Modal>
-                    {/* <VehicleLocation show={showLocation} setShow={setShowLocation} vehicleData={vehicleData} /> */}
                 </div>
             </div>
         </div>

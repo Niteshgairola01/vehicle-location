@@ -80,3 +80,16 @@ export const createNewMapping = async (form) => {
     const response = await axios(config);
     return response;
 };
+
+export const updateMapping = async (form) => {
+    const url = `${APIPort2}/updateMapping`;
+    const config = {
+        url: url,
+        method: 'PUT',
+        data: form,
+        headers: { "Content-Type": "application/json" },
+    }
+
+    const response = await axios(config);
+    return response;
+};
