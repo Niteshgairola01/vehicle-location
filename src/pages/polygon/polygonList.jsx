@@ -84,12 +84,12 @@ const PolygonList = () => {
         }).catch(() => setAllPolygonAreas([]))
     }, []);
 
-    useEffect(() => {
-        let filteredAreas = [];
-        filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === selectedCategory);
-
-        setFilteredPolygons(filteredAreas);
-    }, [selectedCategory]);
+    // useEffect(() => {
+    //     let filteredAreas = [];
+    //     filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === selectedCategory);
+    //     console.log("filteredAreas", filteredAreas);
+    //     setFilteredPolygons(filteredAreas);
+    // }, [selectedCategory]);
 
     const mapContainerStyle = {
         width: '100%',
@@ -101,9 +101,21 @@ const PolygonList = () => {
         setSearchPolygon('');
         setSearchOEM('');
         const polygonAreas = allPolygonAreas.filter(data => data?.geoName === category);
-        setCategoryPolygons(polygonAreas);
-        setFilteredPolygons(polygonAreas);
-    }
+
+        // allPolygonAreas.map(data => {
+        //     console.log("plygons", category);
+        //     console.log("geofence", data?.geofenceType);
+        // })
+        const filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === category);
+        console.log("filtered", filteredAreas);
+        // let filteredAreas = [];
+        // filteredAreas = allPolygonAreas.filter(data => data?.geofenceType === category);
+        // console.log("filteredAreas", filteredAreas);
+        setFilteredPolygons(filteredAreas);
+
+        setCategoryPolygons(filteredAreas);
+        // setFilteredPolygons(polygonAreas);
+    };
 
     const handleSelectPolygon = (polygon) => {
         setSelectedPolygon(polygon);

@@ -816,11 +816,13 @@ const Reports = () => {
         // WhatsApp's maximum data URI length: 2048
         const truncatedDataUri = pdfDataUri.length > 2048 ? pdfDataUri.substring(0, 2048) : pdfDataUri;
         // return `https://wa.me/?text=${encodeURIComponent(pdfDataUri)}`;
-        return `https://wa.me/?text=${encodeURIComponent(truncatedDataUri)}`;
+        window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(pdfDataUri)}`)
+        // return `https://wa.me/?text=${encodeURIComponent(truncatedDataUri)}`;
     };
 
-    const openWhatsAppChat = (link) => {
-        window.open(link, '_blank');
+    const openWhatsAppChat = (pdfDataUri) => {
+        window.open(`whatsapp://send?text=${encodeURIComponent(pdfDataUri)}`, '_blank');
+        // window.open(`whatsapp://send?text=${encodeURIComponent(`OEM Name:- ${selectedOEM?.value}`)}`, '_blank');
     };
 
     const sharePDFViaWhatsApp = async () => {
@@ -851,15 +853,16 @@ const Reports = () => {
             }
         });
 
-        const buffer = await doc.output("arraybuffer");
-        const dataUri = `data:application/pdf;base64,${btoa(buffer)}`;
+        // const buffer = await doc.output("arraybuffer");
+        // const dataUri = `data:application/pdf;base64,${btoa(buffer)}`;
+        const pdfDataUri = doc.output('dataurlstring')
+        const base64PDF = pdfDataUri.split(',')[1];
 
-        // Construct the WhatsApp link with the data URI
-        
-        const whatsappLink = constructWhatsAppLink(dataUri);
 
-        // Open the WhatsApp chat with the link
-        openWhatsAppChat(whatsappLink);
+        console.log("uri", pdfDataUri);
+        // const whatsappLink = constructWhatsAppLink(dataUri);
+
+        openWhatsAppChat(pdfDataUri);
     };
 
     const selectStyles = {
@@ -875,7 +878,7 @@ const Reports = () => {
 
     return (
         <div className='thm-dark m-0 p-0 p-5 pt-3'>
-            <button onClick={sharePDFViaWhatsApp}>Share</button>
+            {/* <button onClick={sharePDFViaWhatsApp}>Share</button> */}
             <Card>
                 <div className='w-100 d-flex justify-content-between align-items-center'>
                     <h5 className='m-0 p-0'>Reports</h5>
