@@ -520,23 +520,22 @@ const DriverMapping = () => {
         }
         else {
             if (mappingToBeUpdated === null) {
-                alert("form")
-                // createNewMapping(form).then(response => {
-                //     if (response?.status === 200) {
-                //         SuccessToast(response?.data);
-                //         getMappingsList();
-                //         setSelectedDate('');
-                //         setSelectedDriver('');
-                //         setSelectedDriverCode('');
-                //         setSelectedStatus('');
-                //         setSelectedVehicleNo('');
-                //         setSelectedRole('');
-                //     } else {
-                //         ErrorToast("Unable to Map");
-                //     }
-                // }).catch(err => {
-                //     ErrorToast(err?.response?.data);
-                // });
+                createNewMapping(form).then(response => {
+                    if (response?.status === 200) {
+                        SuccessToast(response?.data);
+                        getMappingsList();
+                        setSelectedDate('');
+                        setSelectedDriver('');
+                        setSelectedDriverCode('');
+                        setSelectedStatus('');
+                        setSelectedVehicleNo('');
+                        setSelectedRole('');
+                    } else {
+                        ErrorToast("Unable to Map");
+                    }
+                }).catch(err => {
+                    ErrorToast(err?.response?.data);
+                });
             } else {
 
                 const newForm = {
@@ -547,24 +546,23 @@ const DriverMapping = () => {
                     ...(selectedRole?.value !== lastStatus?.role && { role: selectedRole?.value }),
                     ...(remark !== lastStatus?.remark && { remarks: remark }),
                 };
-                alert("new form")
-                // updateMapping(newForm).then(response => {
-                //     if (response?.status === 200) {
-                //         SuccessToast(response?.data);
-                //         getMappingsList();
-                //         // setSelectedDate('');
-                //         // setSelectedDriver('');
-                //         // setSelectedDriverCode('');
-                //         // setSelectedStatus('');
-                //         // setSelectedVehicleNo('');
-                //         // setSelectedRole('');
-                //     } else {
-                //         ErrorToast("Unable to Map");
-                //     }
-                // }).catch(err => {
-                //     console.log("err", err);
-                //     ErrorToast(err?.response?.data);
-                // });
+                updateMapping(newForm).then(response => {
+                    if (response?.status === 200) {
+                        SuccessToast(response?.data);
+                        getMappingsList();
+                        // setSelectedDate('');
+                        // setSelectedDriver('');
+                        // setSelectedDriverCode('');
+                        // setSelectedStatus('');
+                        // setSelectedVehicleNo('');
+                        // setSelectedRole('');
+                    } else {
+                        ErrorToast("Unable to Map");
+                    }
+                }).catch(err => {
+                    console.log("err", err);
+                    ErrorToast(err?.response?.data);
+                });
             }
         }
     };
