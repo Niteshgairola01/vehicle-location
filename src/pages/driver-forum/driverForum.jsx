@@ -388,6 +388,7 @@ const DriverForum = () => {
                 createDriver(form).then(response => {
                     if (response?.status === 200) {
                         SuccessToast("Driver Created Successfully");
+                        
                     }
                 }).catch(err => {
                     err?.response?.data && ErrorToast(err?.response?.data);
@@ -397,9 +398,9 @@ const DriverForum = () => {
                     modifiedBy: loggedInUser,
                     driverCode: newDriverId,
                     ...(formattedDOB !== selectedDriver?.dateOfBirth && { dateOfBirth: formattedDOB }),
-                    ...(formattedIssueDate !== selectedDriver?.licenceIssueDate && { dateOfBirth: formattedIssueDate }),
-                    ...(formattedExpiryDate !== selectedDriver?.licenceExpiryDate && { dateOfBirth: formattedExpiryDate }),
-                    ...(formattedApplicationDate !== selectedDriver?.applicationDate && { dateOfBirth: formattedApplicationDate }),
+                    ...(formattedIssueDate !== selectedDriver?.licenceIssueDate && { licenceIssueDate: formattedIssueDate }),
+                    ...(formattedExpiryDate !== selectedDriver?.licenceExpiryDate && { licenceExpiryDate: formattedExpiryDate }),
+                    ...(formattedApplicationDate !== selectedDriver?.applicationDate && { applicationDate: formattedApplicationDate }),
                     ...(driverName !== selectedDriver?.driverName && { driverName }),
                     ...(fatherName !== selectedDriver?.fatherName && { fatherName }),
                     ...(religion !== selectedDriver?.religion && { religion }),

@@ -566,6 +566,11 @@ const VehicleTrackDash = () => {
                                 }
 
                                 if (selectedFilter.includes('Delayed (As per OEM)')) {
+
+                                    // if(selectedFilter.includes('Delayed (As per OEM)') && (
+                                    //     (!selectedFilter.includes('Trip Tunning') && !selectedFilter.includes('Trip Completed') && !selectedFilter.includes('Mo'))
+                                    // ))
+
                                     if (((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) && (selectedFilter.includes('Delayed (As per OEM)')))
                                         && (!selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
                                     ) {
@@ -711,14 +716,14 @@ const VehicleTrackDash = () => {
                                             }
                                         }
                                     }
-                                    else {
-                                        allFilteredTrip.forEach(data => {
-                                            const testData = (data?.oemFinalStatus === 'Delayed');
-                                            if (testData === true) {
-                                                finalStatusTrips.push(data)
-                                            }
-                                        })
-                                    }
+                                    // else {
+                                    //     allFilteredTrip.forEach(data => {
+                                    //         const testData = (data?.oemFinalStatus === 'Delayed');
+                                    //         if (testData === true) {
+                                    //             finalStatusTrips.push(data)
+                                    //         }
+                                    //     })
+                                    // }
                                 }
                             }
 

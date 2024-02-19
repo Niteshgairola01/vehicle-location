@@ -82,7 +82,7 @@ export const createNewMapping = async (form) => {
 };
 
 export const updateMapping = async (form) => {
-    const url = `${APIPort2}/updateMapping`;
+    const url = `${APIPort2}/updateMappedDriver`;
     const config = {
         url: url,
         method: 'PUT',

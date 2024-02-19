@@ -8,6 +8,7 @@ import { getRunningTrips } from '../../hooks/tripsHooks';
 import { Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { BsFileEarmarkPdfFill } from 'react-icons/bs';
+import { getAllPartiesList } from '../../hooks/clientMasterHooks';
 
 const Reports = () => {
 
@@ -20,13 +21,33 @@ const Reports = () => {
     const [filteredTrips, setFilteredTrips] = useState([]);
     const [finalTrips, setFinalTrips] = useState([]);
 
+    // const [tripsByOEM, setTri]
+    const [OEMList, setOEMList] = useState([]);
+    const [selectedOEM, setSelectedOEM] = useState('');
+    const [OEMName, setOEMName] = useState('');
+    const [OEMTrips, setOEMTrips] = useState([]);
+    const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? filteredTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
+
+    console.log("final", filteredOEMTrips);
+
+    // useEffect(() => {
+    //     const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? filteredTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
+    //     setOEMTrips(filteredOEMTrips);
+    // }, [filteredTrips])
+
+    useEffect(() => {
+        if (selectedOEM === null) {
+            setOEMName('');
+        }
+    }, [selectedOEM]);
+
     const allFilters = ['Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'On Time & Early (As per OEM)', 'Delayed (As per OEM)'];
 
-    const attributes = ['vehicleNo', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'locationTime', 'routeKM', 'runningKMs',
+    const attributes = ['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'locationTime', 'routeKM', 'runningKMs',
         'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'oemFinalStatus', 'delayedHours'
     ];
 
-    const columnNames = ['Vehhicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA', 'GPS (Date / Time)',
+    const columnNames = ['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA', 'GPS (Date / Time)',
         'Route (KM)', 'KM Covered', 'Difference (Km)', 'Location', 'Estimated Arrival Date', 'Final Status', 'OEM Final Status', 'Delayed Hours'
     ];
 
@@ -60,6 +81,32 @@ const Reports = () => {
         return data;
     };
 
+    const getOEMList = () => {
+        getAllPartiesList().then((response) => {
+            if (response.status === 200) {
+                if (response?.data.length > 0) {
+                    const filteredData = response?.data.map(data => ({
+                        ...data,
+                        label: data?.clientName,
+                        value: data?.clientName
+                    }));
+
+                    setOEMList(filteredData);
+                } else {
+                    setOEMList([]);
+                }
+            } else {
+                setOEMList([]);
+            }
+        }).catch(() => setOEMList([]));
+    }
+
+    useEffect(() => {
+        if (selectedReportType[0]?.value === 'Trips Report') {
+            getOEMList();
+        }
+    }, [selectedReportType]);
+
     useEffect(() => {
         if (selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed')) {
             let critical = filteredTrips.filter(data => parseInt(data?.delayedHours) >= 36);
@@ -79,16 +126,18 @@ const Reports = () => {
     }, [filteredTrips]);
 
     const handleChangeReportType = (report) => {
-        // setSelectedReportType(report);
-
         const searchValue = report?.value;
-
         const filteredTypes = reportTypes.filter(data =>
-            ((data?.value && data?.value.toLowerCase().includes(searchValue.toLowerCase())))
+            ((data?.value && data?.value.toLowerCase().includes(searchValue?.toLowerCase())))
         );
 
         setSelectedReportType(filteredTypes);
         setReportType(searchValue);
+    };
+
+    const handleSelectOEM = (oem) => {
+        setSelectedOEM(oem);
+        setOEMName(oem?.value);
     };
 
     const handleFilterTrips = () => {
@@ -120,7 +169,9 @@ const Reports = () => {
                         if (selectedFilters.includes("On Time & Early (As per OEM)") || selectedFilters.includes("Delayed (As per OEM)") || selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed') || selectedFilters.includes('Early') || selectedFilters.includes('On Time')) {
                             let finalStatusTrips = [];
 
-                            if (selectedFilters.includes("Early") || selectedFilters.includes("On Time")) {
+                            if ((selectedFilters.includes("Early") || selectedFilters.includes("On Time")) &&
+                                (!selectedFilters.includes('On Time & Early (As per OEM)') && !selectedFilters.includes('Delayed (As per OEM)'))
+                            ) {
                                 if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
                                     const trips = allTrips.filter((data) => selectedFilters.includes(data?.tripStatus) && selectedFilters.includes(data?.finalStatus));
                                     trips.map((data) => finalStatusTrips.push(data));
@@ -209,15 +260,55 @@ const Reports = () => {
 
                             if (selectedFilters.includes("On Time & Early (As per OEM)") || selectedFilters.includes("Delayed (As per OEM)")) {
                                 if (selectedFilters.includes('On Time & Early (As per OEM)')) {
-                                    if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
+                                    if (!selectedFilters.includes('On Time') && !selectedFilters.includes('Early') && !selectedFilters.includes('Mild Delayed') && !selectedFilters.includes('Moderate Delayed') && !selectedFilters.includes('Critical Delayed')) {
                                         allTrips.forEach(data => {
-                                            const testData = selectedFilters.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
+                                            const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
                                             if (testData === true) {
                                                 finalStatusTrips.push(data)
                                             }
                                         })
 
-                                    } else if (selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed')) {
+                                    }
+
+                                    if (selectedFilters.includes('On Time') || selectedFilters.includes('Early')) {
+                                        if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
+                                            const delayedArr1 = allTrips.filter((data) => selectedFilters.includes(data?.tripStatus) && selectedFilters.includes(data?.finalStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early'));
+                                            delayedArr1.map(data => finalStatusTrips.push(data))
+                                            // finalStatusTrips = delayedArr1
+                                        } else {
+                                            const delayedArr1 = allTrips.filter((data) => selectedFilters.includes(data?.finalStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early'));
+                                            delayedArr1.map(data => finalStatusTrips.push(data))
+                                            console.log("delayedArr1", delayedArr1);
+                                            // finalStatusTrips = delayedArr1
+                                        }
+                                        // if (selectedFilters.includes('On Time')) {
+                                        //     if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
+                                        //         const delayedArr1 = allTrips.filter((data) => selectedFilters.includes(data?.tripStatus) && data?.finalStatus === 'On Time' && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early'));
+                                        //         delayedArr1.map(data => finalStatusTrips.push(data))
+                                        //         // finalStatusTrips = delayedArr1
+                                        //     } else {
+                                        //         const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'On Time' && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early'));
+                                        //         delayedArr1.map(data => finalStatusTrips.push(data))
+                                        //         console.log("delayedArr1", delayedArr1);
+                                        //         // finalStatusTrips = delayedArr1
+                                        //     }
+                                        // }
+
+                                        // if (selectedFilters.includes('Early')) {
+                                        //     if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
+                                        //         const delayedArr1 = allTrips.filter((data) => selectedFilters.includes(data?.tripStatus) && data?.finalStatus === 'Early' && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early'));
+                                        //         delayedArr1.map(data => finalStatusTrips.push(data))
+                                        //         // finalStatusTrips = delayedArr1
+                                        //     } else {
+                                        //         const delayedArr1 = allTrips.filter((data) => data?.finalStatus === 'On Time' && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early'));
+                                        //         delayedArr1.map(data => finalStatusTrips.push(data))
+                                        //         // finalStatusTrips = delayedArr1
+                                        //     }
+                                        // }
+
+                                    }
+
+                                    if (selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed')) {
                                         if (selectedFilters.includes('Mild Delayed')) {
                                             if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
                                                 const delayedArr1 = allTrips.filter((data) => selectedFilters.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
@@ -338,14 +429,16 @@ const Reports = () => {
                                             }
                                         }
                                     }
-                                    else {
-                                        allTrips.forEach(data => {
-                                            const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                            if (testData === true) {
-                                                finalStatusTrips.push(data)
-                                            }
-                                        })
-                                    }
+
+
+                                    // if (!selectedFilters.includes('Early') || !selectedFilters.includes('On Time') || !selectedFilters.includes('Mild Delayed') || !selectedFilters.includes('Moderate Delayed') || !selectedFilters.includes('Critical Delayed')) {
+                                    //     allTrips.forEach(data => {
+                                    //         const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
+                                    //         if (testData === true) {
+                                    //             finalStatusTrips.push(data)
+                                    //         }
+                                    //     })
+                                    // }
                                 }
 
                                 if (selectedFilters.includes('Delayed (As per OEM)')) {
@@ -682,14 +775,20 @@ const Reports = () => {
         return formattedData;
     };
 
-    const exportToPDF = () => {
+    const [pdfData, setPdfData] = useState('');
+
+    const exportToPDF = async () => {
         const doc = new jsPDF('landscape');
         const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
 
         doc.setFontSize(16);
         doc.text('Trips Report', 130, 10);
 
-        const formattedData = formatData(finalTrips);
+        const formattedData = formatData(filteredOEMTrips);
+
+        formattedData.forEach((row, index) => {
+            row['S.No.'] = index + 1
+        });
 
         const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
 
@@ -701,11 +800,66 @@ const Reports = () => {
                 fontSize: 8
             },
             columnStyles: {
-                10: { cellWidth: 40 },
+                11: { cellWidth: 40 },
             }
         });
 
         doc.save('Trips-report.pdf');
+
+        const pdfBlob = await doc.output('blob');
+        setPdfData(pdfBlob);
+        // return pdfBlob;
+    };
+
+    const constructWhatsAppLink = (pdfDataUri) => {
+        console.log("pdf", pdfDataUri.length);
+        // WhatsApp's maximum data URI length: 2048
+        const truncatedDataUri = pdfDataUri.length > 2048 ? pdfDataUri.substring(0, 2048) : pdfDataUri;
+        // return `https://wa.me/?text=${encodeURIComponent(pdfDataUri)}`;
+        return `https://wa.me/?text=${encodeURIComponent(truncatedDataUri)}`;
+    };
+
+    const openWhatsAppChat = (link) => {
+        window.open(link, '_blank');
+    };
+
+    const sharePDFViaWhatsApp = async () => {
+        const doc = new jsPDF('landscape');
+
+        const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
+
+        doc.setFontSize(16);
+        doc.text('Trips Report', 130, 10);
+
+        const formattedData = formatData(filteredOEMTrips);
+
+        formattedData.forEach((row, index) => {
+            row['S.No.'] = index + 1
+        });
+
+        const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
+
+        doc.autoTable({
+            columns,
+            body: formattedData,
+            margin: firstPageMargin,
+            styles: {
+                fontSize: 8
+            },
+            columnStyles: {
+                11: { cellWidth: 40 },
+            }
+        });
+
+        const buffer = await doc.output("arraybuffer");
+        const dataUri = `data:application/pdf;base64,${btoa(buffer)}`;
+
+        // Construct the WhatsApp link with the data URI
+        
+        const whatsappLink = constructWhatsAppLink(dataUri);
+
+        // Open the WhatsApp chat with the link
+        openWhatsAppChat(whatsappLink);
     };
 
     const selectStyles = {
@@ -721,6 +875,7 @@ const Reports = () => {
 
     return (
         <div className='thm-dark m-0 p-0 p-5 pt-3'>
+            <button onClick={sharePDFViaWhatsApp}>Share</button>
             <Card>
                 <div className='w-100 d-flex justify-content-between align-items-center'>
                     <h5 className='m-0 p-0'>Reports</h5>
@@ -761,8 +916,25 @@ const Reports = () => {
                             ) : null
                         }
                     </Col>
+                    <Col sm={3}>
+                        {
+                            selectedReportType[0]?.value === 'Trips Report' ? (
+                                <>
+                                    <Form.Label>Select OEM</Form.Label>
+                                    <Select
+                                        options={OEMList}
+                                        value={selectedOEM}
+                                        onChange={handleSelectOEM}
+                                        isClearable={true}
+                                        styles={selectStyles}
+                                        placeholder="Search OEM"
+                                    />
+                                </>
+                            ) : null
+                        }
+                    </Col>
 
-                    <Col sm={5}></Col>
+                    <Col sm={2}></Col>
                     <Col sm={1} className='d-flex justify-content-end align-items-start'>
                         {
                             selectedFilters.length > 0 ? (
