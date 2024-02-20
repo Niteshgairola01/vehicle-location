@@ -388,7 +388,7 @@ const DriverForum = () => {
                 createDriver(form).then(response => {
                     if (response?.status === 200) {
                         SuccessToast("Driver Created Successfully");
-                        
+
                     }
                 }).catch(err => {
                     err?.response?.data && ErrorToast(err?.response?.data);
@@ -472,10 +472,15 @@ const DriverForum = () => {
                                     <div className='mt-1 polygons-list position-absolute bg-white' style={{ boxShadow: "0px 0px 10px 0px #c8c9ca", width: "100%", zIndex: '2' }} >
                                         {
                                             filteredDrivers.map((data, index) => (
-                                                <div className={`p-0 cursor-pointer ${selectedDriver?.driverName === data?.driverName ? 'active-category' : 'category'} d-flex justify-content-between align-items-center`} key={index}>
-                                                    <p className="m-0 p-0 py-2 ps-2 w-100" onClick={() => handleSelectDriver(data)}>
+                                                <div className={`p-0 py-1 cursor-pointer ${((selectedDriver?.driverName === data?.driverName) && (selectedDriver?.driverCode === data?.driverCode)) ? 'active-category' : 'category'}`}
+                                                    onClick={() => handleSelectDriver(data)}
+                                                    key={index}>
+                                                    <span className="m-0 ps-2 w-100">
                                                         {data?.driverName === null || data?.driverName === '' ? '' : `${data?.driverName}`}
-                                                    </p>
+                                                    </span>
+                                                    <span className='ms-1' style={{ color: ((selectedDriver?.driverName === data?.driverName) && (selectedDriver?.driverCode === data?.driverCode)) ? '#fff' : 'gray', fontSize: "0.7rem" }}>
+                                                        ({data?.driverCode === null || data?.driverCode === '' ? '' : `${data?.driverCode}`})
+                                                    </span>
                                                 </div>
                                             ))
                                         }

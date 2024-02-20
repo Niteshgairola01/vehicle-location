@@ -493,7 +493,7 @@ const VehicleRoute = () => {
             <Modal.Body>
                 <div className='thm-dark mx-5'>
                     <Card>
-                        <div className='side-map-container'>
+                        <div className=' side-map-container' style={{ minHeight: "95%" }}>
                             <LoadScript googleMapsApiKey={key}>
                                 <GoogleMap
                                     mapContainerStyle={mapContainerStyle}

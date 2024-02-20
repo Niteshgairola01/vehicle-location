@@ -121,14 +121,14 @@ const VehicleTrackDash = () => {
             localStorage.clear();
             navigate('/');
         }
-    }, []);
+    }, [loggedInUser, navigate]);
 
     useEffect(() => {
         if (closed === 'true') {
             window.location.reload();
             localStorage.setItem("reload", "false");
         }
-    }, []);
+    }, [closed]);
 
 
     const itemsPerPage = 20
@@ -204,7 +204,7 @@ const VehicleTrackDash = () => {
 
         setOriginsList(desiredOriginArray)
 
-    }, [filteredTrips]);
+    }, [allTrips, filteredTrips]);
 
     useEffect(() => {
         getAllPartiesList().then((response) => {
@@ -952,34 +952,6 @@ const VehicleTrackDash = () => {
         return date + " " + time24Hour;
     }
 
-
-    const handleSplitStaticEta = (staticETA) => {
-        if (staticETA !== null && staticETA.length > 0) {
-            const etaDate = staticETA.split(' ');
-            return etaDate[0];
-        } else {
-            return '';
-        }
-    };
-
-    const handleGPSDate = (date) => {
-        if (date === null) {
-            return false
-        } else if (date?.length === 0) {
-            return false
-        } else {
-            const currentDate = new Date();
-            const givenDateString = date;
-            const givenDate = new Date(givenDateString);
-            const timeDifference = currentDate - givenDate;
-
-            const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-            return hoursDifference > 4 ? true : false;
-        }
-
-    }
-
     const handleFilter = () => {
         const allFilteredTrip = allTrips.filter(test => {
             for (const key in form) {
@@ -1083,29 +1055,6 @@ const VehicleTrackDash = () => {
         setCurrentVehicle(data?.vehicleNo)
         setShowLocationOption(true);
     };
-
-    const locationOptionsBtns = [
-        {
-            title: 'History',
-            icon: <FaRoute />,
-            path: "/vehicle-route",
-            handleClick: (data, i) => { i === 0 && console.log('test') },
-            color: 'thm-dark',
-            cursor: 'cursor-pointer',
-        },
-        {
-            title: 'Track',
-            icon: <FaRoute />,
-            path: "#",
-            handleClick: (data, i) => {
-                i === 1 && setShowLocation(true);
-                i === 1 && setSelectedVehicle(data);
-                i === 1 && setShowMap(true);
-            },
-            color: 'thm-dark',
-            cursor: 'cursor-pointer'
-        },
-    ];
 
     const [sortOrder, setSortOrder] = useState('asc');
 
@@ -1292,7 +1241,7 @@ const VehicleTrackDash = () => {
                             <Row className='dashoard-filter-form rounded'>
                                 {
                                     selectformFields.map((data, index) => (
-                                        <Col sm={12} md={6} lg={2} className='position-relative' key={index} style={{ zIndex: 2 }}>
+                                        <Col sm={12} md={6} lg={2} className='position-relative' key={index} style={{ zIndex: 3 }}>
                                             <Form.Label>{data?.label}</Form.Label>
                                             <Select
                                                 options={data?.options}
@@ -1329,7 +1278,7 @@ const VehicleTrackDash = () => {
                                     </div>
                                     {
                                         showFilters ? (
-                                            <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: 2, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
+                                            <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: 3, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
                                                 {
                                                     allFilters.map((data, index) => (
                                                         <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} border-bottom cursor-pointer`}

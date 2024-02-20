@@ -657,7 +657,7 @@ const UpdatePolygon = () => {
                                         </ul>
                                     ) : null
                                 }
-                                <div ref={fullScreen} style={{ width: '100%', height: isFullScreen ? '100vh' : '100%' }}>
+                                <div ref={fullScreen} style={{ width: '100%', minHeight: "50vh", height: isFullScreen ? '100vh' : '100%' }}>
                                     <div className='d-flex justify-conten-end align-items-start flex-row position-absolute' style={{ top: 10, right: 20, zIndex: 1, }}>
                                         <Tooltip title={isFullScreen ? 'Exit Full Screen' : 'Full Screen'}>
                                             <Link to="#" className='thm-dark me-3 bg-white p-2 rounded cursor-pointer d-flex justify-content-between align-items-start text-decoration-none'
@@ -691,6 +691,7 @@ const UpdatePolygon = () => {
                                         <GoogleMap
                                             mapContainerStyle={mapContainerStyle}
                                             center={handleMapCenter()}
+                                            // onZoomChanged={}
                                             zoom={11}
                                             onLoad={handleLoad}
                                             onClick={handleMapClick}

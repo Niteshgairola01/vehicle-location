@@ -140,12 +140,6 @@ p {
     background-color: var(--thm-secondary);
 }
 
-/* Bootstrap Modal */
-
-.modal-fullscreen {
-    width: 100% !important;
-}
-
 /* Cursor */
 
 .cursor-pointer {
@@ -258,6 +252,31 @@ p {
 
 .fw-900 {
     font-weight: 900;
+}
+
+/* Bootstrap Custom Classes */
+
+/* Nav Dropdown Toggle */
+
+.navbar-light .navbar-nav .nav-link.active,
+.navbar-light .navbar-nav .nav-link {
+    color: var(--thm-base) !important
+}
+
+.navbar-light .navbar-nav .nav-link.active:hover,
+.navbar-light .navbar-nav .nav-link:hover {
+    color: var(--thm-dark) !important
+}
+
+.navbar-light .navbar-nav .nav-link.active,
+.navbar-light .navbar-nav .show>.nav-link {
+    color: var(--thm-dark) !important
+}
+
+/* Bootstrap Modal */
+
+.modal-fullscreen {
+    width: 100% !important;
 }
 
 /* Card */
@@ -997,10 +1016,10 @@ input[type="range"] {
 }
 
 input[type="range"] {
-    color: #ef233c;
+    color: var(--thm-dark);
     --thumb-height: 1.125em;
     --track-height: 0.125em;
-    /* --track-color: rgba(0, 0, 0, 0.2); */
+    --track-color: #d7d7d7;
     --brightness-hover: 180%;
     --brightness-down: 80%;
     --clip-edges: 0.125em;
@@ -1012,17 +1031,6 @@ input[type="range"].win10-thumb {
     --thumb-height: 1.375em;
     --thumb-width: 0.5em;
     --clip-edges: 0.0125em;
-}
-
-@media (prefers-color-scheme: dark) {
-    input[type="range"] {
-        color: var(--thm-dark);
-        --track-color: #d7d7d7;
-    }
-
-    input[type="range"].win10-thumb {
-        color: #3a86ff;
-    }
 }
 
 /* === range commons === */

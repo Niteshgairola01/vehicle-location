@@ -97,7 +97,7 @@ const NavBar = () => {
             </div>
           </Nav>
         </div>
-        {/* <Navbar.Toggle aria-controls="responsive-navbar-nav" /> */}
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
         </Navbar.Collapse>
       </div>

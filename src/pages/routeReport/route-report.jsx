@@ -667,7 +667,7 @@ const RouteReport = () => {
                     </Col>
                     <Col sm={12} md={12} lg={8}>
                         <div className='w-100 position-relative'>
-                            <div>
+                            <div style={{ minHeight: '50vh' }}>
                                 <LoadScript googleMapsApiKey={key}>
                                     <GoogleMap
                                         mapContainerStyle={mapContainerStyle}
@@ -860,7 +860,7 @@ const RouteReport = () => {
                             <div className='w-100 mt-2'>
                                 <input type="range"
                                     min={0} max={routeCoords.length - 1}
-                                    value={arrayLocation?.current} 
+                                    value={arrayLocation?.current}
                                     onChange={handleChangeRange}
                                     className='w-100' />
                             </div>

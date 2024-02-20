@@ -12,6 +12,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { makeStyles } from '@mui/styles';
 
+// Others
+
 import { Input } from '../../components/form/Input';
 import Button from '../../components/Button/coloredButton';
 import HoveredButton from '../../components/Button/hoveredButton';
@@ -332,7 +334,7 @@ const DriverMapping = () => {
                                 });
                             } else {
                                 if (response?.data?.status === 'On Vehicle') {
-                                    setStatuses([{ label: 'On Vehicle', value: 'On Vehicle' }]);
+                                    setStatuses([{ label: 'Off Vehicle', value: 'Off Vehicle' }]);
                                     setSelectedStatus({
                                         label: 'Off Vehicle',
                                         value: 'Off Vehicle'
@@ -384,7 +386,7 @@ const DriverMapping = () => {
                 console.log('error', err);
             })
         };
-    }, [selectedDriverCode]);
+    }, [selectedDriverCode, mappingToBeUpdated]);
 
     const handleChangedate = (dateTime) => {
         const day = dateTime?.$D < 10 ? `0${dateTime?.$D}` : dateTime?.$D;

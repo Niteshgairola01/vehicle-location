@@ -20,9 +20,9 @@ const VehicleLocation = () => {
         lat: parseFloat(form?.lattitude),
         lng: parseFloat(form?.longitude),
     };
-    
+
     return (
-        <div style={{ height: "92vh", width: "100vw" }}>
+        <div style={{ minHeight: "92vh", width: "100vw" }}>
             <LoadScript googleMapsApiKey={key}>
                 <GoogleMap
                     mapContainerStyle={mapContainerStyle}

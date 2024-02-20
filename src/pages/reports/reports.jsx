@@ -25,7 +25,6 @@ const Reports = () => {
     const [OEMList, setOEMList] = useState([]);
     const [selectedOEM, setSelectedOEM] = useState('');
     const [OEMName, setOEMName] = useState('');
-    const [OEMTrips, setOEMTrips] = useState([]);
     const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? finalTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
 
     // useEffect(() => {

@@ -300,7 +300,7 @@ const PolygonList = () => {
                                     </div>
                                 </Card>
                             </Col>
-                            <Col sm={8} className='' style={{ height: "65vh" }}>
+                            <Col sm={8} className='' style={{ minHeight: "50vh", height: "65vh" }}>
                                 <LoadScript googleMapsApiKey={key}>
                                     <GoogleMap
                                         mapContainerStyle={mapContainerStyle}
