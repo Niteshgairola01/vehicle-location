@@ -5,7 +5,7 @@ import Button from '../components/Button/coloredButton'
 import { ErrorToast, SuccessToast, WarningToast } from '../components/toast/toast'
 import { deleteVehicleOnTripComplete, forceCompleteTrip } from '../hooks/tripsHooks'
 
-const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data }) => {
+const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
     const [selectedDate, setSelectedDate] = useState('custom');
     const [unloadingReachDate, setUnloadingReachDate] = useState('');
     const [unloadingDate, setUnloadingDate] = useState('');
@@ -47,7 +47,6 @@ const ForceCompleteForm = ({ getAllTrips, handleFilterTrips, show, setShow, data
             if (response?.data === "Vehicle Deleted Successfully!") {
                 SuccessToast(response?.data);
                 handleFilterTrips();
-                getAllTrips();
                 setUnloadingDate('');
                 setUnloadingReachDate('');
                 setRemark('');

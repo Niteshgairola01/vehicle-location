@@ -100,6 +100,21 @@ const VehicleTrackDash = () => {
     );
 
     const closed = localStorage.getItem('reload');
+    const filtersArr = localStorage.getItem('filters');
+
+    useEffect(() => {
+        console.log("filtersArr", JSON.parse(filtersArr));
+        if (filtersArr !== null) {
+            const parsedFilters = JSON.parse(filtersArr);
+
+            if (parsedFilters.length > 0) {
+                setSelectedFilter(parsedFilters);
+                setTimeout(() => {
+                    localStorage.removeItem('filters');
+                }, 1000);
+            }
+        }
+    }, [filtersArr]);
 
     useEffect(() => {
         if (!loggedInUser) {
@@ -1174,14 +1189,14 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'KM Covered') {
             return <td key={colIndex} className='text-center'>{data?.runningKMs}</td>
         } else if (column?.label === 'Location') {
-            return <td key={colIndex} className='cursor-pointer position-relative'
+            return <td key={colIndex} className={`${data?.location !== "" && data?.location !== null && 'cursor-pointer'} position-relative`}
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
                 onClick={() => handleShowLocation(data)}>
                 {data?.location}
                 <>
                     {
-                        (showLocationOption && data?.vehicleNo === currentVehicle) ? (
+                        (data?.location !== "" && data?.location !== null && showLocationOption && data?.vehicleNo === currentVehicle) ? (
                             <div className='position-absolute bg-white p-3 rounded vehicle-details-popup'>
                                 <h5 className='thm-dark d-inline'>{data?.vehicleNo}</h5>
                                 <span className='ms-2 thm-dark'>2 Mins</span>
@@ -1190,6 +1205,7 @@ const VehicleTrackDash = () => {
                                 <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
                                     <Link to={'/vehicle-route'} state={data}
                                         onClick={() => {
+                                            localStorage.setItem('filters', JSON.stringify(selectedFilter));
                                             localStorage.setItem("vehicle", data?.vehicleNo);
                                             localStorage.setItem("vehicleExitDbID", data?.vehicleExitDbID);
                                             localStorage.setItem("lastDbID", data?.lastDbID);
@@ -1200,7 +1216,6 @@ const VehicleTrackDash = () => {
                                             <span className='fw-bold fs-6 mx-2'>{'History'}</span>
                                         </div>
                                     </Link>
-
 
                                     <Link to={'#'} state={data} className='text-decoration-none'>
                                         <div className={`thm-dark cursor-pointer mx-2`}
@@ -1417,7 +1432,7 @@ const VehicleTrackDash = () => {
                         <table className='table table-striped table-bordered w-100 position-relative'
                             style={{ overflowY: "scroll", overflowX: 'auto' }}
                         >
-                            <thead className='table-head text-white' style={{ zIndex: 1, position: "sticky", top: 0 }}>
+                            <thead className='table-head text-white' style={{ zIndex: 2, position: "sticky", top: 0 }}>
                                 <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                     {
                                         tableColumns.map((data, index) => (
@@ -1476,7 +1491,7 @@ const VehicleTrackDash = () => {
                         }
                     </div>
 
-                    <ForceCompleteForm handleFilterTrips={handleFilterTrips} getAllTrips={getAllTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
+                    <ForceCompleteForm handleFilterTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
 
                     <Modal show={showLocation} fullscreen onHide={() => {
                         setShowLocation(false);

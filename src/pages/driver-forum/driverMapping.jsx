@@ -483,8 +483,8 @@ const DriverMapping = () => {
         }
     };
 
-    const handleSubmit = () => {
-        // e.preventDefault();
+    const handleSubmit = (e) => {
+        e.preventDefault();
         // if (formattedSelectedDate < lastStatus?.date) {
         //     ErrorToast("Date Can not be before of On Vehicle");
         // }
@@ -498,27 +498,30 @@ const DriverMapping = () => {
         // if (formattedSelectedDate < lastStatus?.data) {
         //     ErrorToast("Date");
         // }
-
-        if (formattedSelectedDate === '') {
-            ErrorToast("Select Date");
-        }
-
-        if (selectedDriver?.value === undefined) {
-            ErrorToast("Select Driver");
-        }
-        if (selectedDriverCode?.value === undefined) {
-            ErrorToast("Select Driver Code");
-        }
-        if (selectedStatus?.value === undefined) {
-            ErrorToast("Select Status");
-        }
-        if (selectedVehicleNo?.value === undefined) {
-            ErrorToast("Select Vehicle");
-        }
-        if (selectedRole?.value === undefined) {
-            ErrorToast("Select Role");
-        }
-        else {
+        if (formattedSelectedDate === '' || selectedDriver?.value === undefined || selectedDriverCode?.value === undefined ||
+            selectedStatus?.value === undefined || selectedVehicleNo?.value === undefined || selectedRole?.value === undefined
+        ) {
+            console.log("if block");
+            if (formattedSelectedDate === '') {
+                ErrorToast("Select Date");
+            }
+            if (selectedDriver?.value === undefined) {
+                ErrorToast("Select Driver");
+            }
+            if (selectedDriverCode?.value === undefined) {
+                ErrorToast("Select Driver Code");
+            }
+            if (selectedStatus?.value === undefined) {
+                ErrorToast("Select Status");
+            }
+            if (selectedVehicleNo?.value === undefined) {
+                ErrorToast("Select Vehicle");
+            }
+            if (selectedRole?.value === undefined) {
+                ErrorToast("Select Role");
+            }
+        } else {
+            console.log("else block");
             if (mappingToBeUpdated === null) {
                 createNewMapping(form).then(response => {
                     if (response?.status === 200) {
@@ -565,6 +568,7 @@ const DriverMapping = () => {
                 });
             }
         }
+
     };
 
     const handleShowFilteredMappings = () => {
@@ -741,7 +745,7 @@ const DriverMapping = () => {
                                         <td>{handleFormatDate(data?.date)}</td>
                                         <td className='text-center'>
                                             {
-                                                index === 0 ? (
+                                                data?.mappingId === allMappings[0]?.mappingId ? (
                                                     <Tooltip title="Update">
                                                         <Link to="#">
                                                             <CiEdit className='fs-4 text-success cursor-pointer' onClick={() => handleSelectMappingToBeUpdate(data?.mappingId, data)} />

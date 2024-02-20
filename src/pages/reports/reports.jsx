@@ -26,9 +26,7 @@ const Reports = () => {
     const [selectedOEM, setSelectedOEM] = useState('');
     const [OEMName, setOEMName] = useState('');
     const [OEMTrips, setOEMTrips] = useState([]);
-    const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? filteredTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
-
-    console.log("final", filteredOEMTrips);
+    const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? finalTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
 
     // useEffect(() => {
     //     const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? filteredTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
@@ -148,6 +146,7 @@ const Reports = () => {
 
                 const allTrips = allData?.filter(data => data?.tripStatus === 'Trip Running');
 
+                allTrips.sort();
                 if (selectedFilters.length > 0) {
                     let tripsFilteredByTripStatus = [];
 
@@ -278,7 +277,6 @@ const Reports = () => {
                                         } else {
                                             const delayedArr1 = allTrips.filter((data) => selectedFilters.includes(data?.finalStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early'));
                                             delayedArr1.map(data => finalStatusTrips.push(data))
-                                            console.log("delayedArr1", delayedArr1);
                                             // finalStatusTrips = delayedArr1
                                         }
                                         // if (selectedFilters.includes('On Time')) {
@@ -853,17 +851,67 @@ const Reports = () => {
             }
         });
 
+        // Stack Overflow
+        // const byteString = window.atob(dataURI);
+        // const arrayBuffer = new ArrayBuffer(byteString.length);
+        // const int8Array = new Uint8Array(arrayBuffer);
+        // for (let i = 0; i < byteString.length; i++) {
+        //     int8Array[i] = byteString.charCodeAt(i);
+        // }
+        // const blob = new Blob([int8Array], { type: 'application/pdf' });
+        // return blob;
+
         // const buffer = await doc.output("arraybuffer");
         // const dataUri = `data:application/pdf;base64,${btoa(buffer)}`;
-        const pdfDataUri = doc.output('dataurlstring')
-        const base64PDF = pdfDataUri.split(',')[1];
+        // const pdfDataUri = doc.output('dataurlstring')
+        // const base64PDF = pdfDataUri.split(',')[1];
 
+        const blob = doc.output('blob');
+        const blobPDF = new Blob([doc.output('blob')], { type: 'application/pdf' });
+        // const blob = dataURItoBlob(doc.output('bloburl'));
+        const url = URL.createObjectURL(blobPDF);
 
-        console.log("uri", pdfDataUri);
+        console.log("blobPDF", blobPDF);
+        console.log("url", url);
+
+        // dataURItoBlob(doc.output());
+        // console.log("url", doc.output('bloburl'));
+        // const url = URL.createObjectURL(blob);
+        window.open(`whatsapp://send?text=${url}`)
+        // window.location.href = `https://wa.me/${8503879951}?text=Document%20shared%20via%20your%20app`;
+
+        // console.log("uri", pdfDataUri);
         // const whatsappLink = constructWhatsAppLink(dataUri);
-
-        openWhatsAppChat(pdfDataUri);
+        // window.open(url, '_blank');
+        // openWhatsAppChat(pdfDataUri);
     };
+
+    function dataURItoBlob(dataURI) {
+        // console.log("url", dataURI);
+        // console.log("url length", dataURI.length);
+
+        // window.open(dataURI, '_blank');
+        // window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(dataURI)}`)
+
+        // window.open(`whatsapp://send?text=${encodeURIComponent(dataURI)}`)
+
+        // const byteString = window.atob(dataURI)
+        const byteString = btoa(dataURI);
+        const arrayBuffer = new ArrayBuffer(byteString.length);
+        const int8Array = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < byteString.length; i++) {
+            int8Array[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([int8Array], { type: 'application/pdf' });
+        return blob;
+    }
+
+    // data should be your response data in base64 format
+
+    // const blob = dataURItoBlob(data);
+    // const url = URL.createObjectURL(blob);
+
+    // to open the PDF in a new 
 
     const selectStyles = {
         control: (provided) => ({

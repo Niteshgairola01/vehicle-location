@@ -5,6 +5,7 @@ import AutoLogout from './components/autoLogout';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './assets/styles/maps.css'
+import { signOutUser } from './hooks/authHooks';
 
 function App() {
 
@@ -20,17 +21,22 @@ function App() {
   //   localStorage.setItem("reload", 'true');
   // }, []);
 
-  // useEffect(() => {
-  //   if (storedTimestamp) {
-  //     const storedTime = parseInt(storedTimestamp, 10);
-  //     const currentTime = new Date().getTime();
-  //     const timeDifference = currentTime - storedTime;
-  //     if (timeDifference > 10 * 30 * 1000) {
-  //       localStorage.clear();
-  //       navigate('/');
-  //     }
-  //   }
-  // }, [storedTimestamp]);
+  useEffect(() => {
+    if (storedTimestamp) {
+      const storedTime = parseInt(storedTimestamp, 10);
+      const currentTime = new Date().getTime();
+      const timeDifference = currentTime - storedTime;
+      if (timeDifference > 30 * 60 * 1000) {
+        const form = { userId: localStorage.getItem('userId') }
+        signOutUser(form).then((response) => {
+          if (response?.status === 200) {
+            localStorage.clear();
+            navigate('/')
+          }
+        }).catch(() => console.log("Unable to log out user"));
+      }
+    }
+  }, [storedTimestamp]);
 
 
   return (
