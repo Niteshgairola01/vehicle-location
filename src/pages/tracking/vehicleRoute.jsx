@@ -9,7 +9,7 @@ import { truck } from '../../assets/images';
 import { Modal } from 'react-bootstrap';
 import { ReactSVG } from 'react-svg';
 
-const VehicleRoute = () => {
+const VehicleRoute = ({ show, setShow }) => {
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
@@ -40,7 +40,7 @@ const VehicleRoute = () => {
     const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
 
     const [showGeofenceOption, setShowGeofenceOption] = useState(false);
-    const [geofencePosition, setGeofencePosition] = useState({ lat: 26.858192, lng: 75.669163 })
+    const [geofencePosition, setGeofencePosition] = useState({ lat: 26.858192, lng: 75.669163 });
     const [playbackSpeed, setPlayBackSpeed] = useState(1000);
 
     const [boundCenter, setBoundCenter] = useState(false);
@@ -51,9 +51,6 @@ const VehicleRoute = () => {
         width: '100%',
         height: '95%',
     };
-
-    const history = useLocation();
-    const vehicleData = history.state;
 
     const vehicleNo = localStorage.getItem("vehicle");
     const exitId = localStorage.getItem('vehicleExitDbID');
@@ -190,6 +187,14 @@ const VehicleRoute = () => {
                         };
                     });
 
+
+                    finalCoords.push({
+                        lat: parseFloat(allData[allData?.length - 1]?.lat),
+                        lng: parseFloat(allData[allData?.length - 1]?.long),
+                    });
+
+                    finalRouteData.push(allData[allData?.length - 1])
+
                     setRouteData(finalRouteData);
                     setCoordinates(finalCoords);
 
@@ -313,7 +318,7 @@ const VehicleRoute = () => {
 
     const convertCurrentDateTime = (originalDateTime) => {
         const [datePart, timePart] = currentCoordDetails?.date === undefined ? '' : originalDateTime.split(' ');
-        const [year, day, month] = currentCoordDetails?.date === undefined ? '' : datePart.split('-');
+        const [year, month, day] = currentCoordDetails?.date === undefined ? '' : datePart.split('-');
 
         const formattedDate = currentCoordDetails?.date === undefined ? '' : `${day}-${month}-${year}`;
         const formattedDateTime = currentCoordDetails?.date === undefined ? '' : `${formattedDate} ${timePart}`;
@@ -323,10 +328,12 @@ const VehicleRoute = () => {
 
     const convertMarkerDateTime = (originalDateTime) => {
         const [datePart, timePart] = selectedMarker === null ? '' : originalDateTime.split(' ');
-        const [year, day, month] = selectedMarker === null ? '' : datePart.split('-');
+        const [year, month, day] = selectedMarker === null ? '' : datePart.split('-');
 
         const formattedDate = selectedMarker === null ? '' : `${day}-${month}-${year}`;
         const formattedDateTime = selectedMarker === null ? '' : `${formattedDate} ${timePart}`;
+
+        console.log("formatted", year, day, month, originalDateTime);
 
         return selectedMarker === null ? '' : formattedDateTime;
     };
@@ -461,15 +468,18 @@ const VehicleRoute = () => {
         setBoundCenter(true);
     };
 
+    const handleCloseModal = () => {
+        localStorage.removeItem('vehicle');
+        localStorage.removeItem('vehicleExitDbID');
+        localStorage.removeItem('lastDbID');
+        localStorage.removeItem('lat');
+        localStorage.removeItem('lng');
+        arrayLocation.current = 0
+        setShow(false);
+    }
+
     return (
-        <Modal show={true} className='w-100 p-5' fullscreen centered onHide={() => {
-            localStorage.removeItem('vehicle');
-            localStorage.removeItem('vehicleExitDbID');
-            localStorage.removeItem('lastDbID');
-            localStorage.removeItem('lat');
-            localStorage.removeItem('lng');
-            navigate('/track');
-        }} size='xl'>
+        <Modal show={show} className='w-100 p-5' fullscreen centered onHide={() => handleCloseModal()} size='xl'>
             <Modal.Header closeButton>
                 <div className='m-0 w-100 px-5 d-flex justify-content-between align-items-center'>
                     <h4>Vehicle Route</h4>

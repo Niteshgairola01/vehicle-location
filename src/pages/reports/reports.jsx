@@ -27,11 +27,6 @@ const Reports = () => {
     const [OEMName, setOEMName] = useState('');
     const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? finalTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
 
-    // useEffect(() => {
-    //     const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? filteredTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
-    //     setOEMTrips(filteredOEMTrips);
-    // }, [filteredTrips])
-
     useEffect(() => {
         if (selectedOEM === null) {
             setOEMName('');
@@ -40,13 +35,26 @@ const Reports = () => {
 
     const allFilters = ['Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'On Time & Early (As per OEM)', 'Delayed (As per OEM)'];
 
-    const attributes = ['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'locationTime', 'routeKM', 'runningKMs',
-        'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'oemFinalStatus', 'delayedHours'
-    ];
+    const [attributes, setAttributes] = useState([]);
+    const [columnNames, setColumnNames] = useState([]);
 
-    const columnNames = ['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA', 'GPS (Date / Time)',
-        'Route (KM)', 'KM Covered', 'Difference (Km)', 'Location', 'Estimated Arrival Date', 'Final Status', 'OEM Final Status', 'Delayed Hours'
-    ];
+    useEffect(() => {
+        if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
+            setAttributes(['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'oemReachTime', 'locationTime', 'routeKM', 'runningKMs',
+                'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'oemFinalStatus', 'delayedHours'
+            ]);
+            setColumnNames(['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA(OEM)', 'GPS (Date / Time)',
+                'Route (KM)', 'KM Covered', 'Difference (Km)', 'Location', 'Estimated Arrival Date', 'Final Status', 'OEM Final Status', 'Delayed Hours'
+            ]);
+        } else {
+            setAttributes(['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'locationTime', 'routeKM', 'runningKMs',
+                'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'oemFinalStatus', 'delayedHours'
+            ]);
+            setColumnNames(['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA', 'GPS (Date / Time)',
+                'Route (KM)', 'KM Covered', 'Difference (Km)', 'Location', 'Estimated Arrival Date', 'Final Status', 'OEM Final Status', 'Delayed Hours'
+            ]);
+        }
+    }, [selectedFilters]);
 
     const reportTypes = [{
         label: "Trips Report",
@@ -747,8 +755,8 @@ const Reports = () => {
         const formattedData = rowData.map(item => {
             const formattedItem = {};
             attributes.forEach(attr => {
-                if (attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'estimatedArrivalDate' || attr === 'finalStatus') {
-                    if (attr === 'loadingDate') {
+                if (attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'oemReachTime' || attr === 'estimatedArrivalDate' || attr === 'finalStatus') {
+                    if (attr === 'loadingDate' || attr === 'oemReachTime') {
                         formattedItem[attr] = handleFormateISTDate(item[attr]);
                     }
                     if (attr === 'vehicleExitDate') {
@@ -774,6 +782,11 @@ const Reports = () => {
 
     const [pdfData, setPdfData] = useState('');
 
+    // useEffect(() => {
+    //     fetchContacts();
+    // }, []);
+
+
     const exportToPDF = async () => {
         const doc = new jsPDF('landscape');
         const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
@@ -794,7 +807,8 @@ const Reports = () => {
             body: formattedData,
             margin: firstPageMargin,
             styles: {
-                fontSize: 8
+                fontSize: 8,
+                height: 100
             },
             columnStyles: {
                 11: { cellWidth: 40 },

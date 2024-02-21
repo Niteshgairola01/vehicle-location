@@ -311,6 +311,14 @@ const RouteReport = () => {
                         };
                     });
 
+
+                    finalCoords.push({
+                        lat: parseFloat(allData[allData?.length - 1]?.lat),
+                        lng: parseFloat(allData[allData?.length - 1]?.long),
+                    });
+
+                    finalRouteData.push(allData[allData?.length - 1])
+
                     setRouteData(finalRouteData);
                     setRouteCoords(finalCoords);
 
@@ -500,7 +508,7 @@ const RouteReport = () => {
 
     const convertMarkerDateTime = (originalDateTime) => {
         const [datePart, timePart] = selectedTimeMarker === null ? '' : originalDateTime.split(' ');
-        const [year, day, month] = selectedTimeMarker === null ? '' : datePart.split('-');
+        const [year, month, day] = selectedTimeMarker === null ? '' : datePart.split('-');
 
         const formattedDate = selectedTimeMarker === null ? '' : `${day}-${month}-${year}`;
         const formattedDateTime = selectedTimeMarker === null ? '' : `${formattedDate} ${timePart}`;
@@ -510,7 +518,7 @@ const RouteReport = () => {
 
     const convertSpeedMarkerDateTime = (originalDateTime) => {
         const [datePart, timePart] = selectedSpeedMarker === null ? '' : originalDateTime.split(' ');
-        const [year, day, month] = selectedSpeedMarker === null ? '' : datePart.split('-');
+        const [year, month, day] = selectedSpeedMarker === null ? '' : datePart.split('-');
 
         const formattedDate = selectedSpeedMarker === null ? '' : `${day}-${month}-${year}`;
         const formattedDateTime = selectedSpeedMarker === null ? '' : `${formattedDate} ${timePart}`;
@@ -520,7 +528,7 @@ const RouteReport = () => {
 
     const convertCurrentDateTime = (originalDateTime) => {
         const [datePart, timePart] = currentCoordDetails?.date === undefined ? '' : originalDateTime.split(' ');
-        const [year, day, month] = currentCoordDetails?.date === undefined ? '' : datePart.split('-');
+        const [year, month, day] = currentCoordDetails?.date === undefined ? '' : datePart.split('-');
 
         const formattedDate = currentCoordDetails?.date === undefined ? '' : `${day}-${month}-${year}`;
         const formattedDateTime = currentCoordDetails?.date === undefined ? '' : `${formattedDate} ${timePart}`;

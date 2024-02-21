@@ -53,6 +53,7 @@ const DriverMapping = () => {
     const [filterForm, setFilterForm] = useState({});
 
     // Mapping list
+    const [mappingsList, setMappingList] = useState([]);
     const [allMappings, setAllMappings] = useState([]);
     const [filteredMappings, setFilteredMappings] = useState([]);
 
@@ -76,6 +77,37 @@ const DriverMapping = () => {
     // Update Mapping
     const filteredDriverArray = allMappings?.filter(driver => driver?.driverCode?.toLowerCase().includes(selectedDriverCode?.value?.toLowerCase()));
     const lastStatus = filteredDriverArray[0];
+
+    const lastOccurrences = {};
+
+    mappingsList.forEach((item, index) => {
+        lastOccurrences[item?.driverCode] = index;
+    });
+
+    // Filter elements based on last occurrences and status is not "New"
+    const lastOccuranceArray = mappingsList.filter(item => {
+        return lastOccurrences[item?.driverCode] === mappingsList.indexOf(item) && item.status !== 'New Driver';
+    });
+
+    const lastVehicleOccurrences = {};
+
+    mappingsList.forEach((item, index) => {
+        lastVehicleOccurrences[item?.vehicleNo] = index;
+    });
+
+    // Filter elements based on last occurrences and status is not "New"
+    const lastVehicleOccuranceArray = mappingsList.filter(item => {
+        return lastVehicleOccurrences[item?.vehicleNo] === mappingsList.indexOf(item) && item.status !== 'New Driver';
+    });
+
+    let occuranceArray = lastOccuranceArray.concat(lastVehicleOccuranceArray);
+
+    let editableMappings = [];
+
+    occuranceArray.map(data => {
+        console.log("test", data?.mappingId);
+        editableMappings.push(data?.mappingId)
+    });
 
     useEffect(() => {
         if (mappingToBeUpdated === null) {
@@ -116,7 +148,7 @@ const DriverMapping = () => {
                 });
             }
         }
-    }, [lastStatus, mappingToBeUpdated]);
+    }, [lastStatus]);
 
     const handleSelectMappingToBeUpdate = (id, data) => {
         setMappingToBeUpdated(id);
@@ -167,9 +199,32 @@ const DriverMapping = () => {
         });
     }, [loggedInUser]);
 
+    console.log("mapping", lastOccuranceArray);
+
+    useEffect(() => {
+        getAllMappings().then(response => {
+            if (response?.status === 200) {
+                setMappingList(response?.data);
+
+                // const allData = response?.data;
+                // allData.reverse();
+                // setAllMappings(allData);
+                // setFilteredMappings(allData);
+            } else {
+                setAllMappings([]);
+                setFilteredMappings([]);
+            }
+        }).catch(err => {
+            setAllMappings([]);
+            setFilteredMappings([]);
+        });
+    }, []);
+
     const getMappingsList = () => {
         getAllMappings().then(response => {
             if (response?.status === 200) {
+                // setMappingList(response?.data);
+
                 const allData = response?.data;
                 allData.reverse();
                 setAllMappings(allData);
@@ -245,22 +300,22 @@ const DriverMapping = () => {
     }, []);
 
     useEffect(() => {
-        if (selectedDriver === null || selectedDriver?.value === undefined) {
+        if (selectedDriverCode === null || selectedDriverCode?.value === undefined) {
             setFilterForm(form => {
                 return {
                     ...form,
-                    driverName: "",
+                    driverCode: "",
                 }
             });
         } else {
             setFilterForm(form => {
                 return {
                     ...form,
-                    driverName: selectedDriver?.value,
+                    driverCode: selectedDriverCode?.value,
                 }
             });
         }
-    }, [selectedDriver]);
+    }, [selectedDriverCode]);
 
     useEffect(() => {
         if (selectedVehicleNo === null || selectedVehicleNo?.value === undefined) {
@@ -301,6 +356,10 @@ const DriverMapping = () => {
                                     label: 'Off Vehicle',
                                     value: 'Off Vehicle'
                                 });
+                                // setSelectedVehicleNo({
+                                //     label: response?.vehicleNo,
+                                //     value: response?.vehicleNo,
+                                // })
                             }
                         }
                     } else {
@@ -309,12 +368,14 @@ const DriverMapping = () => {
                             setSelectedStatus({ label: 'On Vehicle', value: 'On Vehicle' });
                             setSelectedDate('');
                             setFormattedSelectedDate('');
+                            setSelectedVehicleNo('');
+                            setSelectedRole('');
 
-                            setForm(form => {
-                                return {
-                                    ...form,
-                                    status: 'On Vehicle'
-                                }
+                            setForm({
+                                createdBy: loggedInUser,
+                                driverCode: selectedDriverCode?.value,
+                                driverName: selectedDriver?.value,
+                                status: 'On Vehicle'
                             });
                         } else {
                             if (response?.data.status === 'New Driver') {
@@ -325,12 +386,14 @@ const DriverMapping = () => {
                                 });
                                 setSelectedDate('');
                                 setFormattedSelectedDate('');
+                                setSelectedVehicleNo('');
+                                setSelectedRole('');
 
-                                setForm(form => {
-                                    return {
-                                        ...form,
-                                        status: 'On Vehicle'
-                                    }
+                                setForm({
+                                    createdBy: loggedInUser,
+                                    driverCode: selectedDriverCode?.value,
+                                    driverName: selectedDriver?.value,
+                                    status: 'On Vehicle'
                                 });
                             } else {
                                 if (response?.data?.status === 'On Vehicle') {
@@ -339,16 +402,27 @@ const DriverMapping = () => {
                                         label: 'Off Vehicle',
                                         value: 'Off Vehicle'
                                     });
-                                    setSelectedVehicleNo('');
-                                    setSelectedRole('');
+                                    setSelectedVehicleNo({
+                                        label: response?.data?.vehicleNo,
+                                        value: response?.data?.vehicleNo
+                                    });
+
+                                    setSelectedRole({
+                                        label: response?.data?.role,
+                                        value: response?.data?.role
+                                    });
+
+                                    setSelectedDate(dayjs(response?.data?.date));
                                     setSelectedDate('');
                                     setFormattedSelectedDate('');
 
-                                    setForm(form => {
-                                        return {
-                                            ...form,
-                                            status: 'Off Vehicle'
-                                        }
+                                    setForm({
+                                        createdBy: loggedInUser,
+                                        driverName: response?.data?.driverName,
+                                        driverCode: response?.data?.driverCode,
+                                        status: 'Off Vehicle',
+                                        vehicleNo: response?.data?.vehicleNo,
+                                        role: response?.data?.role
                                     });
                                 } else if (response?.data?.status === 'Off Vehicle') {
                                     setStatuses([{ label: 'On Vehicle', value: 'On Vehicle' }]);
@@ -356,16 +430,17 @@ const DriverMapping = () => {
                                         label: 'On Vehicle',
                                         value: 'On Vehicle'
                                     });
+
                                     setSelectedVehicleNo('');
                                     setSelectedRole('');
                                     setSelectedDate('');
                                     setFormattedSelectedDate('');
 
-                                    setForm(form => {
-                                        return {
-                                            ...form,
-                                            status: 'On Vehicle'
-                                        }
+                                    setForm({
+                                        createdBy: loggedInUser,
+                                        driverCode: selectedDriverCode?.value,
+                                        driverName: selectedDriver?.value,
+                                        status: 'On Vehicle'
                                     });
                                 }
                             }
@@ -387,6 +462,8 @@ const DriverMapping = () => {
             })
         };
     }, [selectedDriverCode, mappingToBeUpdated]);
+
+    console.log("form", form);
 
     const handleChangedate = (dateTime) => {
         const day = dateTime?.$D < 10 ? `0${dateTime?.$D}` : dateTime?.$D;
@@ -747,7 +824,7 @@ const DriverMapping = () => {
                                         <td>{handleFormatDate(data?.date)}</td>
                                         <td className='text-center'>
                                             {
-                                                data?.mappingId === allMappings[0]?.mappingId ? (
+                                                editableMappings.includes(data?.mappingId) ? (
                                                     <Tooltip title="Update">
                                                         <Link to="#">
                                                             <CiEdit className='fs-4 text-success cursor-pointer' onClick={() => handleSelectMappingToBeUpdate(data?.mappingId, data)} />

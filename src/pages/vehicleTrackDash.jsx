@@ -21,6 +21,7 @@ import DashHead from '../components/dashboardHead';
 import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import { FaSort } from "react-icons/fa";
 import '../assets/styles/home.css';
+import VehicleRoute from './tracking/vehicleRoute';
 
 const VehicleTrackDash = () => {
 
@@ -55,6 +56,7 @@ const VehicleTrackDash = () => {
     const [showLocation, setShowLocation] = useState(false);
     const [showLocationOption, setShowLocationOption] = useState(false);
     const [showHideToggle, setShowHideToggle] = useState(false);
+    const [showRoute, setShowRoute] = useState(false);
     const [isHovered, setIsHovered] = useState(true);
     const [currentVehicle, setCurrentVehicle] = useState('');
 
@@ -79,15 +81,15 @@ const VehicleTrackDash = () => {
             { label: 'Consignor Name', value: 'consignorName', hidden: false },
             { label: 'Origin', value: 'origin', hidden: false },
             { label: 'Destination', value: 'destination', hidden: false },
-            { label: 'Static ETA', value: 'staticETA', hidden: false },
+            { label: 'Static ETA (PAPL)', value: 'staticETA', hidden: false },
+            { label: 'Static ETA (OEM)', value: "oemReachTime", hidden: false },
             { label: 'GPS (Date / Time)', value: 'locationTime', hidden: false },
+            { label: 'Location', value: 'location', hidden: false },
             { label: 'Route (KM)', value: 'routeKM', hidden: false },
             { label: 'KM Covered', value: 'runningKMs', hidden: false },
             { label: 'Difference (Km)', value: 'kmDifference', hidden: false },
             { label: 'Report Unloading', value: 'unloadingReachDate', hidden: false },
             { label: 'Unloading End Date', value: 'unloadingDate', hidden: false },
-            { label: 'OEM Reach Date', value: "oemReachTime", hidden: false },
-            { label: 'Location', value: 'location', hidden: false },
             { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
             { label: 'Final Status', value: 'finalStatus', hidden: false },
             { label: 'OEM Final Status', value: 'oemFinalStatus', hidden: false },
@@ -1120,7 +1122,7 @@ const VehicleTrackDash = () => {
     };
 
     const handleTableColumns = (data, column, value, index, colIndex) => {
-        if (column.label === 'Loading (Date / Time)' || column.label === "Estimated Arrival Date" || column.label === "OEM Reach Date") {
+        if (column.label === 'Loading (Date / Time)' || column.label === "Estimated Arrival Date" || column.label === "Static ETA (OEM)" || column.label === "Static ETA (PAPL)") {
             return <td key={colIndex}>{handleFormateISTDate(value)}</td>;
         } else if (value === "Delayed Hours") {
             return <td key={colIndex}>{getDelayedHours(value)}</td>;
@@ -1153,8 +1155,9 @@ const VehicleTrackDash = () => {
                                 <p className='thm-dark mt-2 mb-0'>{data?.location}</p>
                                 <p className='' style={{ fontSize: "0.8rem" }}>{handleFormatDate(data?.locationTime)}</p>
                                 <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
-                                    <Link to={'/vehicle-route'} state={data}
+                                    <Link to={'#'} state={data}
                                         onClick={() => {
+                                            setShowRoute(true)
                                             localStorage.setItem('filters', JSON.stringify(selectedFilter));
                                             localStorage.setItem("vehicle", data?.vehicleNo);
                                             localStorage.setItem("vehicleExitDbID", data?.vehicleExitDbID);
@@ -1470,6 +1473,8 @@ const VehicleTrackDash = () => {
                             }
                         </Modal.Body>
                     </Modal>
+
+                    <VehicleRoute show={showRoute} setShow={setShowRoute} />
                 </div>
             </div>
         </div>
