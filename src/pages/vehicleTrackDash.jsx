@@ -1205,7 +1205,10 @@ const VehicleTrackDash = () => {
             </td>
         } else if (column?.label === 'Trip Count') {
             return <td key={colIndex} className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-        } else {
+        } else if (column?.label === 'Vehicle No.') {
+            return <td key={colIndex} style={{ background: data?.currVehicleStatus === "On Hold" ? '#fffc00cc' : data?.currVehicleStatus === 'Running' ? '#47ff47cf' : data?.currVehicleStatus === 'GPS Off' && '#ff0000cf' }}>{value}</td>
+        }
+        else {
             return <td key={colIndex}>{value}</td>;
         }
     };
