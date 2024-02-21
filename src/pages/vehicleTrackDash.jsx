@@ -86,6 +86,7 @@ const VehicleTrackDash = () => {
             { label: 'Difference (Km)', value: 'kmDifference', hidden: false },
             { label: 'Report Unloading', value: 'unloadingReachDate', hidden: false },
             { label: 'Unloading End Date', value: 'unloadingDate', hidden: false },
+            { label: 'OEM Reach Date', value: "oemReachTime", hidden: false },
             { label: 'Location', value: 'location', hidden: false },
             { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
             { label: 'Final Status', value: 'finalStatus', hidden: false },
@@ -1119,7 +1120,7 @@ const VehicleTrackDash = () => {
     };
 
     const handleTableColumns = (data, column, value, index, colIndex) => {
-        if (column.label === 'Loading (Date / Time)' || column.label === "Estimated Arrival Date") {
+        if (column.label === 'Loading (Date / Time)' || column.label === "Estimated Arrival Date" || column.label === "OEM Reach Date") {
             return <td key={colIndex}>{handleFormateISTDate(value)}</td>;
         } else if (value === "Delayed Hours") {
             return <td key={colIndex}>{getDelayedHours(value)}</td>;

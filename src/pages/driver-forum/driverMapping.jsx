@@ -75,7 +75,7 @@ const DriverMapping = () => {
 
     // Update Mapping
     const filteredDriverArray = allMappings?.filter(driver => driver?.driverCode?.toLowerCase().includes(selectedDriverCode?.value?.toLowerCase()));
-    const lastStatus = filteredDriverArray[filteredDriverArray.length - 1];
+    const lastStatus = filteredDriverArray[0];
 
     useEffect(() => {
         if (mappingToBeUpdated === null) {
