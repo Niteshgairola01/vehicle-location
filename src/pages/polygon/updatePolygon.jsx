@@ -293,7 +293,7 @@ const UpdatePolygon = () => {
                         createdByUserId: loggedInUser,
                         ...(placeName !== polygonData?.placeName && { placeName: placeName }),
                         ...(selectedCategory?.value !== polygonData?.geofenceType && { geofenceType: selectedCategory?.value }),
-                        ...(((polygonData?.coordinates.length !== coords.length) && !arraysAreEqual) && { coordinates: coords })
+                        ...((!arraysAreEqual) && { coordinates: coords })
                     }
                 ];
 
@@ -320,6 +320,8 @@ const UpdatePolygon = () => {
                         ...((!arraysAreEqual) && { coordinates: coords })
                     }
                 ];
+
+                console.log("form", form);
 
                 updatePolygonArea(form).then((response) => {
                     if (response?.status === 200) {
@@ -565,9 +567,6 @@ const UpdatePolygon = () => {
 
         setSelectedCoordinates(updatedCoordinates);
     }
-
-    console.log("selected", selectedCoordinates);
-
 
     return (
         <Modal show={true} fullscreen centered onHide={() => navigate('/polygon')} size='xl'

@@ -75,6 +75,7 @@ const VehicleTrackDash = () => {
         [
             { label: 'Trip Count', value: 'tripCount', hidden: false },
             { label: 'Vehicle No.', value: 'vehicleNo', hidden: false },
+            { label: 'Status', value: 'status', hidden: false },
             { label: 'Trip No.', value: 'tripLogNo', hidden: false },
             { label: 'Loading (Date / Time)', value: 'loadingDate', hidden: false },
             { label: 'Vehicle Exit (Date / Time)', value: 'vehicleExitDate', hidden: false },
@@ -1206,7 +1207,11 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'Trip Count') {
             return <td key={colIndex} className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
         } else if (column?.label === 'Vehicle No.') {
-            return <td key={colIndex} style={{ background: data?.currVehicleStatus === "On Hold" ? '#fffc00cc' : data?.currVehicleStatus === 'Running' ? '#47ff47cf' : data?.currVehicleStatus === 'GPS Off' && '#ff0000cf' }}>{value}</td>
+            return <td key={colIndex} style={{ background: data?.currVehicleStatus === "On Hold" ? '#fffc00cc' : data?.currVehicleStatus === 'Running' ? '#47ff47cf' : data?.currVehicleStatus === 'GPS Off' && '#ff0000cf', color: data?.currVehicleStatus === 'GPS Off' && '#fff', fontWeight: data?.currVehicleStatus === 'GPS Off' && 'bold' }}>{value}</td>
+        } else if (column?.label === 'Status') {
+            return <td className='d-flex justify-content-center align-items-center'>
+                <div className={`circle ${data?.currVehicleStatus === "On Hold" ? 'circle-yellow-blink' : data?.currVehicleStatus === 'Running' ? 'circle-green-blink' : data?.currVehicleStatus === 'GPS Off' ? 'circle-red-blink' : data?.currVehicleStatus === null && 'bg-white'}`}></div>
+            </td>
         }
         else {
             return <td key={colIndex}>{value}</td>;
@@ -1385,7 +1390,7 @@ const VehicleTrackDash = () => {
                         </div>
                     </div>
                     <div className='table-responsive mt-3' style={{ height: "50vh" }}>
-                        <table className='table table-striped table-bordered w-100 position-relative'
+                        <table className='table table-bordered w-100 position-relative'
                             style={{ overflowY: "scroll", overflowX: 'auto' }}
                         >
                             <thead className='table-head text-white' style={{ zIndex: 2, position: "sticky", top: 0 }}>

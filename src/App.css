@@ -1167,3 +1167,100 @@ input[type="range"]:active::-moz-range-progress {
 input[type="range"]:disabled::-moz-range-thumb {
     cursor: not-allowed;
 }
+
+
+
+
+
+
+
+
+@keyframes green-blink {
+    0% {
+        transform: scale(1);
+        background-color: #00FF00DE;
+    }
+
+    50% {
+        transform: scale (1, 5);
+        background-color: #00a900de;
+    }
+
+    100% {
+        transform: scale(1);
+        background-color: #00FF00DE;
+    }
+}
+
+@keyframes red-blink {
+    0% {
+        transform: scale(1);
+        background-color: #ff0000;
+    }
+
+    50% {
+        transform: scale (1, 5);
+        background-color: #db0707;
+    }
+
+    100% {
+        transform: scale(1);
+        background-color: #ff0000;
+    }
+}
+
+@keyframes yellow-blink {
+    0% {
+        transform: scale(1);
+        background-color: #fffc00;
+    }
+
+    50% {
+        transform: scale (1, 5);
+        background-color: #e5e300;
+    }
+
+    100% {
+        transform: scale(1);
+        background-color: #fffc00;
+    }
+}
+
+.circle {
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+}
+
+.circle-green-blink {
+    -webkit-animation: green-blink 0.4s infinite;
+    -moz-animation: green-blink 0.4s infinite;
+    -o-animation: green-blink 0.4s infinite;
+    animation: green-blink 0.4s infinite;
+}
+
+
+.circle-red-blink {
+    -webkit-animation: red-blink 0.4s infinite;
+    -moz-animation: red-blink 0.4s infinite;
+    -o-animation: red-blink 0.4s infinite;
+    animation: red-blink 0.4s infinite;
+}
+
+.circle-yellow-blink {
+    -webkit-animation: yellow-blink 0.4s infinite;
+    -moz-animation: yellow-blink 0.4s infinite;
+    -o-animation: yellow-blink 0.4s infinite;
+    animation: yellow-blink 0.4s infinite;
+}
+
+/* .red {
+    background-color: red;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-animation: up-right 1s infinite;
+    -moz-animation: up-right 1s infinite;
+    -o-animation: up-right 1s infinite;
+    animation: up-right 1s infinite;
+} */

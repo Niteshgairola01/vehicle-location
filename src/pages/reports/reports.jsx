@@ -61,6 +61,76 @@ const Reports = () => {
         value: "Trips Report"
     }];
 
+    const [sharedPdf, setsharedPdf] = useState(null);
+
+    const sharePDFViaTelegram = async () => {
+        const doc = new jsPDF('landscape');
+
+        const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
+
+        doc.setFontSize(16);
+        doc.text('Trips Report', 130, 10);
+
+        const formattedData = formatData(filteredOEMTrips);
+
+        formattedData.forEach((row, index) => {
+            row['S.No.'] = index + 1
+        });
+
+        const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
+
+        doc.autoTable({
+            columns,
+            body: formattedData,
+            margin: firstPageMargin,
+            styles: {
+                fontSize: 8
+            },
+            columnStyles: {
+                11: { cellWidth: 40 },
+            }
+        });
+
+        const pdfBlob = doc.output('blob');
+        setsharedPdf(doc.output());
+        const formData = new FormData();
+        formData.append('chat_id', '6559524169'); // Replace 'RECIPIENT_CHAT_ID' with the chat ID of the recipient
+        formData.append('document', pdfBlob, 'document.pdf');
+
+        console.log("pdf", pdfBlob);
+
+        sendDocumentToTelegram(formData);
+    };
+
+    const sendDocumentToTelegram = async (formData) => {
+        const telegramBotToken = '6919568815:AAFjrQ0vFPKGpOmdOHklBf2pDreyMeCb7Os';
+        // const chatId = '6559524169';
+
+        // const documentData = { /* Your document data */ };
+
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: '6559524169',
+                    text: 'hi' // Assuming documentData contains the file data
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send document');
+            }
+
+            const responseData = await response.json();
+            console.log('Document sent successfully:', responseData);
+        } catch (error) {
+            console.error('Error sending document:', error);
+        }
+    }
+
     const sortByDate = (data) => {
         data.sort((a, b) => {
             const dateA = new Date(a.loadingDate.split(' ')[0]);
@@ -939,7 +1009,7 @@ const Reports = () => {
 
     return (
         <div className='thm-dark m-0 p-0 p-5 pt-3'>
-            {/* <button onClick={sharePDFViaWhatsApp}>Share</button> */}
+            {/* <button onClick={sharePDFViaTelegram}>Share</button> */}
             <Card>
                 <div className='w-100 d-flex justify-content-between align-items-center'>
                     <h5 className='m-0 p-0'>Reports</h5>
