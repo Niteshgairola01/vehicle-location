@@ -1142,7 +1142,7 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'KM Covered') {
             return <td key={colIndex} className='text-center'>{data?.runningKMs}</td>
         } else if (column?.label === 'Location') {
-            return <td key={colIndex} className={`${data?.location !== "" && data?.location !== null && 'cursor-pointer'} position-relative`}
+            return <td key={colIndex} className={`${data?.location !== "" && data?.location !== null && 'cursor-pointer'} vehicle-location position-relative`}
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
                 onClick={() => handleShowLocation(data)}>
@@ -1207,10 +1207,14 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'Trip Count') {
             return <td key={colIndex} className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
         } else if (column?.label === 'Vehicle No.') {
-            return <td key={colIndex} style={{ background: data?.currVehicleStatus === "On Hold" ? '#fffc00cc' : data?.currVehicleStatus === 'Running' ? '#47ff47cf' : data?.currVehicleStatus === 'GPS Off' && '#ff0000cf', color: data?.currVehicleStatus === 'GPS Off' && '#fff', fontWeight: data?.currVehicleStatus === 'GPS Off' && 'bold' }}>{value}</td>
+            return <td key={colIndex}
+            //  style={{ background: data?.currVehicleStatus === "On Hold" ? '#fffc00cc' : data?.currVehicleStatus === 'Running' ? '#47ff47cf' : data?.currVehicleStatus === 'GPS Off' && '#ff0000cf', color: data?.currVehicleStatus === 'GPS Off' && '#fff', fontWeight: data?.currVehicleStatus === 'GPS Off' && 'bold' }}
+            >{value}</td>
         } else if (column?.label === 'Status') {
-            return <td className='d-flex justify-content-center align-items-center'>
-                <div className={`circle ${data?.currVehicleStatus === "On Hold" ? 'circle-yellow-blink' : data?.currVehicleStatus === 'Running' ? 'circle-green-blink' : data?.currVehicleStatus === 'GPS Off' ? 'circle-red-blink' : data?.currVehicleStatus === null && 'bg-white'}`}></div>
+            return <td className='h-100 py-3  pb-4 d-flex justify-content-center align-items-center'>
+                <div className='h-100'>
+                    <div className={`circle ${data?.currVehicleStatus === "On Hold" ? 'circle-yellow-blink' : data?.currVehicleStatus === 'Running' ? 'circle-green-blink' : data?.currVehicleStatus === 'GPS Off' ? 'circle-red-blink' : data?.currVehicleStatus === null && 'bg-white'}`}></div>
+                </div>
             </td>
         }
         else {
@@ -1246,7 +1250,6 @@ const VehicleTrackDash = () => {
                                 <span>{allTripsCritical}</span>
                             </div>
                         </div>
-
                     </div>
                     <div className='mt-2'>
                         <Form onSubmit={handleSubmit}>
@@ -1304,7 +1307,6 @@ const VehicleTrackDash = () => {
                                                 <div className='d-flex justify-content-end align-items-center w-100'>
                                                     <HoveredButton className="me-2 my-2 py-1 px-4">OK</HoveredButton>
                                                 </div>
-
                                             </div>
                                         ) : null
                                     }
@@ -1390,7 +1392,7 @@ const VehicleTrackDash = () => {
                         </div>
                     </div>
                     <div className='table-responsive mt-3' style={{ height: "50vh" }}>
-                        <table className='table table-bordered w-100 position-relative'
+                        <table className='table table-striped table-bordered w-100 position-relative'
                             style={{ overflowY: "scroll", overflowX: 'auto' }}
                         >
                             <thead className='table-head text-white' style={{ zIndex: 2, position: "sticky", top: 0 }}>

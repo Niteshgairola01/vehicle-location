@@ -763,6 +763,13 @@ table thead {
     background-color: var(--thm-secondary);
 }
 
+.vehicle-location:hover {
+    /* background-color: #09215f3d; */
+    background-color: var(--thm-dark);
+    color: #fff;
+    font-weight: bold;
+}
+
 
 
 
@@ -896,32 +903,39 @@ table thead {
 }
 
 .blink {
-    animation: blink 0.8s infinite;
+    animation: blink 1s infinite;
     border-radius: 5px;
 }
 
 @keyframes blink {
     0% {
         background-color: white;
-        /* Change to white after 1 second */
         color: red;
         border: 2px solid red;
-        /* Change text color to red */
+    }
+
+    25% {
+        background-color: #fff;
+        color: red;
+        border: 2px solid red;
     }
 
     50% {
-        background-color: white;
-        /* Stay white for half the animation */
-        color: red;
-        border: 2px solid white;
+        background-color: red;
+        color: #fff;
+        border: 2px solid red;
+    }
+
+    70% {
+        background-color: red;
+        color: #fff;
+        border: 2px solid red;
     }
 
     100% {
-        background-color: red;
+        background-color: #fff;
         border: 2px solid red;
-        /* Change back to red after 1 second */
-        color: white;
-        /* Change text color back to white */
+        color: #ff0000;
     }
 }
 
@@ -1228,8 +1242,8 @@ input[type="range"]:disabled::-moz-range-thumb {
 
 .circle {
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    width: 1rem;
+    height: 1rem;
 }
 
 .circle-green-blink {
@@ -1238,7 +1252,6 @@ input[type="range"]:disabled::-moz-range-thumb {
     -o-animation: green-blink 0.4s infinite;
     animation: green-blink 0.4s infinite;
 }
-
 
 .circle-red-blink {
     -webkit-animation: red-blink 0.4s infinite;
@@ -1253,14 +1266,3 @@ input[type="range"]:disabled::-moz-range-thumb {
     -o-animation: yellow-blink 0.4s infinite;
     animation: yellow-blink 0.4s infinite;
 }
-
-/* .red {
-    background-color: red;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    -webkit-animation: up-right 1s infinite;
-    -moz-animation: up-right 1s infinite;
-    -o-animation: up-right 1s infinite;
-    animation: up-right 1s infinite;
-} */
