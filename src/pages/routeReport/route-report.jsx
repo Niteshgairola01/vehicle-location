@@ -2,16 +2,12 @@ import React, { useEffect, useRef, useState } from 'react'
 import Select from 'react-select';
 import Card from '../../components/Card/card'
 import { Col, Form, Row } from 'react-bootstrap'
-import { Input, SearchField } from '../../components/form/Input'
 import { getAllVehiclesList, getVehicleRoute } from '../../hooks/vehicleMasterHooks';
 import Button from '../../components/Button/coloredButton';
-import { GoogleMap, InfoWindowF, LoadScript, MarkerF, PolygonF, PolylineF } from '@react-google-maps/api';
-import { getAllPolygonAreas } from '../../hooks/polygonHooks';
+import { GoogleMap, InfoWindowF, LoadScript, MarkerF, PolylineF } from '@react-google-maps/api';
 import { ErrorToast } from '../../components/toast/toast';
-import { truck } from '../../assets/images';
 import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
-import Loader from '../../components/loader/loader';
 import { DisabledButton } from '../../components/Button/Button';
 
 // MUI

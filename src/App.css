@@ -1266,3 +1266,144 @@ input[type="range"]:disabled::-moz-range-thumb {
     -o-animation: yellow-blink 0.4s infinite;
     animation: yellow-blink 0.4s infinite;
 }
+
+
+
+span[class^="dot-"] {
+    opacity: 0;
+}
+
+.dot-one {
+    animation: dot-one 3s infinite linear
+}
+
+.dot-two {
+    animation: dot-two 3s infinite linear
+}
+
+.dot-three {
+    animation: dot-three 3s infinite linear
+}
+
+.dot-four {
+    animation: dot-four 3s infinite linear
+}
+
+.dot-five {
+    animation: dot-five 3s infinite linear
+}
+
+.dot-six {
+    animation: dot-six 3s infinite linear
+}
+
+@keyframes dot-one {
+    0% {
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes dot-two {
+    0% {
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes dot-three {
+    0% {
+        opacity: 0;
+    }
+
+    45% {
+        opacity: 0;
+    }
+
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+@keyframes dot-four {
+    0% {
+        opacity: 0;
+    }
+
+    60% {
+        opacity: 0;
+    }
+
+    85% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+@keyframes dot-five {
+    0% {
+        opacity: 0;
+    }
+
+    70% {
+        opacity: 0;
+    }
+
+    95% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+@keyframes dot-six {
+    0% {
+        opacity: 0;
+    }
+
+    90% {
+        opacity: 0;
+    }
+
+    /* 5% {
+        opacity: 1;
+    } */
+
+    100% {
+        opacity: 1;
+    }
+}

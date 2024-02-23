@@ -3,6 +3,7 @@ import Card from '../../components/Card/card';
 import { Col, Row } from 'react-bootstrap';
 import Select from 'react-select';
 import TripsReport from './trips-report';
+import HoursReport from './hoursReport';
 
 const Reports = () => {
 
@@ -41,6 +42,8 @@ const Reports = () => {
         setReportType(searchValue);
     };
 
+    console.log("selected", selectedReportType);
+
     return (
         <div className='thm-dark m-0 p-0 p-5 pt-3'>
             {/* <button onClick={sharePDFViaTelegram}>Share</button> */}
@@ -64,8 +67,11 @@ const Reports = () => {
                             placeholder="Search Type"
                         />
                     </Col>
-
-                    <TripsReport reportType={reportType} setReportType={setReportType} selectedReportType={selectedReportType} setSelectedReportType={setSelectedReportType} />
+                    {
+                        selectedReportType[0]?.value === 'Trips Report' ? (
+                            <TripsReport reportType={reportType} setReportType={setReportType} selectedReportType={selectedReportType} setSelectedReportType={setSelectedReportType} />
+                        ) : selectedReportType[0]?.value === '10 Hrs Report' && (<HoursReport />)
+                    }
                 </Row>
             </Card>
         </div>
