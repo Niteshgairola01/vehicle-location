@@ -657,8 +657,8 @@ const UpdatePolygon = () => {
                                     ) : null
                                 }
                                 <div ref={fullScreen} style={{ width: '100%', minHeight: "50vh", height: isFullScreen ? '100vh' : '100%' }}>
-                                    <div className='d-flex justify-conten-end align-items-start flex-row position-absolute' style={{ top: 10, right: 20, zIndex: 1, }}>
-                                        <Tooltip title={isFullScreen ? 'Exit Full Screen' : 'Full Screen'}>
+                                    <div className='d-flex justify-conten-end align-items-start flex-row position-absolute' style={{ top: 10, right: 20 }}>
+                                        <Tooltip title={isFullScreen ? 'Exit Full Screen' : 'Full Screen'} style={{zIndex: 1,}}>
                                             <Link to="#" className='thm-dark me-3 bg-white p-2 rounded cursor-pointer d-flex justify-content-between align-items-start text-decoration-none'
                                                 onClick={handleFullscreen}
                                             >
@@ -672,7 +672,7 @@ const UpdatePolygon = () => {
                                                         setSelectedCoordinates([]);
                                                         setIsPolygonClosed(false);
                                                     }}
-                                                    style={{ width: '200px', }}
+                                                    style={{ width: '200px', zIndex: 1 }}
                                                 >
                                                     <p className='m-0 p-0'>Clear Coordinates</p>
                                                     <RxCross1 />
@@ -680,7 +680,7 @@ const UpdatePolygon = () => {
                                             ) : null
                                         }
 
-                                        <div className='bg-white px-3 py-2 thm-dark rounded'>
+                                        <div className='bg-white px-3 py-2 thm-dark rounded' style={{zIndex: 1,}}>
                                             <Form onSubmit={handleSearchByCoords}>
                                                 <Input label="Search By Coordinates" type="search" onChange={handleChangeSearchCoords} placeholder="Ex: 20.876787, 70.984886" />
                                             </Form>

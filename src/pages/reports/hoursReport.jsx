@@ -149,19 +149,6 @@ const HoursReport = () => {
             });
 
             console.log("final", final);
-
-            // console.log("on hold", vehiclesOnHold);
-
-            // console.log("final arr", finalArr);
-
-            // let trips = [];
-            // final.map(data => {
-            //     if (vehiclesOnHold.includes(data?.vehicleNo)) {
-
-            //     }
-            // })
-
-            console.log("final", final);
         };
     }, [vehiclesOnHold, lastRecord, tripsReport, runningTrips, runningVehicles]);
 
@@ -199,82 +186,6 @@ const HoursReport = () => {
             return finalFormattedDate;
         }
     };
-
-    const tets = [
-        {
-            vehicleNo: "RJ14GH0693",
-            date: "2024-02-23 03:23:29",
-            location: "Jaipur",
-        },
-        {
-            vehicleNo: "RJ14GH0693",
-            date: "2024-02-23 03:23:29",
-            location: "Jaipur",
-        },
-        {
-            vehicleNo: "RJ14GH0693",
-            date: "2024-02-23 03:23:29",
-            location: "Jaipur",
-        },
-        {
-            vehicleNo: "RJ14GH0693",
-            date: "2024-02-23 13:23:29",
-            location: "Delhi",
-        },
-        {
-            vehicleNo: "RJ14GH0693",
-            date: "2024-02-23 14:23:29",
-            location: "Delhi",
-        },
-        {
-            vehicleNo: "RJ14GH0693",
-            date: "2024-02-23 15:23:29",
-            location: "Delhi",
-        },
-        {
-            vehicleNo: "RJ14GG8403",
-            date: "2024-02-23 03:23:29",
-            location: "Jaipur",
-        },
-        {
-            vehicleNo: "RJ14GG8403",
-            date: "2024-02-23 03:23:29",
-            location: "Jaipur",
-        },
-        {
-            vehicleNo: "RJ14GG8403",
-            date: "2024-02-23 03:23:29",
-            location: "Jaipur",
-        },
-        {
-            vehicleNo: "RJ14GG8403",
-            date: "2024-02-23 18:23:29",
-            location: "Delhi",
-        },
-        {
-            vehicleNo: "RJ14GG8403",
-            date: "2024-02-23 20:23:29",
-            location: "Delhi",
-        },
-        {
-            vehicleNo: "RJ14GG8403",
-            date: "2024-02-23 23:23:29",
-            location: "Delhi",
-        },
-    ];
-
-    const final = [
-        {
-            vehicleNo: "RJ14GH0693",
-            timeDifference: '2',
-            location: "Delhi",
-        },
-        {
-            vehicleNo: "RJ14GG8403",
-            timeDifference: '5',
-            location: "Delhi",
-        },
-    ];
 
     const handleFormatDate = (date) => {
         if (date === null) {
