@@ -21,6 +21,8 @@ import DashHead from '../components/dashboardHead';
 import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import { FaSort } from "react-icons/fa";
 import '../assets/styles/home.css';
+import '../assets/styles/track-dash.css';
+
 import VehicleRoute from './tracking/vehicleRoute';
 
 const VehicleTrackDash = () => {
@@ -73,12 +75,12 @@ const VehicleTrackDash = () => {
 
     const [tableColumns, setTableColumns] = useState(
         [
-            { label: 'Trip Count', value: 'tripCount', hidden: false },
+            { label: 'S.No.', value: 'tripCount', hidden: false },
             { label: 'Vehicle No.', value: 'vehicleNo', hidden: false },
             { label: 'Status', value: 'status', hidden: false },
             { label: 'Trip No.', value: 'tripLogNo', hidden: false },
-            { label: 'Loading (Date / Time)', value: 'loadingDate', hidden: false },
-            { label: 'Vehicle Exit (Date / Time)', value: 'vehicleExitDate', hidden: false },
+            { label: 'Loading Date ', value: 'loadingDate', hidden: false },
+            { label: 'Vehicle Exit Date', value: 'vehicleExitDate', hidden: false },
             { label: 'Consignor Name', value: 'consignorName', hidden: false },
             { label: 'Origin', value: 'origin', hidden: false },
             { label: 'Destination', value: 'destination', hidden: false },
@@ -1122,11 +1124,11 @@ const VehicleTrackDash = () => {
     };
 
     const handleTableColumns = (data, column, value, index, colIndex) => {
-        if (column.label === 'Loading (Date / Time)' || column.label === "Estimated Arrival Date" || column.label === "Static ETA (OEM)" || column.label === "Static ETA (PAPL)") {
+        if (column.label === 'Loading Date ' || column.label === "Estimated Arrival Date" || column.label === "Static ETA (OEM)" || column.label === "Static ETA (PAPL)") {
             return <td key={colIndex}>{handleFormateISTDate(value)}</td>;
         } else if (value === "Delayed Hours") {
             return <td key={colIndex}>{getDelayedHours(value)}</td>;
-        } else if (column?.label === "Vehicle Exit (Date / Time)" || column?.label === "GPS (Date / Time)" || column?.label === "Estimated Arrival Date") {
+        } else if (column?.label === "Vehicle Exit Date" || column?.label === "GPS (Date / Time)" || column?.label === "Estimated Arrival Date") {
             return <td key={colIndex}>{handleFormatDate(value)}</td>;
         } else if (column?.label === "Static ETA") {
             return <td key={colIndex}>{(data?.staticETA === '' || data?.staticETA === null) ? ' ' : convertTo24HourFormat(data?.staticETA)}</td>;
@@ -1199,22 +1201,23 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'Delayed Hours') {
             return <td key={colIndex}>{getDelayedHours(value)}</td>
         } else if (column?.label === 'Force Complete') {
-            return <td key={colIndex} className='h-100 py-3 d-flex justify-content-center align-items-center'>
+            return <td key={colIndex} className='h-100'>
+                <div className='h-100 py-3 d-flex justify-content-center align-items-center'>
                 <button className={`border border-none ${((data?.tripStatus === 'Trip Running') && (data?.operationUniqueID.length > 0)) ? 'force-complete-button' : 'force-complete-button-disabled'}`}
                     onClick={() => handleShowForceComplete(data)}>Force Complete</button>
+                </div>
             </td>
-        } else if (column?.label === 'Trip Count') {
+        } else if (column?.label === 'S.No.') {
             return <td key={colIndex} className='text-center fw-bold'>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-        } else if (column?.label === 'Vehicle No.') {
-            return <td key={colIndex}
-            //  style={{ background: data?.currVehicleStatus === "On Hold" ? '#fffc00cc' : data?.currVehicleStatus === 'Running' ? '#47ff47cf' : data?.currVehicleStatus === 'GPS Off' && '#ff0000cf', color: data?.currVehicleStatus === 'GPS Off' && '#fff', fontWeight: data?.currVehicleStatus === 'GPS Off' && 'bold' }}
-            >{value}</td>
         } else if (column?.label === 'Status') {
-            return <td className='h-100 py-3  pb-4 d-flex justify-content-center align-items-center'>
-                <div className='h-100'>
+            return <td className='h-100 '>
+                <div className='h-100 d-flex justify-content-center align-items-center'>
                     <div className={`circle ${data?.currVehicleStatus === "On Hold" ? 'circle-yellow-blink' : data?.currVehicleStatus === 'Running' ? 'circle-green-blink' : data?.currVehicleStatus === 'GPS Off' ? 'circle-red-blink' : data?.currVehicleStatus === null && 'bg-white'}`}></div>
                 </div>
             </td>
+        }
+        else if(column?.label === 'Vehicle No.') {
+            return <td key={colIndex} className='fw-bold'>{value}</td>;
         }
         else {
             return <td key={colIndex}>{value}</td>;
@@ -1228,7 +1231,7 @@ const VehicleTrackDash = () => {
     return (
         <div className='m-0 p-0 position-relative' onClick={() => handleHideOptions()}>
             <Loader show={showLoader} />
-            <div className='mt-5 my-3 px-5 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
+            <div className='mt-5 my-3 px-3 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
                     <DashHead title="Vehicle Tracking Dashboard" />
                     <div className='w-100 m-0 p-0 d-flex justify-content-end align-items-center mb-3'>
@@ -1250,7 +1253,7 @@ const VehicleTrackDash = () => {
                             </div>
                         </div>
                     </div>
-                    <div className='mt-2'>
+                    <div className='mt-2 px-3'>
                         <Form onSubmit={handleSubmit}>
                             <Row className='dashoard-filter-form rounded'>
                                 {
@@ -1390,7 +1393,7 @@ const VehicleTrackDash = () => {
                             </Tooltip>
                         </div>
                     </div>
-                    <div className='table-responsive mt-3' style={{ height: "50vh" }}>
+                    <div className='table-responsive mt-3' style={{ height: "70vh" }}>
                         <table className='table table-striped table-bordered w-100 position-relative'
                             style={{ overflowY: "scroll", overflowX: 'auto' }}
                         >
@@ -1402,11 +1405,13 @@ const VehicleTrackDash = () => {
                                                 {
                                                     data?.hidden === false ? (
                                                         <th
-                                                            className={`text-nowrap ${(data?.label === 'Trip Status' || data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location' || data?.label === 'Consignor Name') && 'width-300'}`}
+                                                            className={`text-nowrap ${(data?.label === 'S.No.') && 'width-50'} ${(data?.label === 'Vehicle No.') && 'width-100'} ${(data?.label === 'Status') && 'width-50'} ${(data?.label === 'Trip No.') && 'width-60'} ${(data?.label === 'Origin') && 'width-10'} ${(data?.label === 'Trip Status') && 'width-120'} ${(data?.label === 'Exit From') && 'width-120'} ${(data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location') && 'width-200'} ${(data?.label === 'Consignor Name') && 'width-140'}`}
                                                             key={index}
-                                                            style={{ borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px" }}>
+                                                            style={{
+                                                                borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px"
+                                                            }}>
                                                             <div className='d-flex justify-content-between align-items-center cursor-pointer' onClick={() => handleSortData(data?.value)}>
-                                                                <span className='pe-3'>{data?.label}</span>
+                                                                <span className='pe-3' style={{width: data?.label === 'Vehicle No.' && '70px'}}>{data?.label}</span>
                                                                 {
                                                                     (data?.value !== "") && (
                                                                         <FaSort />
