@@ -181,7 +181,7 @@ const RouteReport = () => {
             setNextCoordinate(arrayLocation.current);
         } else {
             timeoutIds.forEach(clearTimeout);
-            if (routeCoords.length > 0 && currentCoordDetails.lat === undefined) {
+            if (routeCoords.length > 0 && currentCoordDetails?.lat === undefined) {
                 if (arrayLocation.current < routeCoords.length - 1) {
                     setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
                 } else {
@@ -399,6 +399,12 @@ const RouteReport = () => {
                         }
                     }
 
+                    if(response?.data.length === 0){
+                        ErrorToast("No Data Found")
+                    }
+
+                    // if(route)
+
                 } else {
                     setRouteData([])
                 };
@@ -499,7 +505,13 @@ const RouteReport = () => {
     };
 
     const handleGetCoveredDistance = () => {
-        return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
+
+        if(coveredCoordinates[0] === undefined){
+            // ErrorToast("No data found");
+            return '';
+        } else {
+            return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
+        }
     };
 
     const convertMarkerDateTime = (originalDateTime) => {

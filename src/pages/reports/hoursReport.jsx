@@ -100,117 +100,72 @@ const HoursReport = () => {
         };
     }, [fetchingData]);
 
-    // const mainArray = [
-    //     {
-    //         vehicleNo: "RJ25GA4690",
-    //         date: "2024-02-27 01:02:52",
-    //         location: "Jaipur",
-    //     },
-    //     {
-    //         vehicleNo: "RJ25GA4690",
-    //         date: "2024-02-27 02:02:52",
-    //         location: "Jaipur",
-    //     },
-    //     {
-    //         vehicleNo: "RJ25GA4690",
-    //         date: "2024-02-27 05:02:52",
-    //         location: "Delhi",
-    //     },
-    //     {
-    //         vehicleNo: "RJ25GA4690",
-    //         date: "2024-02-27 08:02:52",
-    //         location: "Delhi",
-    //     },
-    //     {
-    //         vehicleNo: "RJ25GA4690",
-    //         date: "2024-02-27 10:02:52",
-    //         location: "Delhi",
-    //     },
-    //     {
-    //         vehicleNo: "RJ30GG1235",
-    //         date: "2024-02-27 00:02:52",
-    //         location: "Mumbai",
-    //     },
-    //     {
-    //         vehicleNo: "RJ30GG1235",
-    //         date: "2024-02-27 10:02:52",
-    //         location: "NOIDA",
-    //     },
-    //     {
-    //         vehicleNo: "RJ30GG1235",
-    //         date: "2024-02-27 12:02:52",
-    //         location: "NOIDA",
-    //     },
-    //     {
-    //         vehicleNo: "RJ30GG1235",
-    //         date: "2024-02-27 15:02:52",
-    //         location: "NOIDA",
-    //     },
-
-    //     {
-    //         vehicleNo: "MH01AB8767",
-    //         date: "2024-02-27 03:02:52",
-    //         location: "Kota",
-    //     },
-    //     {
-    //         vehicleNo: "MH01AB8767",
-    //         date: "2024-02-27 04:02:52",
-    //         location: "Kota",
-    //     },
-    //     {
-    //         vehicleNo: "MH01AB8767",
-    //         date: "2024-02-27 08:02:52",
-    //         location: "Kota",
-    //     },
-    // ];
-
-    // for "RJ25GA4690", date should be "2024-02-27 05:02:52" as it is changing the location from "Jaipur" to "Delhi" for the first time and for "vehileNo"
-    // "RJ30GG1235", date should be "2024-02-27 10:02:52" as it is changing the location from "Mumbai" to "NOIDA" for the first time here and for "vehicleNo"
-    // "MH01AB8767", date should be "2024-02-27 03:02:52" as "location" is not changing for this "vehicleNo" in the entier array
+    const test = lastRecord.reverse();
 
     useEffect(() => {
         if (runningTrips.length > 0) {
 
             const vehicleData = {};
-            const locationIndexes = {}; // To keep track of the index where location is assigned for each vehicleNo
 
-            lastRecord.forEach((record, index) => {
+            test.forEach((record) => {
                 const { vehicleNo, date, location, latLongDistance } = record;
 
                 if (!vehicleData[vehicleNo]) {
                     vehicleData[vehicleNo] = { location, dates: [date], distance: [latLongDistance] };
-                    locationIndexes[vehicleNo] = index;
                 } else {
                     vehicleData[vehicleNo].distance.push(latLongDistance);
                     vehicleData[vehicleNo].dates.push(date);
                     vehicleData[vehicleNo].location = location;
-
-                    locationIndexes[vehicleNo] = index;
                 }
             });
 
+
             const finalResult = Object.entries(vehicleData).map(([vehicleNo, { location, dates, distance }]) => {
 
-                const test = lastRecord.reverse();
-
+                // const test = lastRecord;
                 const firstLocationChangeDates = {};
+
                 for (let i = test.length - 1; i >= 0; i--) {
                     const currentRecord = test[i];
                     const { vehicleNo, date, location } = currentRecord;
 
                     if (!firstLocationChangeDates[vehicleNo]) {
-                        firstLocationChangeDates[vehicleNo] = date;
-                    } else {
-                        if (location !== test[i + 1]?.location) {
-                            firstLocationChangeDates[vehicleNo] = date;
-                        }
+                        firstLocationChangeDates[vehicleNo] = date; // Record the first date for the vehicleNo
+                    } else if (location !== test[i + 1]?.location) {
+                        firstLocationChangeDates[vehicleNo] = date; // Update if location changes
                     }
                 }
 
+                // Handle the case where the location remains unchanged for a vehicle
+                test.forEach(record => {
+                    const { vehicleNo, date } = record;
+                    if (!(vehicleNo in firstLocationChangeDates)) {
+                        firstLocationChangeDates[vehicleNo] = date; // Record the first date for the vehicleNo
+                    }
+                });
+
+                // const firstLocationChangeDates = {};
+                // for (let i = test.length - 1; i >= 0; i--) {
+                //     const currentRecord = test[i];
+                //     const { vehicleNo, date, location } = currentRecord;
+
+                //     if (!firstLocationChangeDates[vehicleNo]) {
+                //         firstLocationChangeDates[vehicleNo] = date;
+                //     } else {
+                //         if (location !== test[i + 1]?.location) {
+                //             firstLocationChangeDates[vehicleNo] = date;
+                //         }
+                //     }
+                // };
+
+                
                 const distanceCovered = distance.reduce((prev, curr) => (parseFloat(prev) + parseFloat(curr)));
                 const KmCovered = parseInt(distanceCovered);
-
+                
                 const firstDate = new Date(firstLocationChangeDates[vehicleNo]);
+
+                console.log('date', vehicleNo, firstLocationChangeDates[vehicleNo], ((new Date() - firstDate) / (1000 * 60 * 60)));
+
                 const timeDifference = (new Date() - firstDate) / (1000 * 60 * 60);
                 return { vehicleNo, timeDifference, location, KmCovered };
             });
@@ -221,7 +176,8 @@ const HoursReport = () => {
                 const timeDiff = (`${(found.timeDifference).toFixed(2)}`).length > 0 ? (`${(found.timeDifference).toFixed(2)}`).split('.') : parseFloat((found.timeDifference).toFixed(2));
                 const hour = parseInt(timeDiff[0]);
                 const minutes = timeDiff.length > 1 ? parseInt(timeDiff[1]) : 0;
-                const finalTime = minutes > 60 ? `${(hour + 1)}:${(minutes - 60) < 10 ? `0${minutes - 60}` : (minutes - 60)}` : `${hour}:${minutes < 10 ? `0${minutes}` : minutes}`;
+                const finalTime = minutes > 60 ? (hour + 1) : minutes;
+                // const finalTime = minutes > 60 ? `${(hour + 1)}` : `${hour}:${minutes < 10 ? `0${minutes}` : minutes}`;
 
                 const coveredDistance = parseFloat(found?.KmCovered) > 0 ? parseFloat(found?.KmCovered) : 0
 
@@ -238,7 +194,7 @@ const HoursReport = () => {
 
             setTimeout(() => {
                 setHoldVehicle(true);
-            }, 500);
+            }, 200);
         };
     }, [vehiclesOnHold, fetchingData]);
 
