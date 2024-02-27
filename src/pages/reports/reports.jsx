@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '../../components/Card/card';
 import { Col, Row } from 'react-bootstrap';
 import Select from 'react-select';
 import TripsReport from './trips-report';
 import HoursReport from './hoursReport';
+import { useNavigate } from 'react-router-dom';
 
 const Reports = () => {
 
     const [selectedReportType, setSelectedReportType] = useState('');
     const [reportType, setReportType] = useState('');
+
+    const loggedInUser = localStorage.getItem('userId');
+    const navigate = useNavigate();
 
     const reportTypes = [
         {
@@ -42,7 +46,12 @@ const Reports = () => {
         setReportType(searchValue);
     };
 
-    console.log("selected", selectedReportType);
+    useEffect(() => {
+        if (!loggedInUser) {
+            localStorage.clear();
+            navigate('/');
+        }
+    }, [loggedInUser, navigate]);
 
     return (
         <div className='thm-dark m-0 p-0 p-5 pt-3'>

@@ -1214,7 +1214,7 @@ input[type="range"]:disabled::-moz-range-thumb {
 
     50% {
         transform: scale (1, 5);
-        background-color: #db0707;
+        background-color: #b60101;
     }
 
     100% {

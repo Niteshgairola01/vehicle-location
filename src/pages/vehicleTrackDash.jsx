@@ -279,7 +279,6 @@ const VehicleTrackDash = () => {
         setAllTripsModerate(allModerates?.length);
         setAllTripsCritical(allCriticals?.length);
 
-
         const mildTrips = filteredTrips.map(data => {
             const delayedHours = parseInt(data?.delayedHours);
             return ((delayedHours >= 0 && delayedHours <= 18) === true && data?.tripStatus === 'Trip Running');
@@ -305,7 +304,7 @@ const VehicleTrackDash = () => {
 
     useEffect(() => {
         getDelayCount();
-    }, [allTrips, filteredTrips]);
+    }, [allTrips, filteredTrips, currentTrips]);
 
     const handleChange = (e) => {
         setForm({
