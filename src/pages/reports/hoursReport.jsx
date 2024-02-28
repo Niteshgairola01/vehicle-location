@@ -102,6 +102,8 @@ const HoursReport = () => {
 
     const test = lastRecord.reverse();
 
+    // let test = [];
+    const [holds, setHolds] = useState([]);
     useEffect(() => {
         if (runningTrips.length > 0) {
 
@@ -125,19 +127,19 @@ const HoursReport = () => {
                 // const test = lastRecord;
                 const firstLocationChangeDates = {};
 
-                for (let i = test.length - 1; i >= 0; i--) {
-                    const currentRecord = test[i];
+                for (let i = lastRecord.length - 1; i >= 0; i--) {
+                    const currentRecord = lastRecord[i];
                     const { vehicleNo, date, location } = currentRecord;
 
                     if (!firstLocationChangeDates[vehicleNo]) {
                         firstLocationChangeDates[vehicleNo] = date; // Record the first date for the vehicleNo
-                    } else if (location !== test[i + 1]?.location) {
+                    } else if (location !== lastRecord[i + 1]?.location) {
                         firstLocationChangeDates[vehicleNo] = date; // Update if location changes
                     }
                 }
 
                 // Handle the case where the location remains unchanged for a vehicle
-                test.forEach(record => {
+                lastRecord.forEach(record => {
                     const { vehicleNo, date } = record;
                     if (!(vehicleNo in firstLocationChangeDates)) {
                         firstLocationChangeDates[vehicleNo] = date; // Record the first date for the vehicleNo
@@ -158,20 +160,23 @@ const HoursReport = () => {
                 //     }
                 // };
 
-                
+
                 const distanceCovered = distance.reduce((prev, curr) => (parseFloat(prev) + parseFloat(curr)));
                 const KmCovered = parseInt(distanceCovered);
-                
+
                 const firstDate = new Date(firstLocationChangeDates[vehicleNo]);
 
-                console.log('date', vehicleNo, firstLocationChangeDates[vehicleNo], ((new Date() - firstDate) / (1000 * 60 * 60)));
+                // console.log('date', vehicleNo, firstLocationChangeDates[vehicleNo], ((new Date() - firstDate) / (1000 * 60 * 60)));
 
                 const timeDifference = (new Date() - firstDate) / (1000 * 60 * 60);
-                return { vehicleNo, timeDifference, location, KmCovered };
+                return { vehicleNo, firstDate, timeDifference, location, KmCovered };
             });
 
             const finalArr = vehiclesOnHold.map(vehicleObj => {
                 const found = finalResult.find(testObj => testObj.vehicleNo === vehicleObj.vehicleNo);
+
+                console.log("found", finalResult);
+                // const timeDiff = (`${(finalResult[vehicleObj?.vehicleNo]?.timeDifference).toFixed(2)}`).length > 0 ? (`${(finalResult[vehicleObj?.vehicleNo]?.timeDifference).toFixed(2)}`).split('.') : parseFloat((finalResult[vehicleObj?.vehicleNo]?.timeDifference).toFixed(2));
 
                 const timeDiff = (`${(found.timeDifference).toFixed(2)}`).length > 0 ? (`${(found.timeDifference).toFixed(2)}`).split('.') : parseFloat((found.timeDifference).toFixed(2));
                 const hour = parseInt(timeDiff[0]);
@@ -183,12 +188,15 @@ const HoursReport = () => {
 
                 return {
                     ...vehicleObj,
-                    timeDifference: found ? finalTime : '',
+                    timeDifference: found ? found.timeDifference : '',
                     KmCovered: found ? coveredDistance : ''
                 };
             });
 
+            setHolds(finalArr);
             if ((finalArr.length > 0) && (!holdVehicle)) {
+                console.log("final", finalArr);
+                // holds.push(finalArr);
                 setVehiclesOnHold(finalArr);
             };
 
@@ -196,7 +204,9 @@ const HoursReport = () => {
                 setHoldVehicle(true);
             }, 200);
         };
-    }, [vehiclesOnHold, fetchingData]);
+    }, [vehiclesOnHold, runningVehicles, lastRecord, fetchingData]);
+    // 
+    console.log("holds", holds);
 
     const handleFormateISTDate = (givenDate) => {
         if (givenDate === null || givenDate.length === 0) {

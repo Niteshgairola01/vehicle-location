@@ -63,15 +63,15 @@ const DriverForum = () => {
     const [selectedDriver, setSelectedDriver] = useState({});
 
     const [allGuarantorCodes, setAllGuarantorCodes] = useState([]);
-    const [guarantors, setGuarantors] = useState([]);
     const [selectedGuarantor, setSelectedGuarantor] = useState('');
     const [selfGuarantor, setSelfGuarantor] = useState(false);
-    const [searchGuarantor, setSearchGuarantor] = useState('');
 
     const [formattedDOB, setFormattedBOD] = useState('');
     const [formattedApplicationDate, setFormattedApplicationDate] = useState('');
     const [formattedIssueDate, setFormattedIssueDate] = useState('');
     const [formattedExpiryDate, setFormattedExpiryDate] = useState('');
+
+    const [firstLoad, setFirstLoad] = useState(true);
 
     const loggedInUser = localStorage.getItem('userId');
 
@@ -82,7 +82,7 @@ const DriverForum = () => {
         });
     }, [loggedInUser]);
 
-    useEffect(() => {
+    const getDrviersList = () => {
         getAllDrivers().then(response => {
             if (response?.status === 200) {
                 const allData = response?.data;
@@ -103,6 +103,10 @@ const DriverForum = () => {
 
             } else setDriversList([]);
         }).catch(() => setDriversList([]));
+    }
+
+    useEffect(() => {
+        getDrviersList();
     }, []);
 
     useEffect(() => {
@@ -125,6 +129,57 @@ const DriverForum = () => {
         }).catch(() => setOfficesList([]));
     }, []);
 
+    useEffect(() => {
+        if ((selectedDriver?.driverCode === undefined) && firstLoad) {
+            const today = new Date();
+
+            const date = today.getDate();
+            const month = today.getMonth();
+            const year = today.getFullYear();
+
+            const hours = today.getHours();
+            const minutes = today.getMinutes();
+            const seconds = today.getSeconds();
+
+            const dateTimeObject = {
+                $D: date,
+                $H: hours,
+                $L: "en",
+                $M: month,
+                $W: 0,
+                $d: today,
+                $isDayjsObject: true,
+                $m: minutes,
+                $ms: 0,
+                $s: seconds,
+                $u: undefined,
+                $x: {},
+                $y: year
+            }
+
+            const currentDay = dateTimeObject?.$D < 10 ? `0${dateTimeObject?.$D}` : dateTimeObject?.$D;
+            const currentMonth = (dateTimeObject?.$M + 1) < 10 ? `0${dateTimeObject?.$M + 1}` : dateTimeObject?.$M + 1;
+            const currentYear = dateTimeObject?.$y < 10 ? `0${dateTimeObject?.$y}` : dateTimeObject?.$y;
+            const currentHours = dateTimeObject?.$H < 10 ? `0${dateTimeObject?.$H}` : dateTimeObject?.$H;
+            const currentMinute = dateTimeObject?.$m < 10 ? `0${dateTimeObject?.$m}` : dateTimeObject?.$m;
+            const currentSeconds = dateTimeObject?.$s < 10 ? `0${dateTimeObject?.$s}` : dateTimeObject?.$s;
+
+            const formattedDate = `${currentYear}-${currentMonth}-${currentDay} ${currentHours}:${currentMinute}:${currentSeconds}`;
+
+            setApplicationDate(dayjs(formattedDate));
+            setFormattedApplicationDate(formattedDate);
+
+            setForm({
+                ...form,
+                applicationDate: formattedDate
+            });
+
+            setTimeout(() => {
+                setFirstLoad(false);
+            }, 500);
+
+        }
+    }, [selectedDriver, firstLoad, applicationDate]);
 
     useEffect(() => {
         if (selectedDriver?.driverCode === undefined || searchDriver.length === 0) {
@@ -161,7 +216,6 @@ const DriverForum = () => {
     }, [searchDriver, searchDriverCode]);
 
     const handleChangeAppicationdate = (dateTime) => {
-
         const day = dateTime?.$D < 10 ? `0${dateTime?.$D}` : dateTime?.$D;
         const month = (dateTime?.$M + 1) < 10 ? `0${dateTime?.$M + 1}` : dateTime?.$M + 1;
         const year = dateTime?.$y < 10 ? `0${dateTime?.$y}` : dateTime?.$y;
@@ -220,6 +274,8 @@ const DriverForum = () => {
         setDob(dayjs(driver?.dateOfBirth));
         setLicenceIssueDate(dayjs(driver?.licenceIssueDate));
         setLicenceExpiryDate(dayjs(driver?.licenceExpiryDate));
+
+        delete form.applicationDate
     };
 
     useEffect(() => {
@@ -245,10 +301,12 @@ const DriverForum = () => {
             setFormattedIssueDate('');
             setSelectedOffice('');
 
-            setApplicationDate('');
+            setApplicationDate(dayjs(new Date()));
             setDob('');
             setLicenceIssueDate('');
             setLicenceExpiryDate('');
+
+            setFirstLoad(true);
         }
     }, [selectedDriver]);
 
@@ -356,39 +414,61 @@ const DriverForum = () => {
         setGuarantorPhone(guarantor?.guarantorPhoneNumber);
     };
 
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (applicationDate?.length === 0) {
-            ErrorToast('Select Application Date');
-        }
+        if (applicationDate?.length === 0 || dob?.length === 0 || licenceIssueDate?.length === 0 || licenceExpiryDate?.length === 0
+            || (selectedOffice === null || selectedOffice.length === 0) || (selectedGuarantor?.value === null || selectedGuarantor.length === 0)
+            || contactPersonPhone.length < 10 || alternativePhone.length < 10 || contactNumber.length < 10 || aadharNo.length < 12) {
 
-        if (dob?.length === 0) {
-            ErrorToast('Select DOB');
-        }
+            if (applicationDate?.length === 0) {
+                ErrorToast('Select Application Date');
+            }
 
-        if (licenceIssueDate?.length === 0) {
-            ErrorToast('Select Licence Issue date');
-        }
+            if (dob?.length === 0) {
+                ErrorToast('Select DOB');
+            }
 
-        if (licenceExpiryDate?.length === 0) {
-            ErrorToast('Select Licence Expiry Date');
-        }
+            if (licenceIssueDate?.length === 0) {
+                ErrorToast('Select Licence Issue date');
+            }
 
-        if (selectedOffice === null || selectedOffice.length === 0) {
-            ErrorToast('Select Office');
-        }
+            if (licenceExpiryDate?.length === 0) {
+                ErrorToast('Select Licence Expiry Date');
+            }
 
-        if (selectedGuarantor?.value === null || selectedGuarantor.length === 0) {
-            ErrorToast('Select Guarantor');
-        }
+            if (selectedOffice === null || selectedOffice.length === 0) {
+                ErrorToast('Select Office');
+            }
 
+            if (selectedGuarantor?.value === null || selectedGuarantor.length === 0) {
+                ErrorToast('Select Guarantor');
+            }
+
+            if (contactPersonPhone.length < 10) {
+                ErrorToast('Contact person phone number can not be of less than 10 digits');
+            }
+
+            if (alternativePhone.length < 10) {
+                ErrorToast('Alternative phone no. number can not be of less than 10 digits');
+            }
+
+            if (contactNumber.length < 10) {
+                ErrorToast('Contact number can not be of less than 10 digits');
+            }
+
+            if (aadharNo.length < 12) {
+                ErrorToast('Aadhar number can not be of less than 12 digits');
+            }
+        }
         else {
             if (searchDriver.length === 0) {
                 createDriver(form).then(response => {
                     if (response?.status === 200) {
                         SuccessToast("Driver Created Successfully");
-
+                        getDrviersList();
+                        setSelectedDriver({});
                     }
                 }).catch(err => {
                     err?.response?.data && ErrorToast(err?.response?.data);
@@ -426,6 +506,7 @@ const DriverForum = () => {
                     updateDriver(newForm).then(response => {
                         if (response?.status === 200) {
                             SuccessToast("Driver Updated Successfully");
+                            setSelectedDriver({});
                         }
                     }).catch(err => {
                         err?.response?.data && ErrorToast(err?.response?.data);
@@ -434,7 +515,6 @@ const DriverForum = () => {
             }
         }
     };
-
     const selectStyles = {
         control: (provided) => ({
             ...provided,
