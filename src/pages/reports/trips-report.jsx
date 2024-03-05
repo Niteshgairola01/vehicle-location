@@ -960,6 +960,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         });
 
         const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
+        const availableHeight = doc.internal.pageSize.getHeight() - doc.autoTable.previous.finalY;
 
         doc.autoTable({
             columns,
@@ -1000,7 +1001,8 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
                     doc.circle(cellX, cellY, radius, 'F', color);
                 }
-            }
+            },
+            rowPageBreak: 'avoid'
         });
 
         doc.save('Trips-report.pdf');

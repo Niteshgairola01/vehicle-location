@@ -309,27 +309,7 @@ const HoursReport = () => {
                     if (attr === 'currVehicleStatus') {
                         formattedItem[attr] = '';
                     }
-                }
-                // else if (attr === 'currVehicleStatus') {
-                //     const test = () => {
-                //         return (
-                //             <div className='h-100 py-3  pb-4 d-flex justify-content-center align-items-center'>
-                //                 <div className='h-100'>
-                //                     <div className={`circle ${item['currentStatus'] === "On Hold" ? 'circle-yellow-blink' : item['currentStatus'] === 'Running' ? 'circle-green-blink' : item['currentStatus'] === 'GPS Off' ? 'circle-red-blink' : item['currentStatus'] === null && 'bg-white'}`}></div>
-                //                 </div>
-                //             </div>
-                //             //         `
-                //             // <td class='h-100 py-3  pb-4 d-flex justify-content-center align-items-center'>
-                //             //     <div class='h-100'>
-                //             //         <div class='${item['currentStatus'] === "On Hold" ? 'circle-yellow-blink' : item['currentStatus'] === 'Running' ? 'circle-green-blink' : item['currentStatus'] === 'GPS Off' ? 'circle-red-blink' : item['currentStatus'] === null && 'bg-white'}'></div>
-                //             //     </div>
-                //             // </td>`
-                //         )
-                //     }
-
-                //     formattedItem[attr] = test();
-                // }
-                else {
+                } else {
                     formattedItem[attr] = item[attr];
                 }
             });
@@ -358,7 +338,6 @@ const HoursReport = () => {
                 });
 
                 const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
-                // Customize the cell function for the 'vehicleNo' column
                 doc.autoTable({
                     columns,
                     body: formattedData,
@@ -397,15 +376,14 @@ const HoursReport = () => {
 
                             doc.circle(cellX, cellY, radius, 'F', color);
                         }
-                    }
+                    },
+                    rowPageBreak: 'avoid'
                 });
 
                 doc.save('10 Hours Trips report.pdf');
             }
         }
     };
-
-    // const test = []
 
     return (
         <>
