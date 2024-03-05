@@ -73,44 +73,68 @@ const VehicleTrackDash = () => {
     const [criticalCounts, setCriticalCounts] = useState(0);
 
     const [animationKey, setAnimationKey] = useState(0);
+    const intialColumns = [
+        { label: 'S.No.', value: 'tripCount', hidden: false },
+        { label: 'Vehicle No.', value: 'vehicleNo', hidden: false },
+        { label: 'Status', value: 'status', hidden: false },
+        { label: 'Trip No.', value: 'tripLogNo', hidden: false },
+        { label: 'Loading Date ', value: 'loadingDate', hidden: false },
+        { label: 'Vehicle Exit Date', value: 'vehicleExitDate', hidden: false },
+        { label: 'Consignor Name', value: 'consignorName', hidden: false },
+        { label: 'Origin', value: 'origin', hidden: false },
+        { label: 'Destination', value: 'destination', hidden: false },
+        { label: 'Static ETA (PAPL)', value: 'staticETA', hidden: false },
+        { label: 'Static ETA (OEM)', value: "oemReachTime", hidden: false },
+        { label: 'GPS (Date / Time)', value: 'locationTime', hidden: false },
+        { label: 'Location', value: 'location', hidden: false },
+        { label: 'Route (KM)', value: 'routeKM', hidden: false },
+        { label: 'KM Covered', value: 'runningKMs', hidden: false },
+        { label: 'Difference (Km)', value: 'kmDifference', hidden: false },
+        { label: 'Report Unloading', value: 'unloadingReachDate', hidden: false },
+        { label: 'Unloading End Date', value: 'unloadingDate', hidden: false },
+        { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
+        { label: 'Final Status', value: 'finalStatus', hidden: false },
+        { label: 'OEM Status', value: 'oemFinalStatus', hidden: false },
+        { label: 'Delayed Hours', value: 'delayedHours', hidden: false },
+        { label: 'Driver Name', value: 'driverName', hidden: false },
+        { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
+        { label: 'Exit From', value: 'exitFrom', hidden: false },
+        { label: 'Trip Status', value: 'tripStatus', hidden: false },
+        { label: 'Force Complete', value: 'forcecomplete', hidden: false }
+    ];
 
-    const [tableColumns, setTableColumns] = useState(
-        [
-            { label: 'S.No.', value: 'tripCount', hidden: false },
-            { label: 'Vehicle No.', value: 'vehicleNo', hidden: false },
-            { label: 'Status', value: 'status', hidden: false },
-            { label: 'Trip No.', value: 'tripLogNo', hidden: false },
-            { label: 'Loading Date ', value: 'loadingDate', hidden: false },
-            { label: 'Vehicle Exit Date', value: 'vehicleExitDate', hidden: false },
-            { label: 'Consignor Name', value: 'consignorName', hidden: false },
-            { label: 'Origin', value: 'origin', hidden: false },
-            { label: 'Destination', value: 'destination', hidden: false },
-            { label: 'Static ETA (PAPL)', value: 'staticETA', hidden: false },
-            { label: 'Static ETA (OEM)', value: "oemReachTime", hidden: false },
-            { label: 'GPS (Date / Time)', value: 'locationTime', hidden: false },
-            { label: 'Location', value: 'location', hidden: false },
-            { label: 'Route (KM)', value: 'routeKM', hidden: false },
-            { label: 'KM Covered', value: 'runningKMs', hidden: false },
-            { label: 'Difference (Km)', value: 'kmDifference', hidden: false },
-            { label: 'Report Unloading', value: 'unloadingReachDate', hidden: false },
-            { label: 'Unloading End Date', value: 'unloadingDate', hidden: false },
-            { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
-            { label: 'Final Status', value: 'finalStatus', hidden: false },
-            { label: 'OEM Status', value: 'oemFinalStatus', hidden: false },
-            { label: 'Delayed Hours', value: 'delayedHours', hidden: false },
-            { label: 'Driver Name', value: 'driverName', hidden: false },
-            { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
-            { label: 'Exit From', value: 'exitFrom', hidden: false },
-            { label: 'Trip Status', value: 'tripStatus', hidden: false },
-            { label: 'Force Complete', value: 'forcecomplete', hidden: false }
-        ]
-    );
+    const [tableColumns, setTableColumns] = useState(intialColumns);
+
+    useEffect(() => {
+        if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
+            const columnsToRemove = ['staticETA', 'oemFinalStatus'];
+            setTableColumns(prevColumns =>
+                prevColumns.filter(column => !columnsToRemove.includes(column.value))
+            );
+        } else {
+            const etaColumn = [{ label: 'Static ETA (PAPL)', value: 'staticETA', hidden: false }];
+            const statusColumn = [{ label: 'OEM Status', value: 'oemFinalStatus', hidden: false }];
+
+            const insertIndex = intialColumns.findIndex(column => column.value === 'staticETA');
+            const oemFinalStatusIndex = intialColumns.findIndex(column => column.value === 'oemFinalStatus');
+
+            if (insertIndex !== -1) {
+                setTableColumns(prevColumns => {
+                    const newColumns = [...prevColumns];
+
+                    newColumns.splice(insertIndex, 0, ...etaColumn);
+                    newColumns.splice(oemFinalStatusIndex, 0, ...statusColumn);
+
+                    return newColumns;
+                });
+            }
+        }
+    }, [selectedFilter]);
 
     const closed = localStorage.getItem('reload');
     const filtersArr = localStorage.getItem('filters');
 
     useEffect(() => {
-        console.log("filtersArr", JSON.parse(filtersArr));
         if (filtersArr !== null) {
             const parsedFilters = JSON.parse(filtersArr);
 
@@ -435,7 +459,6 @@ const VehicleTrackDash = () => {
                                 if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) &&
                                     (!selectedFilter.includes('On Time') && !selectedFilter.includes('Early') && !selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
                                 ) {
-                                    console.log("running");
                                     allFilteredTrip.forEach(data => {
                                         const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
                                         if (testData === true) {
@@ -593,6 +616,19 @@ const VehicleTrackDash = () => {
                                 //     (!selectedFilter.includes('Trip Tunning') && !selectedFilter.includes('Trip Completed') && !selectedFilter.includes('Mo'))
                                 // ))
 
+                                if ((selectedFilter.includes("Delayed (As per OEM)")) &&
+                                    (!selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed') && !selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
+                                ) {
+                                    allFilteredTrip.forEach(data => {
+                                        const testData = (data?.oemFinalStatus === 'Delayed');
+                                        if (testData === true) {
+                                            finalStatusTrips.push(data)
+                                        }
+                                    })
+                                    // const filtered = allFilteredTrip.filter(data => data?.oemFinalStatus === 'Delayed');
+                                    // finalStatusTrips = filtered;
+                                }
+
                                 if (((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) && (selectedFilter.includes('Delayed (As per OEM)')))
                                     && (!selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
                                 ) {
@@ -602,7 +638,6 @@ const VehicleTrackDash = () => {
                                             finalStatusTrips.push(data)
                                         }
                                     })
-
                                 }
 
                                 // if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') && (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)'))) &&
@@ -879,30 +914,58 @@ const VehicleTrackDash = () => {
     };
 
     const showDelayedIcon = (data, index, colIndex) => {
-        if (data?.finalStatus === 'Delayed') {
-            if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                const delayedHours = parseInt(data?.delayedHours);
-                if (delayedHours >= 0 && delayedHours <= 18) {
-                    return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
-                        id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
-                        key={`${index}-${colIndex}-${animationKey}`}
-                        style={{ minWidth: "100%" }}>Mild Delayed</span>
-                } else if (delayedHours >= 19 && delayedHours <= 35) {
-                    return <span className={`py-1 px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}
-                        id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
-                        key={`${index}-${colIndex}-${animationKey}`}
-                        style={{ minWidth: "100%" }}>Moderate Delayed</span>
-                } else if (delayedHours >= 36) {
-                    return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
-                        id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
-                        key={`${index}-${colIndex}-${animationKey}`}
-                        style={{ minWidth: "100%" }}>Critical Delayed</span>
+        if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
+            if (data?.oemFinalStatus === 'Delayed') {
+                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                    if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
+                        return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Mild Delayed</span>
+                    } else if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
+                        return <span className={`py-1 px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Moderate Delayed</span>
+                    } else if (oemDelayedHours >= 36) {
+                        return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Critical Delayed</span>
+                    }
+                } else {
+                    return '';
                 }
-            } else {
-                return '';
+            } else if (data?.finalStatus === 'On Time' || data?.finalStatus === 'Early' || data?.finalStatus === "") {
+                return <span className='px-2 text-center w-100' style={{ fontWeight: '400' }}>{data?.finalStatus}</span>
             }
-        } else if (data?.finalStatus === 'On Time' || data?.finalStatus === 'Early' || data?.finalStatus === "") {
-            return <span className='px-2 text-center w-100' style={{ fontWeight: '400' }}>{data?.finalStatus}</span>
+        } else {
+            if (data?.finalStatus === 'Delayed') {
+                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                    const delayedHours = parseInt(data?.delayedHours);
+                    if (delayedHours >= 0 && delayedHours <= 18) {
+                        return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Mild Delayed</span>
+                    } else if (delayedHours >= 19 && delayedHours <= 35) {
+                        return <span className={`py-1 px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Moderate Delayed</span>
+                    } else if (delayedHours >= 36) {
+                        return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Critical Delayed</span>
+                    }
+                } else {
+                    return '';
+                }
+            } else if (data?.finalStatus === 'On Time' || data?.finalStatus === 'Early' || data?.finalStatus === "") {
+                return <span className='px-2 text-center w-100' style={{ fontWeight: '400' }}>{data?.finalStatus}</span>
+            }
         }
     };
 
@@ -1167,8 +1230,6 @@ const VehicleTrackDash = () => {
     const handleTableColumns = (data, column, value, index, colIndex) => {
         if (column.label === 'Loading Date ' || column.label === "Estimated Arrival Date" || column.label === "Static ETA (OEM)" || column.label === "Static ETA (PAPL)") {
             return <td key={colIndex}>{handleFormateISTDate(value)}</td>;
-        } else if (value === "Delayed Hours") {
-            return <td key={colIndex}>{getDelayedHours(value)}</td>;
         } else if (column?.label === "Vehicle Exit Date" || column?.label === "GPS (Date / Time)" || column?.label === "Estimated Arrival Date") {
             return <td key={colIndex}>{handleFormatDate(value)}</td>;
         } else if (column?.label === "Static ETA") {
@@ -1240,7 +1301,7 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'OEM Status') {
             return <td key={colIndex}>{data?.oemFinalStatus}</td>
         } else if (column?.label === 'Delayed Hours') {
-            return <td key={colIndex}>{getDelayedHours(value)}</td>
+            return <td key={colIndex}>{selectedFilter.includes('Delayed (As per OEM)') ? getDelayedHours(data?.oemDelayedHours) : getDelayedHours(value)}</td>
         } else if (column?.label === 'Force Complete') {
             return <td key={colIndex} className='h-100'>
                 <div className='h-100 py-3 d-flex justify-content-center align-items-center'>
