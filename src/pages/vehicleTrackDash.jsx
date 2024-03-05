@@ -344,8 +344,6 @@ const VehicleTrackDash = () => {
         });
     };
 
-    console.log('showforce', showForce);
-
     const handleFilterTrips = () => {
         // if (!showFilters) {
         //     setShowLoader(true);
@@ -676,7 +674,7 @@ const VehicleTrackDash = () => {
             }
         }
 
-        if ((selectedFilter.length >= 0)) {
+        if ((selectedFilter.length >= 0 && selectedFilter.length !== 1)) {
             const allFilteredTrip = allTrips.filter(test => {
                 for (const key in form) {
                     const testValue = String(test[key]).toLowerCase();
@@ -690,8 +688,9 @@ const VehicleTrackDash = () => {
 
             handleApplyFilter(allFilteredTrip);
             // setShowLoader(false);
-        } else if (selectedFilter.length === 1 || showForce) {
-            console.log("else");
+        }
+
+        if (selectedFilter.length === 1 || showForce) {
             getRunningTrips().then((response) => {
                 if (response.status === 200) {
                     // setShowLoader(false);
