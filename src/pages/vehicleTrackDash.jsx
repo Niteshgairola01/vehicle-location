@@ -107,27 +107,31 @@ const VehicleTrackDash = () => {
 
     useEffect(() => {
         if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
-            const columnsToRemove = ['staticETA', 'oemFinalStatus'];
-            setTableColumns(prevColumns =>
-                prevColumns.filter(column => !columnsToRemove.includes(column.value))
-            );
-        } else {
-            const etaColumn = [{ label: 'Static ETA (PAPL)', value: 'staticETA', hidden: false }];
-            const statusColumn = [{ label: 'OEM Status', value: 'oemFinalStatus', hidden: false }];
+            if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
+                const columnsToRemove = ['staticETA', 'oemFinalStatus'];
+                setTableColumns(prevColumns =>
+                    prevColumns.filter(column => !columnsToRemove.includes(column.value))
+                );
+            } else {
+                const etaColumn = [{ label: 'Static ETA (PAPL)', value: 'staticETA', hidden: false }];
+                const statusColumn = [{ label: 'OEM Status', value: 'oemFinalStatus', hidden: false }];
 
-            const insertIndex = intialColumns.findIndex(column => column.value === 'staticETA');
-            const oemFinalStatusIndex = intialColumns.findIndex(column => column.value === 'oemFinalStatus');
+                const insertIndex = intialColumns.findIndex(column => column.value === 'staticETA');
+                const oemFinalStatusIndex = intialColumns.findIndex(column => column.value === 'oemFinalStatus');
 
-            if (insertIndex !== -1) {
-                setTableColumns(prevColumns => {
-                    const newColumns = [...prevColumns];
+                if (insertIndex !== -1) {
+                    setTableColumns(prevColumns => {
+                        const newColumns = [...prevColumns];
 
-                    newColumns.splice(insertIndex, 0, ...etaColumn);
-                    newColumns.splice(oemFinalStatusIndex, 0, ...statusColumn);
+                        newColumns.splice(insertIndex, 0, ...etaColumn);
+                        newColumns.splice(oemFinalStatusIndex, 0, ...statusColumn);
 
-                    return newColumns;
-                });
+                        return newColumns;
+                    });
+                }
             }
+        } else {
+            setTableColumns(intialColumns);
         }
     }, [selectedFilter]);
 
@@ -340,6 +344,8 @@ const VehicleTrackDash = () => {
         });
     };
 
+    console.log('showforce', showForce);
+
     const handleFilterTrips = () => {
         // if (!showFilters) {
         //     setShowLoader(true);
@@ -467,138 +473,53 @@ const VehicleTrackDash = () => {
                                     })
 
                                 } else if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
-                                    console.log("delayed");
-
-                                    if (selectedFilter.includes('Mild Delayed')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
-                                            delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 0 && delayedHours <= 18) {
-                                                        delayedArr2.push(data);
-                                                    }
-                                                }
-                                            });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
-                                        } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
-                                            delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 0 && delayedHours <= 18) {
-                                                        delayedArr2.push(data);
-                                                    }
-                                                }
-                                            });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
-                                        }
-                                    }
-
-                                    if (selectedFilter.includes('Moderate Delayed')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
-                                            delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 19 && delayedHours <= 35) {
-                                                        delayedArr2.push(data);
-                                                    }
-                                                }
-                                            });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
-                                        } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
-                                            delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 19 && delayedHours <= 35) {
-                                                        delayedArr2.push(data);
-                                                    }
-                                                }
-                                            });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
-                                        }
-                                    }
-
-                                    if (selectedFilter.includes('Critical Delayed')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
-                                            delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 36) {
-                                                        delayedArr2.push(data);
-                                                    }
-                                                }
-                                            });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
-                                        } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
-                                            delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 36) {
-                                                        delayedArr2.push(data);
-                                                    }
-                                                }
-                                            });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
-                                        }
-                                    }
+                                    finalStatusTrips = [];
                                 } else if (selectedFilter.includes('On Time') || selectedFilter.includes('Early')) {
+                                    let onTimeEarly = [];
                                     if (selectedFilter.includes('On Time')) {
-                                        // if(selectedFilter.includes('Trip running') || selectedFilter.includes('Trip Completed')){
-                                        const filtered = allFilteredTrip.filter(data => selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early') && (data?.finalStatus === 'On Time'));
-                                        finalStatusTrips = filtered;
+                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                            // const filtered = allFilteredTrip.filter(data => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'On Time');
+                                            // finalStatusTrips = filtered;
 
-                                        // filtered.map(data => {
-                                        //     finalStatusTrips.push(data);
-                                        // })
-                                        // }
+                                            allFilteredTrip.forEach(data => {
+                                                const filtered = selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'On Time';
+                                                if (filtered === true) {
+                                                    onTimeEarly.push(data)
+                                                }
+                                            });
+                                        } else {
+                                            // const filtered = allFilteredTrip.filter(data => data?.oemFinalStatus === 'On Time');
+                                            // finalStatusTrips = filtered;
+
+
+                                            allFilteredTrip.forEach(data => {
+                                                const filtered = data?.oemFinalStatus === 'On Time';
+                                                if (filtered === true) {
+                                                    onTimeEarly.push(data)
+                                                }
+                                            });
+                                        }
                                     }
+
+                                    if (selectedFilter.includes('Early')) {
+                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                            allFilteredTrip.forEach(data => {
+                                                const filtered = selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Early';
+                                                if (filtered === true) {
+                                                    onTimeEarly.push(data)
+                                                }
+                                            });
+                                        } else {
+                                            allFilteredTrip.forEach(data => {
+                                                const filtered = data?.oemFinalStatus === 'Early';
+                                                if (filtered === true) {
+                                                    onTimeEarly.push(data)
+                                                }
+                                            });
+                                        }
+                                    }
+
+                                    finalStatusTrips = onTimeEarly;
                                 }
                                 else {
                                     allFilteredTrip.forEach(data => {
@@ -654,122 +575,73 @@ const VehicleTrackDash = () => {
                                 if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
                                     if (selectedFilter.includes('Mild Delayed')) {
                                         if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
+                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
                                             delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 0 && delayedHours <= 18) {
-                                                        delayedArr2.push(data);
+                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                    if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
+                                                        finalStatusTrips.push(data);
                                                     }
                                                 }
                                             });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
-
                                         } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
+                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
                                             delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 0 && delayedHours <= 18) {
-                                                        delayedArr2.push(data);
+                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                    if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
+                                                        finalStatusTrips.push(data);
                                                     }
                                                 }
                                             });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = (data?.oemFinalStatus === 'Delayed');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
                                         }
                                     }
 
                                     if (selectedFilter.includes('Moderate Delayed')) {
                                         if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
+                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
                                             delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 19 && delayedHours <= 35) {
-                                                        delayedArr2.push(data);
+                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                    if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
+                                                        finalStatusTrips.push(data);
                                                     }
                                                 }
                                             });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
                                         } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
+                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
                                             delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 19 && delayedHours <= 35) {
-                                                        delayedArr2.push(data);
+                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                    if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
+                                                        finalStatusTrips.push(data);
                                                     }
                                                 }
                                             });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = (data?.oemFinalStatus === 'Delayed');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
                                         }
                                     }
 
                                     if (selectedFilter.includes('Critical Delayed')) {
                                         if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
+                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
                                             delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 36) {
-                                                        delayedArr2.push(data);
+                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                    if (oemDelayedHours >= 36) {
+                                                        finalStatusTrips.push(data);
                                                     }
                                                 }
                                             });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
                                         } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                            let delayedArr2 = [];
+                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
                                             delayedArr1.forEach(data => {
-                                                if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                                    const delayedHours = parseInt(data?.delayedHours);
-                                                    if (delayedHours >= 36) {
-                                                        delayedArr2.push(data);
+                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                    if (oemDelayedHours >= 36) {
+                                                        finalStatusTrips.push(data);
                                                     }
                                                 }
                                             });
-
-                                            delayedArr2.forEach(data => {
-                                                const testData = (data?.oemFinalStatus === 'Delayed');
-                                                if (testData === true) {
-                                                    finalStatusTrips.push(data)
-                                                }
-                                            })
                                         }
                                     }
                                 }
@@ -819,6 +691,7 @@ const VehicleTrackDash = () => {
             handleApplyFilter(allFilteredTrip);
             // setShowLoader(false);
         } else if (selectedFilter.length === 1 || showForce) {
+            console.log("else");
             getRunningTrips().then((response) => {
                 if (response.status === 200) {
                     // setShowLoader(false);
@@ -850,6 +723,10 @@ const VehicleTrackDash = () => {
         }
 
     };
+
+    // useEffect(() => {
+    //     handleFilterTrips();
+    // }, [showForce]);
 
     const intervalRef = useRef(null);
 
@@ -937,8 +814,8 @@ const VehicleTrackDash = () => {
                 } else {
                     return '';
                 }
-            } else if (data?.finalStatus === 'On Time' || data?.finalStatus === 'Early' || data?.finalStatus === "") {
-                return <span className='px-2 text-center w-100' style={{ fontWeight: '400' }}>{data?.finalStatus}</span>
+            } else if (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early' || data?.oemFinalStatus === "") {
+                return <span className='px-2 text-center w-100' style={{ fontWeight: '400' }}>{data?.oemFinalStatus}</span>
             }
         } else {
             if (data?.finalStatus === 'Delayed') {
@@ -1301,7 +1178,7 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'OEM Status') {
             return <td key={colIndex}>{data?.oemFinalStatus}</td>
         } else if (column?.label === 'Delayed Hours') {
-            return <td key={colIndex}>{selectedFilter.includes('Delayed (As per OEM)') ? getDelayedHours(data?.oemDelayedHours) : getDelayedHours(value)}</td>
+            return <td key={colIndex}>{(selectedFilter.includes('Delayed (As per OEM)') || selectedFilter.includes('On Time & Early (As per OEM)')) ? getDelayedHours(data?.oemDelayedHours) : getDelayedHours(value)}</td>
         } else if (column?.label === 'Force Complete') {
             return <td key={colIndex} className='h-100'>
                 <div className='h-100 py-3 d-flex justify-content-center align-items-center'>
