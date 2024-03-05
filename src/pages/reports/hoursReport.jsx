@@ -99,114 +99,79 @@ const HoursReport = () => {
             setVehiclesOnHold(filteredTripsOnHold);
         };
     }, [fetchingData]);
-
-    const test = lastRecord.reverse();
-
-    // let test = [];
-    const [holds, setHolds] = useState([]);
     useEffect(() => {
         if (runningTrips.length > 0) {
 
             const vehicleData = {};
+            const locationIndexes = {}; // To keep track of the index where location is assigned for each vehicleNo
 
-            test.forEach((record) => {
+            lastRecord.forEach((record, index) => {
                 const { vehicleNo, date, location, latLongDistance } = record;
 
                 if (!vehicleData[vehicleNo]) {
                     vehicleData[vehicleNo] = { location, dates: [date], distance: [latLongDistance] };
+                    locationIndexes[vehicleNo] = index;
                 } else {
                     vehicleData[vehicleNo].distance.push(latLongDistance);
                     vehicleData[vehicleNo].dates.push(date);
                     vehicleData[vehicleNo].location = location;
+
+                    locationIndexes[vehicleNo] = index;
                 }
             });
 
-
             const finalResult = Object.entries(vehicleData).map(([vehicleNo, { location, dates, distance }]) => {
 
-                // const test = lastRecord;
-                const firstLocationChangeDates = {};
+                const test = lastRecord.reverse();
 
-                for (let i = lastRecord.length - 1; i >= 0; i--) {
-                    const currentRecord = lastRecord[i];
+                const firstLocationChangeDates = {};
+                for (let i = test.length - 1; i >= 0; i--) {
+                    const currentRecord = test[i];
                     const { vehicleNo, date, location } = currentRecord;
 
                     if (!firstLocationChangeDates[vehicleNo]) {
-                        firstLocationChangeDates[vehicleNo] = date; // Record the first date for the vehicleNo
-                    } else if (location !== lastRecord[i + 1]?.location) {
-                        firstLocationChangeDates[vehicleNo] = date; // Update if location changes
+                        firstLocationChangeDates[vehicleNo] = date;
+                    } else {
+                        if (location !== test[i + 1]?.location) {
+                            firstLocationChangeDates[vehicleNo] = date;
+                        }
                     }
                 }
-
-                // Handle the case where the location remains unchanged for a vehicle
-                lastRecord.forEach(record => {
-                    const { vehicleNo, date } = record;
-                    if (!(vehicleNo in firstLocationChangeDates)) {
-                        firstLocationChangeDates[vehicleNo] = date; // Record the first date for the vehicleNo
-                    }
-                });
-
-                // const firstLocationChangeDates = {};
-                // for (let i = test.length - 1; i >= 0; i--) {
-                //     const currentRecord = test[i];
-                //     const { vehicleNo, date, location } = currentRecord;
-
-                //     if (!firstLocationChangeDates[vehicleNo]) {
-                //         firstLocationChangeDates[vehicleNo] = date;
-                //     } else {
-                //         if (location !== test[i + 1]?.location) {
-                //             firstLocationChangeDates[vehicleNo] = date;
-                //         }
-                //     }
-                // };
-
 
                 const distanceCovered = distance.reduce((prev, curr) => (parseFloat(prev) + parseFloat(curr)));
                 const KmCovered = parseInt(distanceCovered);
 
                 const firstDate = new Date(firstLocationChangeDates[vehicleNo]);
-
-                // console.log('date', vehicleNo, firstLocationChangeDates[vehicleNo], ((new Date() - firstDate) / (1000 * 60 * 60)));
-
                 const timeDifference = (new Date() - firstDate) / (1000 * 60 * 60);
-                return { vehicleNo, firstDate, timeDifference, location, KmCovered };
+                return { vehicleNo, timeDifference, location, KmCovered };
             });
 
             const finalArr = vehiclesOnHold.map(vehicleObj => {
                 const found = finalResult.find(testObj => testObj.vehicleNo === vehicleObj.vehicleNo);
 
-                console.log("found", finalResult);
-                // const timeDiff = (`${(finalResult[vehicleObj?.vehicleNo]?.timeDifference).toFixed(2)}`).length > 0 ? (`${(finalResult[vehicleObj?.vehicleNo]?.timeDifference).toFixed(2)}`).split('.') : parseFloat((finalResult[vehicleObj?.vehicleNo]?.timeDifference).toFixed(2));
-
                 const timeDiff = (`${(found.timeDifference).toFixed(2)}`).length > 0 ? (`${(found.timeDifference).toFixed(2)}`).split('.') : parseFloat((found.timeDifference).toFixed(2));
                 const hour = parseInt(timeDiff[0]);
                 const minutes = timeDiff.length > 1 ? parseInt(timeDiff[1]) : 0;
-                const finalTime = minutes > 60 ? (hour + 1) : minutes;
-                // const finalTime = minutes > 60 ? `${(hour + 1)}` : `${hour}:${minutes < 10 ? `0${minutes}` : minutes}`;
+                const finalTime = minutes > 60 ? `${(hour + 1)}:${(minutes - 60) < 10 ? `0${minutes - 60}` : (minutes - 60)}` : `${hour}:${minutes < 10 ? `0${minutes}` : minutes}`;
 
                 const coveredDistance = parseFloat(found?.KmCovered) > 0 ? parseFloat(found?.KmCovered) : 0
 
                 return {
                     ...vehicleObj,
-                    timeDifference: found ? found.timeDifference : '',
+                    timeDifference: found ? finalTime : '',
                     KmCovered: found ? coveredDistance : ''
                 };
             });
 
-            setHolds(finalArr);
             if ((finalArr.length > 0) && (!holdVehicle)) {
-                console.log("final", finalArr);
-                // holds.push(finalArr);
                 setVehiclesOnHold(finalArr);
             };
 
             setTimeout(() => {
                 setHoldVehicle(true);
-            }, 200);
+            }, 500);
         };
-    }, [vehiclesOnHold, runningVehicles, lastRecord, fetchingData]);
-    // 
-    console.log("holds", holds);
+    }, [vehiclesOnHold, fetchingData]);
 
     const handleFormateISTDate = (givenDate) => {
         if (givenDate === null || givenDate.length === 0) {
@@ -323,7 +288,7 @@ const HoursReport = () => {
             const formattedItem = {};
             attributes.forEach(attr => {
                 if (attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'oemReachTime'
-                    || attr === 'estimatedArrivalDate' || attr === 'finalStatus') {
+                    || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'currVehicleStatus') {
                     if (attr === 'loadingDate' || attr === 'oemReachTime') {
                         formattedItem[attr] = handleFormateISTDate(item[attr]);
                     }
@@ -339,6 +304,10 @@ const HoursReport = () => {
 
                     if (attr === 'finalStatus') {
                         formattedItem[attr] = getDelayedType(item[attr], item['delayedHours']);
+                    }
+
+                    if (attr === 'currVehicleStatus') {
+                        formattedItem[attr] = '';
                     }
                 }
                 // else if (attr === 'currVehicleStatus') {
@@ -400,6 +369,34 @@ const HoursReport = () => {
                     },
                     columnStyles: {
                         12: { cellWidth: 40 },
+                    },
+                    didDrawCell: (data) => {
+
+                        if (data.column.dataKey === 'currVehicleStatus' && data.row.raw['S.No.'] !== 'S.No.') {
+
+                            const cellWidth = data.cell.width; // Get cell width
+                            const cellHeight = data.cell.height; // Get cell height
+                            const cellX = data.cell.x + (cellWidth / 2); // Center circle horizontally
+                            const cellY = data.cell.y + (cellHeight / 3); // Center circle vertically
+                            const radius = 1.5; // Adjust radius based on cell size
+
+                            const test = vehiclesOnHold.filter(filters => filters?.vehicleNo === data.row.raw.vehicleNo);
+
+                            console.log("test", test[0]);
+
+                            let color = 'black';
+                            if (test[0].currVehicleStatus === 'On Hold') {
+                                color = '#fffc00'
+                            } else if (test[0].currVehicleStatus === 'GPS Off') {
+                                color = '#ff0000'
+                            } else if (test[0].currVehicleStatus === 'Running') {
+                                color = '#00ff00'
+                            }
+
+                            doc.setFillColor(color); // Set fill to transparent (if supported)
+
+                            doc.circle(cellX, cellY, radius, 'F', color);
+                        }
                     }
                 });
 

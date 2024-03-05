@@ -317,9 +317,9 @@ const VehicleTrackDash = () => {
     };
 
     const handleFilterTrips = () => {
-        if (!showFilters) {
-            setShowLoader(true);
-        }
+        // if (!showFilters) {
+        //     setShowLoader(true);
+        // }
 
         const handleApplyFilter = (allFilteredTrip) => {
             if (selectedFilter.length > 0) {
@@ -769,7 +769,7 @@ const VehicleTrackDash = () => {
             }
         }
 
-        if (selectedFilter.length > 1 || !showForce) {
+        if ((selectedFilter.length >= 0)) {
             const allFilteredTrip = allTrips.filter(test => {
                 for (const key in form) {
                     const testValue = String(test[key]).toLowerCase();
@@ -782,10 +782,11 @@ const VehicleTrackDash = () => {
             });
 
             handleApplyFilter(allFilteredTrip);
+            // setShowLoader(false);
         } else if (selectedFilter.length === 1 || showForce) {
             getRunningTrips().then((response) => {
                 if (response.status === 200) {
-                    setShowLoader(false);
+                    // setShowLoader(false);
                     const allData = response?.data;
 
                     const allFilteredTrip = allData.filter(test => {
@@ -800,14 +801,14 @@ const VehicleTrackDash = () => {
                     });
 
                     handleApplyFilter(allFilteredTrip);
-                    setShowForce(false);
+                    // setShowForce(false);
                 } else {
-                    setShowLoader(false);
+                    // setShowLoader(false);
                     setFilteredTrips([]);
                 }
             }).catch((err) => {
                 err?.message && setErrorMessage(err?.message);
-                setShowLoader(false);
+                // setShowLoader(false);
                 setFilteredTrips([])
             });
 

@@ -423,8 +423,6 @@ const VehicleRoute = ({ show, setShow }) => {
         setBoundCenter(true);
     };
 
-    console.log("postion", geofencePosition);
-
     const handleStartPosition = () => {
         if (coordinates.length > 0) {
             return { lat: coordinates[0].lat, lng: coordinates[0].lng }
