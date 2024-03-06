@@ -12,6 +12,7 @@ import RouteReport from '../pages/routeReport/route-report';
 import Reports from '../pages/reports/reports';
 import DriverForum from '../pages/driver-forum/driverForum';
 import DriverMapping from '../pages/driver-forum/driverMapping';
+import ForecastDashoard from '../pages/forecast/forecast-dashboard';
 
 const AllRoutes = () => {
     const location = useLocation();
@@ -176,6 +177,9 @@ const AllRoutes = () => {
                 {/* Driver Forum */}
                 <Route path="/create-driver" element={<DriverForum />} />
                 <Route path="/driver-mapping" element={<DriverMapping />} />
+
+                {/* Forecasting */}
+                <Route path="/forecast" element={<ForecastDashoard />} />
 
             </Routes>
         </>

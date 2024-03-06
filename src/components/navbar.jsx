@@ -32,6 +32,10 @@ const NavBar = () => {
       title: "Reports",
       path: '/reports'
     },
+    {
+      title: "Forecast",
+      path: '/forecast'
+    },
     // {
     //   title: "Driver Forum",
     //   path: '/driver-forum'
