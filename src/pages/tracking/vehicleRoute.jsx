@@ -165,7 +165,7 @@ const VehicleRoute = ({ show, setShow }) => {
     };
 
     useEffect(() => {
-        if (form.length > 0) {
+        if (form.length > 0 && form[0] !== null) {
             getVehicleRoute(form).then((response) => {
                 if (response.status === 200) {
                     const allData = response?.data;

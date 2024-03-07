@@ -35,6 +35,14 @@ const PolygonList = () => {
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
 
+    const [mapLoaded, setMapLoaded] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setMapLoaded(false); // Clean up when component unmounts
+        }, 500);
+    }, []);
+
     useEffect(() => {
         if (!loggedInUser) {
             localStorage.clear();
@@ -301,48 +309,52 @@ const PolygonList = () => {
                                 </Card>
                             </Col>
                             <Col sm={8} className='' style={{ minHeight: "50vh", height: "65vh" }}>
-                                <LoadScript googleMapsApiKey={key}>
-                                    <GoogleMap
-                                        mapContainerStyle={mapContainerStyle}
-                                        center={handleMapCenter()}
-                                        onLoad={(map) => {
-                                            const bounds = selectedCoordinates.length < 0 && getBounds();
-                                            selectedCoordinates.length < 0 && map.fitBounds(bounds);
-                                            selectedCoordinates.length < 0 && setCenter(map.getCenter);
-                                        }}
-                                        zoom={12}
-                                        options={{ gestureHandling: 'greedy' }}
-                                    >
-                                        {
-                                            selectedCoordinates.length === 1 ? (
-                                                <>
-                                                    <CircleF
-                                                        center={selectedCoordinates[0]}
-                                                        radius={500} // 500 meters radius (adjust as needed)
-                                                        options={{
-                                                            fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
-                                                            strokeColor: 'red',
-                                                            strokeOpacity: 0.8,
-                                                            strokeWeight: 2,
-                                                        }}
-                                                    />
+                                {
+                                    !mapLoaded && (
+                                        <LoadScript googleMapsApiKey={key}>
+                                            <GoogleMap
+                                                mapContainerStyle={mapContainerStyle}
+                                                center={handleMapCenter()}
+                                                onLoad={(map) => {
+                                                    const bounds = selectedCoordinates.length < 0 && getBounds();
+                                                    selectedCoordinates.length < 0 && map.fitBounds(bounds);
+                                                    selectedCoordinates.length < 0 && setCenter(map.getCenter);
+                                                }}
+                                                zoom={12}
+                                                options={{ gestureHandling: 'greedy' }}
+                                            >
+                                                {
+                                                    selectedCoordinates.length === 1 ? (
+                                                        <>
+                                                            <CircleF
+                                                                center={selectedCoordinates[0]}
+                                                                radius={500} // 500 meters radius (adjust as needed)
+                                                                options={{
+                                                                    fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
+                                                                    strokeColor: 'red',
+                                                                    strokeOpacity: 0.8,
+                                                                    strokeWeight: 2,
+                                                                }}
+                                                            />
 
-                                                    <MarkerF position={selectedCoordinates[0]} />
-                                                </>
-                                            ) : (
-                                                <PolygonF
-                                                    paths={selectedCoordinates}
-                                                    options={{
-                                                        fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
-                                                        strokeColor: 'red',
-                                                        strokeOpacity: 0.8,
-                                                        strokeWeight: 2,
-                                                    }}
-                                                />
-                                            )
-                                        }
-                                    </GoogleMap>
-                                </LoadScript>
+                                                            <MarkerF position={selectedCoordinates[0]} />
+                                                        </>
+                                                    ) : (
+                                                        <PolygonF
+                                                            paths={selectedCoordinates}
+                                                            options={{
+                                                                fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
+                                                                strokeColor: 'red',
+                                                                strokeOpacity: 0.8,
+                                                                strokeWeight: 2,
+                                                            }}
+                                                        />
+                                                    )
+                                                }
+                                            </GoogleMap>
+                                        </LoadScript>
+                                    )
+                                }
                             </Col>
                         </Row>
                     </div>

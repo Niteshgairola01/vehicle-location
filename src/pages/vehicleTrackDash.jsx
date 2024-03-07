@@ -344,388 +344,397 @@ const VehicleTrackDash = () => {
         });
     };
 
+    const handleApplyFilter = (allFilteredTrip) => {
+        if (selectedFilter.length > 0) {
+            let tripsFilteredByTripStatus = [];
+
+            if (selectedFilter.includes('Trip not Assgined')) {
+                if (selectedFilter.includes('Trip Running')) {
+                    if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Manual Bind')) {
+                        tripsFilteredByTripStatus = allFilteredTrip.filter((data) => ((data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running") && data?.exitFrom === "Manual Bind");
+                    } else if (selectedFilter.includes('Trip Running')) {
+                        tripsFilteredByTripStatus = allFilteredTrip.filter((data) => ((data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running"));
+                    }
+                } else if (selectedFilter.includes('Trip Completed')) {
+                    tripsFilteredByTripStatus = [];
+                } else if (selectedFilter.includes('Trip not Assgined') && selectedFilter.length === 1) {
+                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => (data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running");
+                }
+            } else {
+                tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+
+                if (selectedFilter.includes("On Time & Early (As per OEM)") || selectedFilter.includes("Delayed (As per OEM)") || selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
+                    let finalStatusTrips = [];
+
+                    if (selectedFilter.includes("Early") || selectedFilter.includes("On Time")) {
+                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                            const trips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
+                            trips.map((data) => finalStatusTrips.push(data));
+                        } else {
+                            const trips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
+                            trips.map((data) => finalStatusTrips.push(data));
+                        }
+                    }
+
+                    if (
+                        (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) &&
+                        (!selectedFilter.includes('On Time & Early (As per OEM)') && !selectedFilter.includes('Delayed (As per OEM)'))
+                    ) {
+                        if (selectedFilter.includes('Mild Delayed')) {
+                            if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
+                                const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                delayedArr1.forEach(data => {
+                                    if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                        const delayedHours = parseInt(data?.delayedHours);
+                                        if (delayedHours >= 0 && delayedHours <= 18) {
+                                            finalStatusTrips.push(data);
+                                        }
+                                    }
+                                })
+                            } else {
+                                const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
+                                delayedArr1.forEach(data => {
+                                    if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                        const delayedHours = parseInt(data?.delayedHours);
+                                        if (delayedHours >= 0 && delayedHours <= 18) {
+                                            finalStatusTrips.push(data);
+                                        }
+                                    }
+                                })
+                            }
+                        }
+
+                        if (selectedFilter.includes('Moderate Delayed')) {
+                            if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                delayedArr1.forEach(data => {
+                                    if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                        const delayedHours = parseInt(data?.delayedHours);
+                                        if (delayedHours >= 19 && delayedHours <= 35) {
+                                            finalStatusTrips.push(data);
+                                        }
+                                    }
+                                })
+                            } else {
+                                const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
+                                delayedArr1.forEach(data => {
+                                    if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                        const delayedHours = parseInt(data?.delayedHours);
+                                        if (delayedHours >= 19 && delayedHours <= 35) {
+                                            finalStatusTrips.push(data);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        if (selectedFilter.includes('Critical Delayed')) {
+                            if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
+                                delayedArr1.forEach(data => {
+                                    if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                        const delayedHours = parseInt(data?.delayedHours);
+                                        if (delayedHours >= 36) {
+                                            finalStatusTrips.push(data);
+                                        }
+                                    }
+                                })
+                            } else {
+                                const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
+                                delayedArr1.forEach(data => {
+                                    if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
+                                        const delayedHours = parseInt(data?.delayedHours);
+                                        if (delayedHours >= 36) {
+                                            finalStatusTrips.push(data);
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    }
+
+                    if (selectedFilter.includes("On Time & Early (As per OEM)") || selectedFilter.includes("Delayed (As per OEM)")) {
+                        if (selectedFilter.includes('On Time & Early (As per OEM)')) {
+                            if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) &&
+                                (!selectedFilter.includes('On Time') && !selectedFilter.includes('Early') && !selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
+                            ) {
+                                allFilteredTrip.forEach(data => {
+                                    const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
+                                    if (testData === true) {
+                                        finalStatusTrips.push(data)
+                                    }
+                                })
+
+                            } else if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
+                                finalStatusTrips = [];
+                            } else if (selectedFilter.includes('On Time') || selectedFilter.includes('Early')) {
+                                let onTimeEarly = [];
+                                if (selectedFilter.includes('On Time')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        // const filtered = allFilteredTrip.filter(data => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'On Time');
+                                        // finalStatusTrips = filtered;
+
+                                        allFilteredTrip.forEach(data => {
+                                            const filtered = selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'On Time';
+                                            if (filtered === true) {
+                                                onTimeEarly.push(data)
+                                            }
+                                        });
+                                    } else {
+                                        // const filtered = allFilteredTrip.filter(data => data?.oemFinalStatus === 'On Time');
+                                        // finalStatusTrips = filtered;
+
+
+                                        allFilteredTrip.forEach(data => {
+                                            const filtered = data?.oemFinalStatus === 'On Time';
+                                            if (filtered === true) {
+                                                onTimeEarly.push(data)
+                                            }
+                                        });
+                                    }
+                                }
+
+                                if (selectedFilter.includes('Early')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        allFilteredTrip.forEach(data => {
+                                            const filtered = selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Early';
+                                            if (filtered === true) {
+                                                onTimeEarly.push(data)
+                                            }
+                                        });
+                                    } else {
+                                        allFilteredTrip.forEach(data => {
+                                            const filtered = data?.oemFinalStatus === 'Early';
+                                            if (filtered === true) {
+                                                onTimeEarly.push(data)
+                                            }
+                                        });
+                                    }
+                                }
+
+                                finalStatusTrips = onTimeEarly;
+                            }
+                            else {
+                                allFilteredTrip.forEach(data => {
+                                    const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
+                                    if (testData === true) {
+                                        finalStatusTrips.push(data)
+                                    }
+                                })
+                            }
+                        }
+
+                        if (selectedFilter.includes('Delayed (As per OEM)')) {
+
+                            // if(selectedFilter.includes('Delayed (As per OEM)') && (
+                            //     (!selectedFilter.includes('Trip Tunning') && !selectedFilter.includes('Trip Completed') && !selectedFilter.includes('Mo'))
+                            // ))
+
+                            if ((selectedFilter.includes("Delayed (As per OEM)")) &&
+                                (!selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed') && !selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
+                            ) {
+                                allFilteredTrip.forEach(data => {
+                                    const testData = (data?.oemFinalStatus === 'Delayed');
+                                    if (testData === true) {
+                                        finalStatusTrips.push(data)
+                                    }
+                                })
+                                // const filtered = allFilteredTrip.filter(data => data?.oemFinalStatus === 'Delayed');
+                                // finalStatusTrips = filtered;
+                            }
+
+                            if (((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) && (selectedFilter.includes('Delayed (As per OEM)')))
+                                && (!selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
+                            ) {
+                                allFilteredTrip.forEach(data => {
+                                    const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
+                                    if (testData === true) {
+                                        finalStatusTrips.push(data)
+                                    }
+                                })
+                            }
+
+                            // if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') && (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)'))) &&
+                            //     (!selectedFilter.includes('On Time & Early (As per OEM)') && !selectedFilter.includes('Delayed (As per OEM)'))) {
+                            //     allFilteredTrip.forEach(data => {
+                            //         const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
+                            //         if (testData === true) {
+                            //             finalStatusTrips.push(data)
+                            //         }
+                            //     })
+
+                            // }
+
+                            if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
+                                if (selectedFilter.includes('Mild Delayed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
+                                        delayedArr1.forEach(data => {
+                                            if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
+                                        delayedArr1.forEach(data => {
+                                            if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+
+                                if (selectedFilter.includes('Moderate Delayed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
+                                        delayedArr1.forEach(data => {
+                                            if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
+                                        delayedArr1.forEach(data => {
+                                            if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+
+                                if (selectedFilter.includes('Critical Delayed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
+                                        delayedArr1.forEach(data => {
+                                            if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                if (oemDelayedHours >= 36) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
+                                        delayedArr1.forEach(data => {
+                                            if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
+                                                const oemDelayedHours = parseInt(data?.oemDelayedHours);
+                                                if (oemDelayedHours >= 36) {
+                                                    finalStatusTrips.push(data);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            // else {
+                            //     allFilteredTrip.forEach(data => {
+                            //         const testData = (data?.oemFinalStatus === 'Delayed');
+                            //         if (testData === true) {
+                            //             finalStatusTrips.push(data)
+                            //         }
+                            //     })
+                            // }
+                        }
+                    }
+
+                    tripsFilteredByTripStatus = finalStatusTrips;
+                } else {
+                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
+                }
+            };
+
+            if (selectedFilter.includes('Manual Bind')) {
+                if (selectedFilter.length === 1) {
+                    tripsFilteredByTripStatus = allFilteredTrip.filter(data => data?.exitFrom === 'Manual Bind')
+                } else {
+                    tripsFilteredByTripStatus = tripsFilteredByTripStatus.filter(data => data?.exitFrom === 'Manual Bind')
+                }
+            }
+
+            setFilteredTrips(tripsFilteredByTripStatus);
+        } else {
+            setFilteredTrips(allFilteredTrip);
+        }
+    };
+
+    const realTimeDataFilter = () => {
+        if (!showFilters) {
+            setShowLoader(true);
+        }
+
+        getRunningTrips().then((response) => {
+            if (response.status === 200) {
+                setShowLoader(false);
+                const allData = response?.data;
+
+                const allFilteredTrip = allData.filter(test => {
+                    for (const key in form) {
+                        const testValue = String(test[key]).toLowerCase();
+                        const formValue = form[key].toLowerCase();
+                        if ((testValue !== formValue && formValue.length > 0)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+
+                handleApplyFilter(allFilteredTrip);
+                // setShowForce(false);
+            } else {
+                setShowLoader(false);
+                setFilteredTrips([]);
+            }
+        }).catch((err) => {
+            err?.message && setErrorMessage(err?.message);
+            setShowLoader(false);
+            setFilteredTrips([])
+        });
+    };
+
+    const currentDataFilter = () => {
+        const allFilteredTrip = allTrips.filter(test => {
+            for (const key in form) {
+                const testValue = String(test[key]).toLowerCase();
+                const formValue = form[key].toLowerCase();
+                if ((testValue !== formValue && formValue.length > 0)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        handleApplyFilter(allFilteredTrip);
+        // setShowLoader(false);    
+    };
+
     const handleFilterTrips = () => {
         // if (!showFilters) {
         //     setShowLoader(true);
         // }
 
-        const handleApplyFilter = (allFilteredTrip) => {
-            if (selectedFilter.length > 0) {
-                let tripsFilteredByTripStatus = [];
 
-                if (selectedFilter.includes('Trip not Assgined')) {
-                    if (selectedFilter.includes('Trip Running')) {
-                        if (selectedFilter.includes('Trip Running') && selectedFilter.includes('Manual Bind')) {
-                            tripsFilteredByTripStatus = allFilteredTrip.filter((data) => ((data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running") && data?.exitFrom === "Manual Bind");
-                        } else if (selectedFilter.includes('Trip Running')) {
-                            tripsFilteredByTripStatus = allFilteredTrip.filter((data) => ((data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running"));
-                        }
-                    } else if (selectedFilter.includes('Trip Completed')) {
-                        tripsFilteredByTripStatus = [];
-                    } else if (selectedFilter.includes('Trip not Assgined') && selectedFilter.length === 1) {
-                        tripsFilteredByTripStatus = allFilteredTrip.filter((data) => (data?.tripLogNo === null || (data?.tripLogNo !== null && data?.tripLogNo.length === 0)) && data?.tripStatus === "Trip Running");
-                    }
-                } else {
-                    tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-
-                    if (selectedFilter.includes("On Time & Early (As per OEM)") || selectedFilter.includes("Delayed (As per OEM)") || selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed') || selectedFilter.includes('Early') || selectedFilter.includes('On Time')) {
-                        let finalStatusTrips = [];
-
-                        if (selectedFilter.includes("Early") || selectedFilter.includes("On Time")) {
-                            if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                const trips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
-                                trips.map((data) => finalStatusTrips.push(data));
-                            } else {
-                                const trips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.finalStatus));
-                                trips.map((data) => finalStatusTrips.push(data));
-                            }
-                        }
-
-                        if (
-                            (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) &&
-                            (!selectedFilter.includes('On Time & Early (As per OEM)') && !selectedFilter.includes('Delayed (As per OEM)'))
-                        ) {
-                            if (selectedFilter.includes('Mild Delayed')) {
-                                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
-                                    const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                    delayedArr1.forEach(data => {
-                                        if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                            const delayedHours = parseInt(data?.delayedHours);
-                                            if (delayedHours >= 0 && delayedHours <= 18) {
-                                                finalStatusTrips.push(data);
-                                            }
-                                        }
-                                    })
-                                } else {
-                                    const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                    delayedArr1.forEach(data => {
-                                        if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                            const delayedHours = parseInt(data?.delayedHours);
-                                            if (delayedHours >= 0 && delayedHours <= 18) {
-                                                finalStatusTrips.push(data);
-                                            }
-                                        }
-                                    })
-                                }
-                            }
-
-                            if (selectedFilter.includes('Moderate Delayed')) {
-                                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                    const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                    delayedArr1.forEach(data => {
-                                        if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                            const delayedHours = parseInt(data?.delayedHours);
-                                            if (delayedHours >= 19 && delayedHours <= 35) {
-                                                finalStatusTrips.push(data);
-                                            }
-                                        }
-                                    })
-                                } else {
-                                    const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                    delayedArr1.forEach(data => {
-                                        if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                            const delayedHours = parseInt(data?.delayedHours);
-                                            if (delayedHours >= 19 && delayedHours <= 35) {
-                                                finalStatusTrips.push(data);
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-
-                            if (selectedFilter.includes('Critical Delayed')) {
-                                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                    const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed');
-                                    delayedArr1.forEach(data => {
-                                        if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                            const delayedHours = parseInt(data?.delayedHours);
-                                            if (delayedHours >= 36) {
-                                                finalStatusTrips.push(data);
-                                            }
-                                        }
-                                    })
-                                } else {
-                                    const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
-                                    delayedArr1.forEach(data => {
-                                        if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-                                            const delayedHours = parseInt(data?.delayedHours);
-                                            if (delayedHours >= 36) {
-                                                finalStatusTrips.push(data);
-                                            }
-                                        }
-                                    })
-                                }
-                            }
-                        }
-
-                        if (selectedFilter.includes("On Time & Early (As per OEM)") || selectedFilter.includes("Delayed (As per OEM)")) {
-                            if (selectedFilter.includes('On Time & Early (As per OEM)')) {
-                                if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) &&
-                                    (!selectedFilter.includes('On Time') && !selectedFilter.includes('Early') && !selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
-                                ) {
-                                    allFilteredTrip.forEach(data => {
-                                        const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                        if (testData === true) {
-                                            finalStatusTrips.push(data)
-                                        }
-                                    })
-
-                                } else if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
-                                    finalStatusTrips = [];
-                                } else if (selectedFilter.includes('On Time') || selectedFilter.includes('Early')) {
-                                    let onTimeEarly = [];
-                                    if (selectedFilter.includes('On Time')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            // const filtered = allFilteredTrip.filter(data => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'On Time');
-                                            // finalStatusTrips = filtered;
-
-                                            allFilteredTrip.forEach(data => {
-                                                const filtered = selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'On Time';
-                                                if (filtered === true) {
-                                                    onTimeEarly.push(data)
-                                                }
-                                            });
-                                        } else {
-                                            // const filtered = allFilteredTrip.filter(data => data?.oemFinalStatus === 'On Time');
-                                            // finalStatusTrips = filtered;
-
-
-                                            allFilteredTrip.forEach(data => {
-                                                const filtered = data?.oemFinalStatus === 'On Time';
-                                                if (filtered === true) {
-                                                    onTimeEarly.push(data)
-                                                }
-                                            });
-                                        }
-                                    }
-
-                                    if (selectedFilter.includes('Early')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            allFilteredTrip.forEach(data => {
-                                                const filtered = selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Early';
-                                                if (filtered === true) {
-                                                    onTimeEarly.push(data)
-                                                }
-                                            });
-                                        } else {
-                                            allFilteredTrip.forEach(data => {
-                                                const filtered = data?.oemFinalStatus === 'Early';
-                                                if (filtered === true) {
-                                                    onTimeEarly.push(data)
-                                                }
-                                            });
-                                        }
-                                    }
-
-                                    finalStatusTrips = onTimeEarly;
-                                }
-                                else {
-                                    allFilteredTrip.forEach(data => {
-                                        const testData = (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early');
-                                        if (testData === true) {
-                                            finalStatusTrips.push(data)
-                                        }
-                                    })
-                                }
-                            }
-
-                            if (selectedFilter.includes('Delayed (As per OEM)')) {
-
-                                // if(selectedFilter.includes('Delayed (As per OEM)') && (
-                                //     (!selectedFilter.includes('Trip Tunning') && !selectedFilter.includes('Trip Completed') && !selectedFilter.includes('Mo'))
-                                // ))
-
-                                if ((selectedFilter.includes("Delayed (As per OEM)")) &&
-                                    (!selectedFilter.includes('Trip Running') && !selectedFilter.includes('Trip Completed') && !selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
-                                ) {
-                                    allFilteredTrip.forEach(data => {
-                                        const testData = (data?.oemFinalStatus === 'Delayed');
-                                        if (testData === true) {
-                                            finalStatusTrips.push(data)
-                                        }
-                                    })
-                                    // const filtered = allFilteredTrip.filter(data => data?.oemFinalStatus === 'Delayed');
-                                    // finalStatusTrips = filtered;
-                                }
-
-                                if (((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) && (selectedFilter.includes('Delayed (As per OEM)')))
-                                    && (!selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
-                                ) {
-                                    allFilteredTrip.forEach(data => {
-                                        const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
-                                        if (testData === true) {
-                                            finalStatusTrips.push(data)
-                                        }
-                                    })
-                                }
-
-                                // if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') && (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)'))) &&
-                                //     (!selectedFilter.includes('On Time & Early (As per OEM)') && !selectedFilter.includes('Delayed (As per OEM)'))) {
-                                //     allFilteredTrip.forEach(data => {
-                                //         const testData = selectedFilter.includes(data?.tripStatus) && (data?.oemFinalStatus === 'Delayed');
-                                //         if (testData === true) {
-                                //             finalStatusTrips.push(data)
-                                //         }
-                                //     })
-
-                                // }
-
-                                if (selectedFilter.includes('Mild Delayed') || selectedFilter.includes('Moderate Delayed') || selectedFilter.includes('Critical Delayed')) {
-                                    if (selectedFilter.includes('Mild Delayed')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
-                                            delayedArr1.forEach(data => {
-                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
-                                                    if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
-                                                        finalStatusTrips.push(data);
-                                                    }
-                                                }
-                                            });
-                                        } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
-                                            delayedArr1.forEach(data => {
-                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
-                                                    if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
-                                                        finalStatusTrips.push(data);
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    }
-
-                                    if (selectedFilter.includes('Moderate Delayed')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
-                                            delayedArr1.forEach(data => {
-                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
-                                                    if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
-                                                        finalStatusTrips.push(data);
-                                                    }
-                                                }
-                                            });
-                                        } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
-                                            delayedArr1.forEach(data => {
-                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
-                                                    if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
-                                                        finalStatusTrips.push(data);
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    }
-
-                                    if (selectedFilter.includes('Critical Delayed')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
-                                            delayedArr1.forEach(data => {
-                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
-                                                    if (oemDelayedHours >= 36) {
-                                                        finalStatusTrips.push(data);
-                                                    }
-                                                }
-                                            });
-                                        } else {
-                                            const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
-                                            delayedArr1.forEach(data => {
-                                                if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-                                                    const oemDelayedHours = parseInt(data?.oemDelayedHours);
-                                                    if (oemDelayedHours >= 36) {
-                                                        finalStatusTrips.push(data);
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    }
-                                }
-                                // else {
-                                //     allFilteredTrip.forEach(data => {
-                                //         const testData = (data?.oemFinalStatus === 'Delayed');
-                                //         if (testData === true) {
-                                //             finalStatusTrips.push(data)
-                                //         }
-                                //     })
-                                // }
-                            }
-                        }
-
-                        tripsFilteredByTripStatus = finalStatusTrips;
-                    } else {
-                        tripsFilteredByTripStatus = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus));
-                    }
-                };
-
-                if (selectedFilter.includes('Manual Bind')) {
-                    if (selectedFilter.length === 1) {
-                        tripsFilteredByTripStatus = allFilteredTrip.filter(data => data?.exitFrom === 'Manual Bind')
-                    } else {
-                        tripsFilteredByTripStatus = tripsFilteredByTripStatus.filter(data => data?.exitFrom === 'Manual Bind')
-                    }
-                }
-
-                setFilteredTrips(tripsFilteredByTripStatus);
-            } else {
-                setFilteredTrips(allFilteredTrip);
-            }
+        if ((selectedFilter.length >= 0)) {
+            currentDataFilter();
         }
 
-        if ((selectedFilter.length >= 0 && selectedFilter.length !== 1)) {
-            const allFilteredTrip = allTrips.filter(test => {
-                for (const key in form) {
-                    const testValue = String(test[key]).toLowerCase();
-                    const formValue = form[key].toLowerCase();
-                    if ((testValue !== formValue && formValue.length > 0)) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-
-            handleApplyFilter(allFilteredTrip);
-            // setShowLoader(false);
-        }
-
-        if (selectedFilter.length === 1 || showForce) {
-            getRunningTrips().then((response) => {
-                if (response.status === 200) {
-                    // setShowLoader(false);
-                    const allData = response?.data;
-
-                    const allFilteredTrip = allData.filter(test => {
-                        for (const key in form) {
-                            const testValue = String(test[key]).toLowerCase();
-                            const formValue = form[key].toLowerCase();
-                            if ((testValue !== formValue && formValue.length > 0)) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    });
-
-                    handleApplyFilter(allFilteredTrip);
-                    // setShowForce(false);
-                } else {
-                    // setShowLoader(false);
-                    setFilteredTrips([]);
-                }
-            }).catch((err) => {
-                err?.message && setErrorMessage(err?.message);
-                // setShowLoader(false);
-                setFilteredTrips([])
-            });
-
+        if (showForce) {
+            realTimeDataFilter();
+            setShowForce(false);
         }
 
     };
-
-    // useEffect(() => {
-    //     handleFilterTrips();
-    // }, [showForce]);
 
     const intervalRef = useRef(null);
 
@@ -1212,7 +1221,7 @@ const VehicleTrackDash = () => {
             <div className='mt-5 my-3 mx-2 px-3 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
                     <DashHead title="Vehicle Tracking Dashboard" />
-                    <div className='w-100 m-0 p-0 d-flex justify-content-end align-items-center mb-3'>
+                    <div className='w-100 m-0 p-0 pt-3 d-flex justify-content-end align-items-center mb-3'>
                         <div className='d-flex justify-content-center align-items-center'>
                             <div className='mx-1 px-2 thm-dark'>
                                 <span>Current Status </span>
@@ -1244,6 +1253,7 @@ const VehicleTrackDash = () => {
                                                 onChange={data?.onChange}
                                                 isClearable={true}
                                                 styles={selectStyles}
+                                                placeholder={`Search ${data?.label}`}
                                             />
                                         </Col>
                                     ))
@@ -1254,7 +1264,7 @@ const VehicleTrackDash = () => {
                                 </Col>
 
                                 <Col sm={12} md={6} lg={2} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
-                                    <Button type="button" className="px-3" onClick={() => handleFilterTrips()}>Show</Button>
+                                    <Button type="button" className="px-3" onClick={() => realTimeDataFilter()}>Show</Button>
                                     <HoveredButton type="button" className="px-3 ms-2"
                                         onClick={() => handleSelectFilter('All')}
                                     >Show All</HoveredButton>
@@ -1365,7 +1375,7 @@ const VehicleTrackDash = () => {
                             </div>
                             <Tooltip title="Refresh Data">
                                 <Link>
-                                    <IoMdRefresh onClick={() => handleFilterTrips()}
+                                    <IoMdRefresh onClick={() => realTimeDataFilter()}
                                         className='fs-2 refresh-button bg-thm-dark thm-white rounded p-1 cursor-pointer' />
                                 </Link>
                             </Tooltip>
