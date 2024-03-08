@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import * as XLSX from 'xlsx';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { Col, Form, Row } from 'react-bootstrap';
@@ -9,7 +10,9 @@ import { Link } from 'react-router-dom';
 import { BsFileEarmarkPdfFill } from 'react-icons/bs';
 import { FaFileExcel } from "react-icons/fa6";
 import { getAllPartiesList } from '../../hooks/clientMasterHooks';
-import * as XLSX from 'xlsx';
+import { ErrorToast } from '../../components/toast/toast';
+import { RxCross2 } from "react-icons/rx";
+import '../../assets/styles/reports.css';
 
 const TripsReport = ({ reportType, setReportType, selectedReportType, setSelectedReportType }) => {
 
@@ -24,9 +27,45 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     const [OEMList, setOEMList] = useState([]);
     const [selectedOEM, setSelectedOEM] = useState('');
     const [OEMName, setOEMName] = useState('');
+    const [selectedOEMs, setSelectedOEMs] = useState([]);
     const [sharedPdf, setsharedPdf] = useState(null);
 
-    const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? finalTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
+    // const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? finalTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
+
+    // const filteredbyOEMs = finalTrips.filter(data => selectedOEMs.includes(data?.consignorName.toLowerCase()));
+
+    const filteredOEMTrips = finalTrips.length > 0 ? ((selectedOEMs.length === 0 || selectedOEMs.includes(undefined)) ? finalTrips : finalTrips.filter(item => {
+        const consignorLowerCase = item.consignorName.toLowerCase();
+        return selectedOEMs.some(consignor => consignor.toLowerCase() === consignorLowerCase) && item;
+    })) : [];
+
+    console.log("oem", finalTrips);
+
+    const test = [
+        {
+            vehicle: 1,
+            consignor: 'MARUTI SUZUKI INDIA LIMITED'
+        },
+        {
+            vehicle: 2,
+            consignor: 'Glovis'
+        },
+        {
+            vehicle: 3,
+            consignor: 'MARUTI SUZUKI INDIA LIMITED'
+        },
+        {
+            vehicle: 4,
+            consignor: 'HONDA'
+        },
+        {
+            vehicle: 5,
+            consignor: 'Mahindra Logistics'
+        },
+    ];
+
+    const consignors = ['Maruti Suzuki India Limited', 'Mahindra Logistics']
+
     const reportTypes = [
         {
             label: "Trips Report",
@@ -257,6 +296,18 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     const handleSelectOEM = (oem) => {
         setSelectedOEM(oem);
         setOEMName(oem?.value);
+
+        if (oem?.value !== undefined && !selectedOEMs.includes(oem?.value)) {
+            oem?.value !== undefined && setSelectedOEMs([...selectedOEMs, oem?.value])
+        } else if (selectedOEMs.includes(oem?.value)) {
+            ErrorToast("OEM is alread selected");
+        }
+    };
+
+    const handleDeselectOEM = (oem) => {
+        const filtered = selectedOEMs.filter(data => data !== oem);
+        setSelectedOEMs(filtered);
+        setSelectedOEM('');
     };
 
     const getAllTrips = () => {
@@ -1022,6 +1073,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                 'Status': item?.currVehicleStatus,
                 'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
                 'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+                'Consignor Name': item?.consignorName,
                 'Origin': item.origin,
                 'Destination': item.destination,
                 'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
@@ -1041,6 +1093,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                 'Status': item.currVehicleStatus,
                 'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
                 'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+                'Consignor Name': item?.consignorName,
                 'Origin': item.origin,
                 'Destination': item.destination,
                 'Static ETA': convertTo24HourFormat(item?.staticETA),
@@ -1057,24 +1110,30 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
             }));
         }
 
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(formattedData);
+        if (formattedData.length > 0) {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(formattedData);
 
-        // Set bold font for header row
-        const headerCellStyle = {
-            font: { bold: true }
-        };
+            const headerCellStyle = {
+                font: { bold: true }
+            };
 
-        // Apply style to the header row (first row)
-        const headerRange = XLSX.utils.decode_range(ws['!ref']);
-        for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-            if (!ws[cellAddress]) continue;
-            ws[cellAddress].s = headerCellStyle;
+            // Apply style to the header row (first row)
+            const headerRange = XLSX.utils.decode_range(ws['!ref']);
+            for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (!ws[cellAddress]) continue;
+                ws[cellAddress].s = headerCellStyle;
+            }
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+            XLSX.writeFile(wb, 'trips_report.xlsx');
+        } else {
+            ErrorToast("No data found")
         }
 
-        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-        XLSX.writeFile(wb, 'exported_data.xlsx');
+
     };
 
     const constructWhatsAppLink = (pdfDataUri) => {
@@ -1226,7 +1285,26 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                                 isClearable={true}
                                 styles={selectStyles}
                                 placeholder="Search OEM"
+                                closeMenuOnSelect={false}
                             />
+
+                            <div className='mt-2'>
+                                <p className='mb-1 mt-3 fw-500'>Selected OEMs:-</p>
+
+                                {
+                                    selectedOEMs.map(data => (
+                                        <div className='py-1 mb-1 px-3 cursor-pointer d-flex justify-content-between align-items-center selected-oem'>
+                                            <p className='w-100 m-0 p-0' style={{ fontSize: "0.8rem" }}>{data}</p>
+                                            <RxCross2 onClick={() => handleDeselectOEM(data)} />
+                                        </div>
+
+                                    ))
+                                }
+
+                                {
+                                    selectedOEMs.length === 0 && <div className='text-secondary w-100 text-center'>No OEM Selected</div>
+                                }
+                            </div>
                         </>
                     ) : null
                 }

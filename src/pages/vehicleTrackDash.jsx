@@ -67,10 +67,12 @@ const VehicleTrackDash = () => {
     const [allTripsModerate, setAllTripsModerate] = useState(0);
     const [allTripsCritical, setAllTripsCritical] = useState(0);
 
-
     const [mildCounts, setMildCounts] = useState(0);
     const [moderateCounts, setModerateCounts] = useState(0);
     const [criticalCounts, setCriticalCounts] = useState(0);
+
+    const [onHoldCounts, setOnHoldCounts] = useState(0);
+    const [gpsOffCounts, setGpsOffCounts] = useState(0);
 
     const [animationKey, setAnimationKey] = useState(0);
     const intialColumns = [
@@ -200,6 +202,13 @@ const VehicleTrackDash = () => {
             if (response.status === 200) {
                 setShowLoader(false);
                 const allData = response?.data;
+
+                const gpsOff = allData.filter(data => data?.currVehicleStatus === 'GPS Off');
+                const onHold = allData.filter(data => data?.currVehicleStatus === 'On Hold');
+                // const onHold = allData.filter(data => data?.tripStatus === 'Trip Running' && data?.currVehicleStatus === 'On Hold');
+
+                setGpsOffCounts(gpsOff.length);
+                setOnHoldCounts(onHold?.length);
 
                 setAllTrips(allData);
                 setFilteredTrips(allData);
@@ -1221,7 +1230,19 @@ const VehicleTrackDash = () => {
             <div className='mt-5 my-3 mx-2 px-3 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
                     <DashHead title="Vehicle Tracking Dashboard" />
-                    <div className='w-100 m-0 p-0 pt-3 d-flex justify-content-end align-items-center mb-3'>
+                    <div className='w-100 m-0 p-0 pt-3 d-flex justify-content-between align-items-center mb-3'>
+                        <div className='d-flex justify-content-start align-items-start'>
+                            <div className='bg-danger rounded px-4 text-white me-2'>
+                                <span className='fw-bold me-2' style={{ fontSize: '0.8rem' }}>GPS OFF:</span>
+                                <span className='fw-bold' style={{ fontSize: '0.8rem' }}>{gpsOffCounts}</span>
+                            </div>
+
+                            <div className='bg-warning rounded px-4 text-dark me-2'>
+                                <span className=' me-2' style={{ fontSize: '0.8rem' }}>On Hold:</span>
+                                <span className='' style={{ fontSize: '0.8rem' }}>{onHoldCounts}</span>
+                            </div>
+                        </div>
+
                         <div className='d-flex justify-content-center align-items-center'>
                             <div className='mx-1 px-2 thm-dark'>
                                 <span>Current Status </span>

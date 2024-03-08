@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
+import * as XLSX from 'xlsx';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { Col } from 'react-bootstrap';
@@ -383,6 +384,58 @@ const HoursReport = () => {
                 doc.save('10 Hours Trips report.pdf');
             }
         }
+    };
+
+    console.log("vehicles on hold", vehiclesOnHold);
+
+
+    const exportToExcel = () => {
+        let formattedData = []
+
+        formattedData = vehiclesOnHold.map(item => ({
+            'Vehicle No': item.vehicleNo,
+            'Status': item?.currVehicleStatus,
+            'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
+            'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+            'Origin': item.origin,
+            'Destination': item.destination,
+            'Static ETA': convertTo24HourFormat(item?.staticETA),
+            'GPS (Date / Time)': item?.locationTime,
+            'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
+            'Route (KM)': item?.routeKM,
+            'KM Covered': item?.runningKMs,
+            'Difference (Km)': item?.kmDifference,
+            'Location': item?.location,
+            'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
+            'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours),
+            'KM Covered': item?.kmCovered,
+            'Hold Hours': item?.timeDifference,
+        }));
+
+        if (formattedData.length > 0) {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(formattedData);
+
+            const headerCellStyle = {
+                font: { bold: true }
+            };
+
+            // Apply style to the header row (first row)
+            const headerRange = XLSX.utils.decode_range(ws['!ref']);
+            for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (!ws[cellAddress]) continue;
+                ws[cellAddress].s = headerCellStyle;
+            }
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+            XLSX.writeFile(wb, '10_hours_report.xlsx');
+        } else {
+            ErrorToast("No data found")
+        }
+
+
     };
 
     return (
