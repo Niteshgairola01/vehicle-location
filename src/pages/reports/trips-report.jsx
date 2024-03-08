@@ -8,6 +8,7 @@ import { Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { BsFileEarmarkPdfFill } from 'react-icons/bs';
 import { getAllPartiesList } from '../../hooks/clientMasterHooks';
+import * as XLSX from 'xlsx';
 
 const TripsReport = ({ reportType, setReportType, selectedReportType, setSelectedReportType }) => {
 
@@ -1010,6 +1011,35 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         const pdfBlob = await doc.output('blob');
         setPdfData(pdfBlob);
         // return pdfBlob;
+    };
+
+    const exportToExcel = () => {
+        const formattedData = filteredOEMTrips.map(item => ({
+            'Vehicle No': item.vehicleNo,
+            'Status': item.currVehicleStatus,
+            'Loading (Date / Time)': item.tripLogNo,
+            'Vehicle Exit (Date / Time)': item.loadingDate,
+            'Origin': item.origin,
+            'Destination': item.Destination,
+            'Static ETA(OEM)': item?.staticEta,
+            'GPS (Date / Time)': item?.locationDataTime,
+            'Reach Date': item?.reachDate,
+            'Route (KM)': item?.routeKm,
+            'KM Covered': item?.routeKm,
+            'Difference (Km)': item?.routeKm,
+
+            
+            'Creation Date': item.creationDate,
+            'Vehicle Exit Date': item.vehicleExitDate,
+            'Consignor Name': item.consignorName,
+            'Origin': item.origin,
+            'Destination': item.destination
+        }));
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(formattedData);
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+        XLSX.writeFile(wb, 'exported_data.xlsx');
     };
 
     const constructWhatsAppLink = (pdfDataUri) => {

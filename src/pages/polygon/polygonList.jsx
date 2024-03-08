@@ -4,7 +4,7 @@ import '../../assets/styles/polygon.css';
 import { Col, Row } from 'react-bootstrap';
 import { Tooltip } from '@mui/material';
 import Card from '../../components/Card/card';
-import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
+import { CircleF, DirectionsService, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton';
 import { CiEdit } from "react-icons/ci";
 import { Link, useNavigate } from 'react-router-dom';

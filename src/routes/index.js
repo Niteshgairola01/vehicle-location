@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import VehicleTrackDash from '../pages/vehicleTrackDash';
 import PolygonList from '../pages/polygon/polygonList';
@@ -13,6 +13,7 @@ import Reports from '../pages/reports/reports';
 import DriverForum from '../pages/driver-forum/driverForum';
 import DriverMapping from '../pages/driver-forum/driverMapping';
 import ForecastDashoard from '../pages/forecast/forecast-dashboard';
+import PlantInforDash from '../pages/plantInfo/plantInforDash';
 
 const AllRoutes = () => {
     const location = useLocation();
@@ -181,6 +182,8 @@ const AllRoutes = () => {
                 {/* Forecasting */}
                 <Route path="/forecast" element={<ForecastDashoard />} />
 
+                {/* Plant Info */}
+                <Route path="/plant-info" element={<PlantInforDash />} />
             </Routes>
         </>
     )

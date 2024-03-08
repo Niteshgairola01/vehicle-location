@@ -36,6 +36,10 @@ const NavBar = () => {
       title: "Forecast",
       path: '/forecast'
     },
+    {
+      title: "Plant",
+      path: '/plant-info'
+    },
     // {
     //   title: "Driver Forum",
     //   path: '/driver-forum'

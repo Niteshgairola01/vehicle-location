@@ -297,8 +297,6 @@ const ForecastDashoard = () => {
         }
     };
 
-    console.log("office", hoveredOffice);
-
     return (
         <div className='thm-dark m-0 p-0 py-5 px-3 pt-3'>
             <Card>
