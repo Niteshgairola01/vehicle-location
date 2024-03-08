@@ -7,6 +7,7 @@ import { getRunningTrips } from '../../hooks/tripsHooks';
 import { Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { BsFileEarmarkPdfFill } from 'react-icons/bs';
+import { FaFileExcel } from "react-icons/fa6";
 import { getAllPartiesList } from '../../hooks/clientMasterHooks';
 import * as XLSX from 'xlsx';
 
@@ -1014,30 +1015,64 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     };
 
     const exportToExcel = () => {
-        const formattedData = filteredOEMTrips.map(item => ({
-            'Vehicle No': item.vehicleNo,
-            'Status': item.currVehicleStatus,
-            'Loading (Date / Time)': item.tripLogNo,
-            'Vehicle Exit (Date / Time)': item.loadingDate,
-            'Origin': item.origin,
-            'Destination': item.Destination,
-            'Static ETA(OEM)': item?.staticEta,
-            'GPS (Date / Time)': item?.locationDataTime,
-            'Reach Date': item?.reachDate,
-            'Route (KM)': item?.routeKm,
-            'KM Covered': item?.routeKm,
-            'Difference (Km)': item?.routeKm,
-
-            
-            'Creation Date': item.creationDate,
-            'Vehicle Exit Date': item.vehicleExitDate,
-            'Consignor Name': item.consignorName,
-            'Origin': item.origin,
-            'Destination': item.destination
-        }));
+        let formattedData = []
+        if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
+            formattedData = filteredOEMTrips.map(item => ({
+                'Vehicle No': item.vehicleNo,
+                'Status': item?.currVehicleStatus,
+                'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
+                'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+                'Origin': item.origin,
+                'Destination': item.destination,
+                'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
+                'GPS (Date / Time)': getGPSTime(item?.locationTime),
+                'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
+                'Route (KM)': item?.routeKM,
+                'KM Covered': item?.runningKMs,
+                'Difference (Km)': item?.kmDifference,
+                'Location': item?.location,
+                'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
+                'OEM Final Status': getDelayedType(item?.oemFinalStatus, item?.oemDelayedHours),
+                'OEM Delayed Hours': getDelayedHours(item?.oemDelayedHours),
+            }));
+        } else {
+            formattedData = filteredOEMTrips.map(item => ({
+                'Vehicle No': item.vehicleNo,
+                'Status': item.currVehicleStatus,
+                'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
+                'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+                'Origin': item.origin,
+                'Destination': item.destination,
+                'Static ETA': convertTo24HourFormat(item?.staticETA),
+                'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
+                'GPS (Date / Time)': getGPSTime(item?.locationTime),
+                'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
+                'Route (KM)': item?.routeKM,
+                'KM Covered': item?.runningKMs,
+                'Difference (Km)': item?.kmDifference,
+                'Location': item?.location,
+                'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
+                'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours),
+                'Delayed Hours': getDelayedHours(item?.delayedHours),
+            }));
+        }
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(formattedData);
+
+        // Set bold font for header row
+        const headerCellStyle = {
+            font: { bold: true }
+        };
+
+        // Apply style to the header row (first row)
+        const headerRange = XLSX.utils.decode_range(ws['!ref']);
+        for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+            if (!ws[cellAddress]) continue;
+            ws[cellAddress].s = headerCellStyle;
+        }
+
         XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
         XLSX.writeFile(wb, 'exported_data.xlsx');
     };
@@ -1203,7 +1238,9 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                     selectedFilters.length > 0 ? (
                         <Tooltip title="Export As PDF">
                             <Link>
+                                <FaFileExcel className='ms-2 cursor-pointer fs-3 text-success' onClick={() => exportToExcel()} />
                                 <BsFileEarmarkPdfFill className='ms-2 cursor-pointer fs-3' style={{ color: "#ed031b" }} onClick={exportToPDF} />
+                                {/* <button onClick={() => exportToExcel()}>Excel</button> */}
                             </Link>
                         </Tooltip>
                     ) : null
