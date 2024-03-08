@@ -28,43 +28,21 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     const [selectedOEM, setSelectedOEM] = useState('');
     const [OEMName, setOEMName] = useState('');
     const [selectedOEMs, setSelectedOEMs] = useState([]);
+    const [originList, setOriginList] = useState([]);
+    const [selectedOrigin, setSelectedOrigin] = useState('');
+    const [selectedOrigins, setSelectedOrigins] = useState([]);
+
     const [sharedPdf, setsharedPdf] = useState(null);
 
-    // const filteredOEMTrips = finalTrips.length > 0 ? (OEMName === "" ? finalTrips : finalTrips.filter(data => data?.consignorName && data?.consignorName?.toLowerCase().includes(OEMName.toLowerCase()))) : [];
-
-    // const filteredbyOEMs = finalTrips.filter(data => selectedOEMs.includes(data?.consignorName.toLowerCase()));
-
-    const filteredOEMTrips = finalTrips.length > 0 ? ((selectedOEMs.length === 0 || selectedOEMs.includes(undefined)) ? finalTrips : finalTrips.filter(item => {
+    const tripsFilteredByOEM = finalTrips.length > 0 ? ((selectedOEMs.length === 0 || selectedOEMs.includes(undefined)) ? finalTrips : finalTrips.filter(item => {
         const consignorLowerCase = item.consignorName.toLowerCase();
         return selectedOEMs.some(consignor => consignor.toLowerCase() === consignorLowerCase) && item;
     })) : [];
 
-    console.log("oem", finalTrips);
-
-    const test = [
-        {
-            vehicle: 1,
-            consignor: 'MARUTI SUZUKI INDIA LIMITED'
-        },
-        {
-            vehicle: 2,
-            consignor: 'Glovis'
-        },
-        {
-            vehicle: 3,
-            consignor: 'MARUTI SUZUKI INDIA LIMITED'
-        },
-        {
-            vehicle: 4,
-            consignor: 'HONDA'
-        },
-        {
-            vehicle: 5,
-            consignor: 'Mahindra Logistics'
-        },
-    ];
-
-    const consignors = ['Maruti Suzuki India Limited', 'Mahindra Logistics']
+    const filteredOEMTrips = tripsFilteredByOEM.length > 0 ? ((selectedOrigins.length === 0 || selectedOrigins.includes(undefined)) ? tripsFilteredByOEM : tripsFilteredByOEM.filter(item => {
+        const originLowerCase = item.origin.toLowerCase();
+        return selectedOrigins.some(consignor => consignor.toLowerCase() === originLowerCase) && item;
+    })) : [];
 
     const reportTypes = [
         {
@@ -300,7 +278,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         if (oem?.value !== undefined && !selectedOEMs.includes(oem?.value)) {
             oem?.value !== undefined && setSelectedOEMs([...selectedOEMs, oem?.value])
         } else if (selectedOEMs.includes(oem?.value)) {
-            ErrorToast("OEM is alread selected");
+            ErrorToast("OEM is selected already");
         }
     };
 
@@ -310,11 +288,44 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         setSelectedOEM('');
     };
 
+    const handleSelectOrigin = (origin) => {
+        setSelectedOrigin(origin);
+
+        if (origin?.value !== undefined && !selectedOrigins.includes(origin?.value)) {
+            origin?.value !== undefined && setSelectedOrigins([...selectedOrigins, origin?.value])
+        } else if (selectedOrigins.includes(origin?.value)) {
+            ErrorToast("Origin is selected already");
+        }
+    };
+
+    const handleDeselectOrigin = (origin) => {
+        const filtered = selectedOrigins.filter(data => data !== origin);
+        setSelectedOrigins(filtered);
+        setSelectedOrigin('');
+    };
+
     const getAllTrips = () => {
         getRunningTrips().then(response => {
             if (response?.status === 200) {
                 const allData = response?.data;
                 const allTrips = allData?.filter(data => data?.tripStatus === 'Trip Running');
+                const uniqueOriginsSet = new Set();
+
+                allTrips.forEach(item => {
+                    item?.origin !== null && uniqueOriginsSet.add(item.origin.toLowerCase());
+                });
+
+                const uniqueOriginsArray = Array.from(uniqueOriginsSet);
+
+                const desiredOriginArray = uniqueOriginsArray.map(origin => {
+                    return {
+                        origin: origin.charAt(0).toUpperCase() + origin.slice(1),
+                        label: origin.charAt(0).toUpperCase() + origin.slice(1),
+                        value: origin.charAt(0).toUpperCase() + origin.slice(1),
+                    };
+                });
+
+                setOriginList(desiredOriginArray)
 
                 setAllTrips(allTrips);
             } else {
@@ -1310,7 +1321,45 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                 }
             </Col>
 
-            <Col sm={2}></Col>
+
+            <Col sm={2}>
+                {
+                    selectedReportType[0]?.value === 'Trips Report' ? (
+                        <>
+                            <Form.Label>Select Origin</Form.Label>
+                            <Select
+                                options={originList}
+                                value={selectedOrigin}
+                                onChange={handleSelectOrigin}
+                                isClearable={true}
+                                styles={selectStyles}
+                                placeholder="Search Origin"
+                                closeMenuOnSelect={false}
+                            />
+
+                            <div className='mt-2'>
+                                <p className='mb-1 mt-3 fw-500'>Selected Origins:-</p>
+
+                                {
+                                    selectedOrigins.map(data => (
+                                        <div className='py-1 mb-1 px-3 cursor-pointer d-flex justify-content-between align-items-center selected-oem'>
+                                            <p className='w-100 m-0 p-0' style={{ fontSize: "0.8rem" }}>{data}</p>
+                                            <RxCross2 onClick={() => handleDeselectOrigin(data)} />
+                                        </div>
+
+                                    ))
+                                }
+
+                                {
+                                    selectedOrigins.length === 0 && <div className='text-secondary w-100 text-center'>No Origin Selected</div>
+                                }
+                            </div>
+                        </>
+                    ) : null
+                }
+            </Col>
+
+            {/* <Col sm={2}></Col> */}
             <Col sm={1} className='d-flex justify-content-end align-items-start'>
                 {
                     selectedFilters.length > 0 ? (

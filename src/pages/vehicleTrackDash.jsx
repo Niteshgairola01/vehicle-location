@@ -1232,12 +1232,12 @@ const VehicleTrackDash = () => {
                     <DashHead title="Vehicle Tracking Dashboard" />
                     <div className='w-100 m-0 p-0 pt-3 d-flex justify-content-between align-items-center mb-3'>
                         <div className='d-flex justify-content-start align-items-start'>
-                            <div className='bg-danger rounded px-4 text-white me-2'>
+                            <div className='rounded px-4 text-white me-2' style={{background:"#ff0000"}}>
                                 <span className='fw-bold me-2' style={{ fontSize: '0.8rem' }}>GPS OFF:</span>
                                 <span className='fw-bold' style={{ fontSize: '0.8rem' }}>{gpsOffCounts}</span>
                             </div>
 
-                            <div className='bg-warning rounded px-4 text-dark me-2'>
+                            <div className='rounded px-4 text-dark me-2' style={{background: "#fffc00"}}>
                                 <span className=' me-2' style={{ fontSize: '0.8rem' }}>On Hold:</span>
                                 <span className='' style={{ fontSize: '0.8rem' }}>{onHoldCounts}</span>
                             </div>
