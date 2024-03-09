@@ -282,7 +282,10 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         if (oem?.value !== undefined && !selectedOEMs.includes(oem?.value)) {
             oem?.value !== undefined && setSelectedOEMs([...selectedOEMs, oem?.value])
         } else if (selectedOEMs.includes(oem?.value)) {
-            ErrorToast("OEM is selected already");
+            // ErrorToast("OEM is selected already");
+            const filtered = selectedOEMs.filter(data => data !== oem?.value);
+            setSelectedOEMs(filtered);
+            setSelectedOEM('');
         }
     };
 
@@ -298,7 +301,10 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         if (origin?.value !== undefined && !selectedOrigins.includes(origin?.value)) {
             origin?.value !== undefined && setSelectedOrigins([...selectedOrigins, origin?.value])
         } else if (selectedOrigins.includes(origin?.value)) {
-            ErrorToast("Origin is selected already");
+            // ErrorToast("Origin is selected already");
+            const filtered = selectedOrigins.filter(data => data !== origin?.value);
+            setSelectedOrigins(filtered);
+            setSelectedOrigin('');
         }
     };
 
@@ -1078,25 +1084,31 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         // return pdfBlob;
     };
 
+    const formatDate = (dateTimeString) => {
+        const dateTime = new Date(dateTimeString);
+        // Format the date-time string consistently for Excel
+        return `${dateTime.toLocaleDateString()} ${dateTime.toLocaleTimeString()}`;
+    };
+
     // const exportToExcel = () => {
     //     let formattedData = []
     //     if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
     //         formattedData = filteredOEMTrips.map(item => ({
     //             'Vehicle No': item.vehicleNo,
     //             'Status': item?.currVehicleStatus,
-    //             'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
-    //             'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+    //             'Loading (Date / Time)': new Date(handleFormateISTDate(item.loadingDate)),
+    //             'Vehicle Exit (Date / Time)': new Date(handleFormatDate(item.vehicleExitDate)),
     //             'Consignor Name': item?.consignorName,
     //             'Origin': item.origin,
     //             'Destination': item.destination,
-    //             'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
-    //             'GPS (Date / Time)': getGPSTime(item?.locationTime),
-    //             'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
+    //             'Static ETA(OEM)': new Date(handleFormateISTDate(item?.oemReachTime)),
+    //             'GPS (Date / Time)': new Date(getGPSTime(item?.locationTime)),
+    //             'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : new Date(handleFormatDate(item?.unloadingReachDate)),
     //             'Route (KM)': item?.routeKM,
     //             'KM Covered': item?.runningKMs,
     //             'Difference (Km)': item?.kmDifference,
     //             'Location': item?.location,
-    //             'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
+    //             'Estimated Arrival Date': new Date(convertTo24HourFormat(item?.estimatedArrivalDate)),
     //             'OEM Final Status': getDelayedType(item?.oemFinalStatus, item?.oemDelayedHours),
     //             'OEM Delayed Hours': getDelayedHours(item?.oemDelayedHours),
     //         }));
@@ -1104,20 +1116,20 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     //         formattedData = filteredOEMTrips.map(item => ({
     //             'Vehicle No': item.vehicleNo,
     //             'Status': item.currVehicleStatus,
-    //             'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
-    //             'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+    //             'Loading (Date / Time)': new Date(handleFormateISTDate(item.loadingDate)),
+    //             'Vehicle Exit (Date / Time)': new Date(handleFormatDate(item.vehicleExitDate)),
     //             'Consignor Name': item?.consignorName,
     //             'Origin': item.origin,
     //             'Destination': item.destination,
-    //             'Static ETA': convertTo24HourFormat(item?.staticETA),
-    //             'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
-    //             'GPS (Date / Time)': getGPSTime(item?.locationTime),
-    //             'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
+    //             'Static ETA': new Date(convertTo24HourFormat(item?.staticETA)),
+    //             'Static ETA(OEM)': new Date(handleFormateISTDate(item?.oemReachTime)),
+    //             'GPS (Date / Time)': new Date(getGPSTime(item?.locationTime)),
+    //             'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : new Date(handleFormatDate(item?.unloadingReachDate)),
     //             'Route (KM)': item?.routeKM,
     //             'KM Covered': item?.runningKMs,
     //             'Difference (Km)': item?.kmDifference,
     //             'Location': item?.location,
-    //             'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
+    //             'Estimated Arrival Date': new Date(convertTo24HourFormat(item?.estimatedArrivalDate)),
     //             'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours),
     //             'Delayed Hours': getDelayedHours(item?.delayedHours),
     //         }));
@@ -1389,9 +1401,11 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
             ...provided,
             fontSize: '0.9rem',
         }),
-        option: (provided) => ({
+        option: (provided, state) => ({
             ...provided,
             fontSize: '0.9rem',
+            background: state.isSelected ? '#09215f' : 'white',
+            cursor: 'pointer'
         }),
     };
 
@@ -1429,6 +1443,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                                 isClearable={true}
                                 styles={selectStyles}
                                 placeholder="Search OEM"
+                                isOptionSelected={(option) => selectedOEMs.includes(option.value)}
                                 closeMenuOnSelect={false}
                             />
 
@@ -1467,6 +1482,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                                 isClearable={true}
                                 styles={selectStyles}
                                 placeholder="Search Origin"
+                                isOptionSelected={(option) => selectedOrigins.includes(option.value)}
                                 closeMenuOnSelect={false}
                             />
 
