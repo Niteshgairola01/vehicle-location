@@ -24,9 +24,9 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     const [finalTrips, setFinalTrips] = useState([]);
     const [attributes, setAttributes] = useState([]);
     const [columnNames, setColumnNames] = useState([]);
+    const [excelAtrributes, setExcelAttributes] = useState([]);
     const [OEMList, setOEMList] = useState([]);
     const [selectedOEM, setSelectedOEM] = useState('');
-    const [OEMName, setOEMName] = useState('');
     const [selectedOEMs, setSelectedOEMs] = useState([]);
     const [originList, setOriginList] = useState([]);
     const [selectedOrigin, setSelectedOrigin] = useState('');
@@ -74,11 +74,16 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     }, [selectedFilters]);
 
     useEffect(() => {
-        if (selectedOEM === null) {
-            setOEMName('');
+        if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
+            setExcelAttributes(['vehicleNo', 'currVehicleStatus', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'oemReachTime', 'locationTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
+                'kmDifference', 'location', 'estimatedArrivalDate', 'oemFinalStatus', 'oemDelayedHours'
+            ]);
+        } else {
+            setExcelAttributes(['vehicleNo', 'currVehicleStatus', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'locationTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
+                'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+            ]);
         }
-    }, [selectedOEM]);
-
+    }, [selectedFilters]);
 
     const allFilters = ['Early', 'On Time', 'Mild Delayed', 'Moderate Delayed', 'Critical Delayed', 'On Time & Early (As per OEM)', 'Delayed (As per OEM)'];
 
@@ -273,7 +278,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
     const handleSelectOEM = (oem) => {
         setSelectedOEM(oem);
-        setOEMName(oem?.value);
 
         if (oem?.value !== undefined && !selectedOEMs.includes(oem?.value)) {
             oem?.value !== undefined && setSelectedOEMs([...selectedOEMs, oem?.value])
@@ -1050,8 +1054,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
                     const test = filteredOEMTrips.filter(filters => filters?.vehicleNo === data.row.raw.vehicleNo);
 
-                    console.log("test", test[0]);
-
                     let color = 'black';
                     if (test[0].currVehicleStatus === 'On Hold') {
                         color = '#fffc00'
@@ -1076,76 +1078,207 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         // return pdfBlob;
     };
 
-    const exportToExcel = () => {
-        let formattedData = []
-        if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
-            formattedData = filteredOEMTrips.map(item => ({
-                'Vehicle No': item.vehicleNo,
-                'Status': item?.currVehicleStatus,
-                'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
-                'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
-                'Consignor Name': item?.consignorName,
-                'Origin': item.origin,
-                'Destination': item.destination,
-                'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
-                'GPS (Date / Time)': getGPSTime(item?.locationTime),
-                'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
-                'Route (KM)': item?.routeKM,
-                'KM Covered': item?.runningKMs,
-                'Difference (Km)': item?.kmDifference,
-                'Location': item?.location,
-                'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
-                'OEM Final Status': getDelayedType(item?.oemFinalStatus, item?.oemDelayedHours),
-                'OEM Delayed Hours': getDelayedHours(item?.oemDelayedHours),
-            }));
-        } else {
-            formattedData = filteredOEMTrips.map(item => ({
-                'Vehicle No': item.vehicleNo,
-                'Status': item.currVehicleStatus,
-                'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
-                'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
-                'Consignor Name': item?.consignorName,
-                'Origin': item.origin,
-                'Destination': item.destination,
-                'Static ETA': convertTo24HourFormat(item?.staticETA),
-                'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
-                'GPS (Date / Time)': getGPSTime(item?.locationTime),
-                'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
-                'Route (KM)': item?.routeKM,
-                'KM Covered': item?.runningKMs,
-                'Difference (Km)': item?.kmDifference,
-                'Location': item?.location,
-                'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
-                'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours),
-                'Delayed Hours': getDelayedHours(item?.delayedHours),
-            }));
-        }
+    // const exportToExcel = () => {
+    //     let formattedData = []
+    //     if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
+    //         formattedData = filteredOEMTrips.map(item => ({
+    //             'Vehicle No': item.vehicleNo,
+    //             'Status': item?.currVehicleStatus,
+    //             'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
+    //             'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+    //             'Consignor Name': item?.consignorName,
+    //             'Origin': item.origin,
+    //             'Destination': item.destination,
+    //             'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
+    //             'GPS (Date / Time)': getGPSTime(item?.locationTime),
+    //             'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
+    //             'Route (KM)': item?.routeKM,
+    //             'KM Covered': item?.runningKMs,
+    //             'Difference (Km)': item?.kmDifference,
+    //             'Location': item?.location,
+    //             'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
+    //             'OEM Final Status': getDelayedType(item?.oemFinalStatus, item?.oemDelayedHours),
+    //             'OEM Delayed Hours': getDelayedHours(item?.oemDelayedHours),
+    //         }));
+    //     } else {
+    //         formattedData = filteredOEMTrips.map(item => ({
+    //             'Vehicle No': item.vehicleNo,
+    //             'Status': item.currVehicleStatus,
+    //             'Loading (Date / Time)': handleFormateISTDate(item.loadingDate),
+    //             'Vehicle Exit (Date / Time)': handleFormatDate(item.vehicleExitDate),
+    //             'Consignor Name': item?.consignorName,
+    //             'Origin': item.origin,
+    //             'Destination': item.destination,
+    //             'Static ETA': convertTo24HourFormat(item?.staticETA),
+    //             'Static ETA(OEM)': handleFormateISTDate(item?.oemReachTime),
+    //             'GPS (Date / Time)': getGPSTime(item?.locationTime),
+    //             'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : handleFormatDate(item?.unloadingReachDate),
+    //             'Route (KM)': item?.routeKM,
+    //             'KM Covered': item?.runningKMs,
+    //             'Difference (Km)': item?.kmDifference,
+    //             'Location': item?.location,
+    //             'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
+    //             'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours),
+    //             'Delayed Hours': getDelayedHours(item?.delayedHours),
+    //         }));
+    //     }
 
-        if (formattedData.length > 0) {
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(formattedData);
+    //     if (formattedData.length > 0) {
+    //         const wb = XLSX.utils.book_new();
+    //         const ws = XLSX.utils.json_to_sheet(formattedData);
 
-            const headerCellStyle = {
-                font: { bold: true }
-            };
+    //         const headerCellStyle = {
+    //             font: { bold: true }
+    //         };
 
-            // Apply style to the header row (first row)
-            const headerRange = XLSX.utils.decode_range(ws['!ref']);
-            for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
-                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-                if (!ws[cellAddress]) continue;
-                ws[cellAddress].s = headerCellStyle;
+    //         // Apply style to the header row (first row)
+    //         const headerRange = XLSX.utils.decode_range(ws['!ref']);
+    //         for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+    //             const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+    //             if (!ws[cellAddress]) continue;
+    //             ws[cellAddress].s = headerCellStyle;
+    //         }
+
+    //         XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+    //         XLSX.writeFile(wb, 'trips_report.xlsx');
+    //     } else {
+    //         ErrorToast("No data found")
+    //     }
+
+
+    // };
+
+    const formatDataKey = (data) => {
+        return data.map((item) => {
+            const filteredItem = {};
+            const desiredKeys = excelAtrributes.map(key => key);
+
+            for (const key of desiredKeys) {
+                if (item.hasOwnProperty(key)) {
+                    filteredItem[key] = item[key];
+                }
             }
 
-            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-
-            XLSX.writeFile(wb, 'trips_report.xlsx');
-        } else {
-            ErrorToast("No data found")
-        }
-
-
+            return filteredItem;
+        });
     };
+
+    const formatExcelData = (data) => {
+        return data.map((item) => {
+            const formattedItem = { ...item };
+
+            if (formattedItem.hasOwnProperty('loadingDate')) {
+                formattedItem.loadingDate = handleFormateISTDate(formattedItem.loadingDate);
+            }
+
+            if (formattedItem.hasOwnProperty('vehicleExitDate')) {
+                formattedItem.vehicleExitDate = handleFormatDate(formattedItem.vehicleExitDate);
+            }
+
+            if (formattedItem.hasOwnProperty('staticETA')) {
+                formattedItem.staticETA = convertTo24HourFormat(formattedItem?.staticETA);
+            }
+
+            if (formattedItem.hasOwnProperty('oemReachTime')) {
+                formattedItem.oemReachTime = handleFormateISTDate(formattedItem?.oemReachTime);
+            }
+
+            if (formattedItem.hasOwnProperty('locationTime')) {
+                formattedItem.locationTime = getGPSTime(formattedItem?.locationTime);
+            }
+
+            if (formattedItem.hasOwnProperty('unloadingReachDate')) {
+                formattedItem.unloadingReachDate = formattedItem?.unloadingReachDate === "" || formattedItem?.unloadingReachDate === null ? '' : handleFormatDate(formattedItem?.unloadingReachDate);
+            }
+
+            if (formattedItem.hasOwnProperty('estimatedArrivalDate')) {
+                formattedItem.estimatedArrivalDate = convertTo24HourFormat(formattedItem?.estimatedArrivalDate);
+            }
+
+            if (formattedItem.hasOwnProperty('oemFinalStatus')) {
+                formattedItem.oemFinalStatus = getDelayedType(formattedItem?.oemFinalStatus, formattedItem?.oemDelayedHours);
+            }
+
+            if (formattedItem.hasOwnProperty('oemDelayedHours')) {
+                formattedItem.oemDelayedHours = getDelayedHours(formattedItem?.oemDelayedHours);
+            }
+
+            if (formattedItem.hasOwnProperty('finalStatus')) {
+                formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours);
+            }
+
+            if (formattedItem.hasOwnProperty('delayedHours')) {
+                formattedItem.delayedHours = getDelayedHours(formattedItem?.delayedHours);
+            }
+
+            return formattedItem;
+        });
+    };
+
+    const exportToExcel = () => {
+        let formattedData = [];
+
+        formattedData = formatExcelData(formatDataKey(filteredOEMTrips.filter(item => excelAtrributes.includes(Object.keys(item)[0]))));
+
+        let headers = [];
+
+        if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
+            headers = [
+                {
+                    vehicleNo: 'Vehicle No.',
+                    currVehicleStatus: 'Status',
+                    loadingDate: 'Loading (Date / Time)',
+                    vehicleExitDate: 'Vehicle Exit (Date / Time)',
+                    consignorName: 'Consignor Name',
+                    origin: 'Origin',
+                    destination: 'Destination',
+                    oemReachTime: 'Static ETA(OEM)',
+                    locationTime: 'GPS (Date / Time)',
+                    unloadingReachDate: 'Reach Date',
+                    routeKM: 'Route (KM)',
+                    runningKMs: 'KM Covered',
+                    kmDifference: 'Difference (Km)',
+                    location: 'Location',
+                    estimatedArrivalDate: 'Estimated Arrival Date',
+                    oemFinalStatus: 'OEM Final Status',
+                    oemDelayedHours: 'OEM Delayed Hours'
+                }
+            ];
+        } else {
+            headers = [
+                {
+                    vehicleNo: 'Vehicle No.',
+                    currVehicleStatus: 'Status',
+                    loadingDate: 'Loading (Date / Time)',
+                    vehicleExitDate: 'Vehicle Exit (Date / Time)',
+                    consignorName: 'Consignor Name',
+                    origin: 'Origin',
+                    destination: 'Destination',
+                    staticETA: 'Static ETA',
+                    oemReachTime: 'Static ETA(OEM)',
+                    locationTime: 'GPS (Date / Time)',
+                    unloadingReachDate: 'Reach Date',
+                    routeKM: 'Route (KM)',
+                    runningKMs: 'KM Covered',
+                    kmDifference: 'Difference (Km)',
+                    location: 'Location',
+                    estimatedArrivalDate: 'Estimated Arrival Date',
+                    finalStatus: 'Final Status',
+                    delayedHours: 'Delayed Hours'
+                }
+            ];
+        };
+
+        formattedData.unshift(headers[0]);
+
+        const worksheet = XLSX.utils.json_to_sheet(formattedData, {
+            skipHeader: true,
+        });
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'trips_report');
+        XLSX.writeFile(workbook, `trips_report.xlsx`);
+    }
 
     const constructWhatsAppLink = (pdfDataUri) => {
         console.log("pdf", pdfDataUri.length);
