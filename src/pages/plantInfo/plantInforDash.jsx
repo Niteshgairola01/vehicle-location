@@ -31,8 +31,9 @@ const PlantInforDash = () => {
 
     // FCA
     const [fcaRanjangaonRunning, setFcaRanjanGaonRunning] = useState(0);
-    const [fcaChennaiRunning, setFcaChennaiRunning] = useState(0);
-
+    
+    // PCA
+    const [pcaChennaiRunning, setPcaChennaiRunning] = useState(0);
     // Transystem
     const [tranSystmeMehsanaRunning, setTransystemMehsanaRunning] = useState(0);
     const [transytemBangaloreRunning, setTransystemBangaloreRunning] = useState(0);
@@ -71,8 +72,10 @@ const PlantInforDash = () => {
 
                 // FCA
                 const fcaRanjangaon = runningTrips.filter(data => data?.origin.toLowerCase().includes('ranjangaon'.toLowerCase()) && data?.consignorName.toLowerCase().includes('fca'.toLowerCase()));
-                const fcaChennai = runningTrips.filter(data => data?.origin.toLowerCase().includes('chennai'.toLowerCase()) && data?.consignorName.toLowerCase().includes('fca'.toLowerCase()));
-
+                
+                // PCA
+                const pcaChennai = runningTrips.filter(data => data?.origin.toLowerCase().includes('chennai'.toLowerCase()) && data?.consignorName.toLowerCase().includes('pca'.toLowerCase()));
+                
                 // Transystem
                 const transystemMehsana = runningTrips.filter(data => data?.origin.toLowerCase().includes('mehsana'.toLowerCase()) && data?.consignorName.toLowerCase().includes('transystem'.toLowerCase()));
                 const transystemBangalore = runningTrips.filter(data => data?.origin.toLowerCase().includes('bangalore'.toLowerCase()) && data?.consignorName.toLowerCase().includes('transystem'.toLowerCase()));
@@ -105,8 +108,10 @@ const PlantInforDash = () => {
 
                 // FCA
                 setFcaRanjanGaonRunning(fcaRanjangaon.length);
-                setFcaChennaiRunning(fcaChennai.length);
-
+                
+                // PCA
+                setPcaChennaiRunning(pcaChennai.length);
+                
                 // Transystem
                 setTransystemMehsanaRunning(transystemMehsana.length);
                 setTransystemBangaloreRunning(transystemBangalore.length);
@@ -128,12 +133,12 @@ const PlantInforDash = () => {
     const runnings = [
         marutiMehsanaRunning, marutiManesarRunning, marutiBangaloreRunning, mahindraChakanRunning, mahindraHaridwarRunning, mahindraNasikRunning,
         hondaTapukaraRunning, tataRudrapurRunning, tataPuneRunning, tataSanandRunning, glovisPenukondaRunning, glovisChennaiRunning,
-        SKODAChakanRunning, fcaRanjangaonRunning, fcaChennaiRunning, tranSystmeMehsanaRunning, transytemBangaloreRunning
+        SKODAChakanRunning, fcaRanjangaonRunning, pcaChennaiRunning, tranSystmeMehsanaRunning, transytemBangaloreRunning
     ];
 
     const plants = [
         "Maruti- Mehsana", "Maruti- Gurgaon", "Maruti- Bangalore", "Mahindra- Chakan", "Mahindra- Haridwar", "Mahindra- Nasik", "Honda- Tapukara", "Tata Motors Lmited- Rudrapur", "Tata Motors pv ltd- Pune",
-        "Tata Motors pv ltd- Sanand", "Glovis Anantpura- Penukonda", "Glovis- Chennai", "SKODA- Chakan", "FCA- Ranjangaon", "FCA- Chennai", "Transystem- Mehsana", "Transystem- Bangalore",
+        "Tata Motors pv ltd- Sanand", "Glovis Anantpura- Penukonda", "Glovis- Chennai", "SKODA- Chakan", "FCA- Ranjangaon", "PCA- Chennai", "Transystem- Mehsana", "Transystem- Bangalore",
     ];
 
     return (

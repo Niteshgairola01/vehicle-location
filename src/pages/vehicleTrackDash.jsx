@@ -42,12 +42,14 @@ const VehicleTrackDash = () => {
     const [partiesList, setPartiesList] = useState([]);
     const [vehiclesList, setVehiclesList] = useState([]);
     const [originsList, setOriginsList] = useState([]);
+    const [destinationList, setDestinationList] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
     const [showForceCompleteModal, setShowForceCompleteModal] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState({});
     const [hovered, setHovered] = useState(false);
     const [selectedParty, setSelectedParty] = useState('');
     const [selectedOrigin, setSelectedOrigin] = useState('');
+    const [selectedDestination, setSelectedDestination] = useState('');
     const [isOpenParty, setIsOpenParty] = useState(false);
     const [isOpenOffice, setIsOpenOffice] = useState(false);
     const [showLoader, setShowLoader] = useState(false);
@@ -207,6 +209,21 @@ const VehicleTrackDash = () => {
                 const onHold = allData.filter(data => data?.currVehicleStatus === 'On Hold');
                 // const onHold = allData.filter(data => data?.tripStatus === 'Trip Running' && data?.currVehicleStatus === 'On Hold');
 
+                let allDestinations = [];
+                let finalDestinationsList = [];
+
+                allData.forEach(data => (data?.destination !== null && data?.destination !== '') && allDestinations.push(data?.destination));
+
+                const repeatedDestinations = allDestinations.filter((data, index) => allDestinations.indexOf(data) !== index);
+
+                [...new Set(repeatedDestinations)].forEach(data => {
+                    finalDestinationsList.push({
+                        label: data,
+                        value: data
+                    })
+                })
+
+                setDestinationList(finalDestinationsList);
                 setGpsOffCounts(gpsOff.length);
                 setOnHoldCounts(onHold?.length);
 
@@ -292,7 +309,7 @@ const VehicleTrackDash = () => {
 
     useEffect(() => {
         handleFilterTrips();
-    }, [selectedOrigin, selectedParty, selectedVehicleNo]);
+    }, [selectedOrigin, selectedDestination, selectedParty, selectedVehicleNo]);
 
 
     const getDelayCount = () => {
@@ -991,6 +1008,25 @@ const VehicleTrackDash = () => {
         }
     };
 
+    const handleChangeDestination = (selectedValue) => {
+        console.log("selected value", selectedValue);
+        setSelectedDestination(selectedValue);
+
+        if (selectedValue === null) {
+            setForm({
+                ...form,
+                destination: ''
+            });
+        } else {
+            setForm({
+                ...form,
+                destination: selectedValue?.value
+            });
+        }
+    };
+
+    console.log("form", form);
+
     const handleChangeParty = (selectedValue) => {
         setSelectedParty(selectedValue);
 
@@ -1035,16 +1071,22 @@ const VehicleTrackDash = () => {
 
     const selectformFields = [
         {
+            label: "Party",
+            options: partiesList,
+            value: selectedParty,
+            onChange: handleChangeParty
+        },
+        {
             label: "Origin",
             options: originsList,
             value: selectedOrigin,
             onChange: handleChangeOrigin
         },
         {
-            label: "Party",
-            options: partiesList,
-            value: selectedParty,
-            onChange: handleChangeParty
+            label: "Destination",
+            options: destinationList,
+            value: selectedDestination,
+            onChange: handleChangeDestination
         },
         {
             label: "Vehicle",
@@ -1232,12 +1274,12 @@ const VehicleTrackDash = () => {
                     <DashHead title="Vehicle Tracking Dashboard" />
                     <div className='w-100 m-0 p-0 pt-3 d-flex justify-content-between align-items-center mb-3'>
                         <div className='d-flex justify-content-start align-items-start'>
-                            <div className='rounded px-4 text-white me-2' style={{background:"#ff0000"}}>
+                            <div className='rounded px-4 text-white me-2' style={{ background: "#ff0000" }}>
                                 <span className='fw-bold me-2' style={{ fontSize: '0.8rem' }}>GPS OFF:</span>
                                 <span className='fw-bold' style={{ fontSize: '0.8rem' }}>{gpsOffCounts}</span>
                             </div>
 
-                            <div className='rounded px-4 text-dark me-2' style={{background: "#fffc00"}}>
+                            <div className='rounded px-4 text-dark me-2' style={{ background: "#fffc00" }}>
                                 <span className=' me-2' style={{ fontSize: '0.8rem' }}>On Hold:</span>
                                 <span className='' style={{ fontSize: '0.8rem' }}>{onHoldCounts}</span>
                             </div>
@@ -1266,7 +1308,7 @@ const VehicleTrackDash = () => {
                             <Row className='dashoard-filter-form rounded'>
                                 {
                                     selectformFields.map((data, index) => (
-                                        <Col sm={12} md={6} lg={2} className='position-relative' key={index} style={{ zIndex: 3 }}>
+                                        <Col sm={12} md={6} lg={data?.label === 'Vehicle' ? 2 : 2} className='position-relative' key={index} style={{ zIndex: 3 }}>
                                             <Form.Label>{data?.label}</Form.Label>
                                             <Select
                                                 options={data?.options}
@@ -1280,59 +1322,61 @@ const VehicleTrackDash = () => {
                                     ))
                                 }
 
-                                <Col sm={12} md={6} lg={2}>
+                                <Col sm={12} md={6} lg={1}>
                                     <Input label="Trip No." type='text' name='tripLogNo' value={form.tripLogNo} onChange={handleChange} placeholder='Trip No.' autocomplete="off" />
                                 </Col>
 
-                                <Col sm={12} md={6} lg={2} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
+                                <Col sm={12} md={6} lg={3} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
                                     <Button type="button" className="px-3" onClick={() => realTimeDataFilter()}>Show</Button>
                                     <HoveredButton type="button" className="px-3 ms-2"
                                         onClick={() => handleSelectFilter('All')}
                                     >Show All</HoveredButton>
+                                    <div className='ms-3 position-relative w-45'>
+                                        <div className={`${selectedFilter.length > 0 && 'bg-thm-dark'} border border-secondary rounded p-2 cursor-pointer d-flex justify-content-between align-items-center`}
+                                            onMouseOver={() => setHovered(true)}
+                                            onMouseOut={() => setHovered(false)}
+                                            onClick={() => setShowFilters(!showFilters)}
+                                        >
+                                            <span className={`${selectedFilter.length > 0 && 'bg-thm-dark thm-white'}`} style={{ width: "8rem", fontSize: "0.8rem" }}>
+                                                {selectedFilter.length > 0 ? 'Filters Applied' : 'Filter'}
+                                            </span>
+                                            <CiFilter className={`${selectedFilter.length > 0 && 'thm-white'}`} />
+                                        </div>
+                                        {
+                                            showFilters ? (
+                                                <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: 3, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
+                                                    {
+                                                        allFilters.map((data, index) => (
+                                                            <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} border-bottom cursor-pointer`}
+                                                                onMouseOver={() => setHovered(true)}
+                                                                onMouseOut={() => setHovered(false)}
+                                                                key={index}
+                                                                onClick={() => handleSelectFilter(data)}
+                                                            >{data}</div>
+                                                        ))
+                                                    }
+                                                    <div className='d-flex justify-content-end align-items-center w-100'>
+                                                        <HoveredButton className="me-2 my-2 py-1 px-4">OK</HoveredButton>
+                                                    </div>
+                                                </div>
+                                            ) : null
+                                        }
+                                        {
+                                            selectedFilter.length > 0 ? (
+                                                <div>
+                                                    <Tooltip title="Reset Filters">
+                                                        <Link to="#">
+                                                            <MdSettingsBackupRestore onClick={() => handleResetFilters()} className='thm-dark cursor-pointer ms-2 fs-3' />
+                                                        </Link>
+                                                    </Tooltip>
+                                                </div>
+                                            ) : null
+                                        }
+                                    </div>
                                 </Col>
 
-                                <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
-                                    <div className={`${selectedFilter.length > 0 && 'bg-thm-dark'} border border-secondary rounded p-2 cursor-pointer d-flex justify-content-between align-items-center`}
-                                        onMouseOver={() => setHovered(true)}
-                                        onMouseOut={() => setHovered(false)}
-                                        onClick={() => setShowFilters(!showFilters)}
-                                    >
-                                        <span className={`${selectedFilter.length > 0 && 'bg-thm-dark thm-white'}`} style={{ width: "8rem", fontSize: "0.8rem" }}>
-                                            {selectedFilter.length > 0 ? 'Filters Applied' : 'Filter'}
-                                        </span>
-                                        <CiFilter className={`${selectedFilter.length > 0 && 'thm-white'}`} />
-                                    </div>
-                                    {
-                                        showFilters ? (
-                                            <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: 3, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
-                                                {
-                                                    allFilters.map((data, index) => (
-                                                        <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} border-bottom cursor-pointer`}
-                                                            onMouseOver={() => setHovered(true)}
-                                                            onMouseOut={() => setHovered(false)}
-                                                            key={index}
-                                                            onClick={() => handleSelectFilter(data)}
-                                                        >{data}</div>
-                                                    ))
-                                                }
-                                                <div className='d-flex justify-content-end align-items-center w-100'>
-                                                    <HoveredButton className="me-2 my-2 py-1 px-4">OK</HoveredButton>
-                                                </div>
-                                            </div>
-                                        ) : null
-                                    }
-                                    {
-                                        selectedFilter.length > 0 ? (
-                                            <div>
-                                                <Tooltip title="Reset Filters">
-                                                    <Link to="#">
-                                                        <MdSettingsBackupRestore onClick={() => handleResetFilters()} className='thm-dark cursor-pointer ms-2 fs-3' />
-                                                    </Link>
-                                                </Tooltip>
-                                            </div>
-                                        ) : null
-                                    }
-                                </Col>
+                                {/* <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
+                                </Col> */}
                             </Row>
                         </Form>
                     </div>
