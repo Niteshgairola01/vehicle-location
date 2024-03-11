@@ -16,8 +16,6 @@ import { ErrorToast } from '../../components/toast/toast';
 import { FaFileExcel } from 'react-icons/fa6';
 
 const UnloadingReport = ({ reportType }) => {
-    // Last 10 hrs
-    // const [allTripsLogs, setAllTripLogs] = useState([]);
     const [unloadingTrips, setUnloadingTrips] = useState([]);
     const [reportUnloadingTrips, setReportUnloadingTrips] = useState([]);
 
@@ -31,7 +29,6 @@ const UnloadingReport = ({ reportType }) => {
     const [attributes, setAttributes] = useState([]);
     const [columnNames, setColumnNames] = useState([]);
     const [excelAtrributes, setExcelAttributes] = useState([]);
-    const [fetchingData, setFetchingData] = useState(true);
 
     const finalTrips = reportType === "Unloading Date Report" ? unloadingTrips : reportUnloadingTrips;
 
@@ -48,8 +45,6 @@ const UnloadingReport = ({ reportType }) => {
     useEffect(() => {
         getUnloadingReport().then(response => {
             if (response.status === 200) {
-                setFetchingData(false);
-
                 const allData = response?.data;
 
                 const isTodayOrYesterday = (dateString) => {

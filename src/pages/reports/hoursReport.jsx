@@ -20,11 +20,11 @@ const HoursReport = () => {
     const [holdVehicle, setHoldVehicle] = useState(false);
 
     const attributes = ['S.No.', 'vehicleNo', 'currVehicleStatus', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'locationTime', 'routeKM', 'runningKMs',
-        'kmDifference', 'last10HoursKms', 'location', 'estimatedArrivalDate', 'finalStatus', 'KmCovered'
+        'kmDifference', 'last10HoursKms', 'location', 'estimatedArrivalDate', 'finalStatus'
     ];
 
     const columnNames = ['S.No.', 'Vehicle No.', 'Status', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA', 'GPS (Date / Time)',
-        'Route (KM)', 'KM Covered', 'Difference (Km)', 'Last 10Hrs KM', 'Location', 'Estimated Arrival Date', 'Final Status', 'KM Covered'
+        'Route (KM)', 'KM Covered', 'Difference (Km)', 'Last 10Hrs KM', 'Location', 'Estimated Arrival Date', 'Final Status'
     ];
 
     useEffect(() => {
