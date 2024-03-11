@@ -1135,9 +1135,22 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     //         }));
     //     }
 
+    //     console.log("formatted data", formattedData);
+
     //     if (formattedData.length > 0) {
     //         const wb = XLSX.utils.book_new();
     //         const ws = XLSX.utils.json_to_sheet(formattedData);
+
+    //         const dateColumns = ['C', 'D', 'H', 'I', 'J', 'K', 'P']; // Columns corresponding to 'Loading Date', 'Creation Date', and 'Vehicle Exit Date'
+    //         dateColumns.forEach(column => {
+    //             for (let i = 1; i <= formattedData.length; i++) {
+    //                 const cellAddress = column + i;
+    //                 const cell = ws[cellAddress];
+    //                 if (cell && cell.t === 'd') {
+    //                     cell.z = 'dd/mm/yyyy hh:mm:ss'; // Specify the desired date/time format
+    //                 }
+    //             }
+    //         });
 
     //         const headerCellStyle = {
     //             font: { bold: true }
@@ -1284,9 +1297,52 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
         formattedData.unshift(headers[0]);
 
-        const worksheet = XLSX.utils.json_to_sheet(formattedData, {
-            skipHeader: true,
-        });
+        const numberFormatter = (value) => {
+            const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const parsedDate = Date.parse(value, options);
+            const dateTimeParts = value.split(' ');
+            const datePart = dateTimeParts[0].split('/');
+            const timePart = dateTimeParts.length > 1 ? dateTimeParts[1].split(':') : '';
+            // console.log("value", dateTimeParts);
+
+            if (typeof value === 'string' && !isNaN(Number(value))) {
+                return value === "" || value === null ? "" : Number(value); // Convert number-like strings to numbers
+            }
+            // if (typeof value === 'string' && dateTimeParts.length > 1 && timePart.length > 2) {
+            //     // Assuming DD/MM/YYYY format
+            //     const day = parseInt(datePart[0], 10);
+            //     const month = parseInt(datePart[1], 10) - 1; // Months start at 0 (January = 0)
+            //     const year = parseInt(datePart[2], 10);
+            //     const hour = parseInt(timePart[0], 10);
+            //     const minute = parseInt(timePart[1], 10);
+            //     const second = parseInt(timePart[2], 10);
+
+            //     // return value === "" || value === null ? ""  : new Date(year, month, day); // Create Date with time
+
+            //     return value === "" || value === null ? "" : new Date(year, month, day, hour, minute, second); // Create Date with time
+            // }
+
+            return value;
+        };
+
+        // const test = formattedData.map(row => Object.fromEntries(Object.entries(row).map(([key, value]) => [key, numberFormatter(value)])));
+        // console.log("test", test);
+
+        const worksheet = XLSX.utils.json_to_sheet(formattedData.map(row => Object.fromEntries(Object.entries(row).map(([key, value]) => [key, numberFormatter(value)]))),
+            {
+                // colStyles: {
+                //     2: { numFmt: 'dd/mm/yyyy hh:mm:ss' },
+                //     3: { numFmt: 'dd/mm/yyyy hh:mm:ss' },
+                //     7: { numFmt: 'dd/mm/yyyy hh:mm:ss' },
+                //     8: { numFmt: 'dd/mm/yyyy hh:mm:ss' },
+                //     9: { numFmt: 'dd/mm/yyyy hh:mm:ss' },
+                //     15: { numFmt: 'dd/mm/yyyy hh:mm:ss' },
+                // },
+                skipHeader: true,
+            });
+        // const worksheet = XLSX.utils.json_to_sheet(formattedData, {
+        //     skipHeader: true,
+        // });
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'trips_report');
         XLSX.writeFile(workbook, `trips_report.xlsx`);
