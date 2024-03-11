@@ -53,6 +53,10 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
             label: "10 Hrs Report",
             value: "10 Hrs Report"
         },
+        {
+            label: "Unloading Report",
+            value: "Unloading Report"
+        },
     ];
 
     useEffect(() => {
@@ -335,7 +339,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                     };
                 });
 
-                setOriginList(desiredOriginArray)
+                setOriginList(desiredOriginArray);
 
                 setAllTrips(allTrips);
             } else {
@@ -1564,7 +1568,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                 }
             </Col>
 
-            {/* <Col sm={2}></Col> */}
             <Col sm={1} className='d-flex justify-content-end align-items-start'>
                 {
                     selectedFilters.length > 0 ? (

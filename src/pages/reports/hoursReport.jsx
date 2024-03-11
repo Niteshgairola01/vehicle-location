@@ -20,11 +20,11 @@ const HoursReport = () => {
     const [holdVehicle, setHoldVehicle] = useState(false);
 
     const attributes = ['S.No.', 'vehicleNo', 'currVehicleStatus', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'locationTime', 'routeKM', 'runningKMs',
-        'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'KmCovered', 'timeDifference'
+        'kmDifference', 'last10HoursKms', 'location', 'estimatedArrivalDate', 'finalStatus', 'KmCovered'
     ];
 
     const columnNames = ['S.No.', 'Vehicle No.', 'Status', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA', 'GPS (Date / Time)',
-        'Route (KM)', 'KM Covered', 'Difference (Km)', 'Location', 'Estimated Arrival Date', 'Final Status', 'KM Covered', 'Hold Hours'
+        'Route (KM)', 'KM Covered', 'Difference (Km)', 'Last 10Hrs KM', 'Location', 'Estimated Arrival Date', 'Final Status', 'KM Covered'
     ];
 
     useEffect(() => {
@@ -142,24 +142,15 @@ const HoursReport = () => {
                 const distanceCovered = distance.reduce((prev, curr) => (parseFloat(prev) + parseFloat(curr)));
                 const KmCovered = parseInt(distanceCovered);
 
-                const firstDate = new Date(firstLocationChangeDates[vehicleNo]);
-                const timeDifference = (new Date() - firstDate) / (1000 * 60 * 60);
-                return { vehicleNo, timeDifference, location, KmCovered };
+                return { vehicleNo, location, KmCovered };
             });
 
             const finalArr = vehiclesOnHold.map(vehicleObj => {
                 const found = finalResult.find(testObj => testObj.vehicleNo === vehicleObj.vehicleNo);
-
-                const timeDiff = (`${(found.timeDifference).toFixed(2)}`).length > 0 ? (`${(found.timeDifference).toFixed(2)}`).split('.') : parseFloat((found.timeDifference).toFixed(2));
-                const hour = parseInt(timeDiff[0]);
-                const minutes = timeDiff.length > 1 ? parseInt(timeDiff[1]) : 0;
-                const finalTime = minutes > 60 ? `${(hour + 1)}:${(minutes - 60) < 10 ? `0${minutes - 60}` : (minutes - 60)}` : `${hour}:${minutes < 10 ? `0${minutes}` : minutes}`;
-
                 const coveredDistance = parseFloat(found?.KmCovered) > 0 ? parseFloat(found?.KmCovered) : 0
 
                 return {
                     ...vehicleObj,
-                    timeDifference: found ? finalTime : '',
                     KmCovered: found ? coveredDistance : ''
                 };
             });
@@ -348,7 +339,7 @@ const HoursReport = () => {
                         height: 100
                     },
                     columnStyles: {
-                        12: { cellWidth: 40 },
+                        13: { cellWidth: 40 },
                     },
                     didDrawCell: (data) => {
 
@@ -386,8 +377,6 @@ const HoursReport = () => {
         }
     };
 
-    console.log("vehicles on hold", vehiclesOnHold);
-
 
     const exportToExcel = () => {
         let formattedData = []
@@ -405,11 +394,11 @@ const HoursReport = () => {
             'Route (KM)': item?.routeKM,
             'KM Covered': item?.runningKMs,
             'Difference (Km)': item?.kmDifference,
+            'Last 10 Hrs KM': item?.last10HoursKms,
             'Location': item?.location,
             'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
             'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours),
             'KM Covered': item?.kmCovered,
-            'Hold Hours': item?.timeDifference,
         }));
 
         if (formattedData.length > 0) {

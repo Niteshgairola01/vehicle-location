@@ -94,6 +94,7 @@ const VehicleTrackDash = () => {
         { label: 'Route (KM)', value: 'routeKM', hidden: false },
         { label: 'KM Covered', value: 'runningKMs', hidden: false },
         { label: 'Difference (Km)', value: 'kmDifference', hidden: false },
+        { label: 'Last 10 hrs KM', value: 'last10HoursKms', hidden: false },
         { label: 'Report Unloading', value: 'unloadingReachDate', hidden: false },
         { label: 'Unloading End Date', value: 'unloadingDate', hidden: false },
         { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
