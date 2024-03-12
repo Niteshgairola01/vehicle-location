@@ -1068,7 +1068,7 @@ const VehicleTrackDash = () => {
             ...provided,
             fontSize: '0.9rem',
         }),
-        menu: provided => ({...provided, zIndex: 9})
+        // menu: provided => ({...provided, zIndex: 9999})
     };
 
     const selectformFields = [
@@ -1310,7 +1310,7 @@ const VehicleTrackDash = () => {
                             <Row className='dashoard-filter-form rounded'>
                                 {
                                     selectformFields.map((data, index) => (
-                                        <Col sm={12} md={6} lg={data?.label === 'Vehicle' ? 2 : 2} className='position-relative' key={index} style={{ zIndex: 1 }}>
+                                        <Col sm={12} md={6} lg={data?.label === 'Vehicle' ? 2 : 2} className='position-relative' key={index} style={{ zIndex: 3 }}>
                                             <Form.Label>{data?.label}</Form.Label>
                                             <Select
                                                 options={data?.options}
