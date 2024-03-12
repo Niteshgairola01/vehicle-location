@@ -332,11 +332,7 @@ const ForecastDashoard = () => {
                                         onMouseOut={() => setHoveredOffice('')}
                                         key={data?.officeName} style={{ borderBottom: "1px solid #000" }}>
                                         <span>{data?.officeName}</span>
-                                        {/* {
-                                            hoveredOffice === data?.officeName && ( */}
                                         <button className={`${hoveredOffice === data?.officeName ? 'bg-white thm-dark' : 'bg-thm-dark text-white'} px-4 rounded-pill`} style={{ fontSize: "0.8rem", fontWeight: "450" }}>BTN</button>
-                                        {/* )
-                                        } */}
                                     </div>
 
                                 ))

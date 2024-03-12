@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import Card from '../../components/Card/card'
 import { getRunningTrips } from '../../hooks/tripsHooks';
+import { getVehicleRoute } from '../../hooks/vehicleMasterHooks';
+import { getUnloadingReport } from '../../hooks/reportHooks';
 
 const PlantInforDash = () => {
 
@@ -67,18 +69,7 @@ const PlantInforDash = () => {
     useEffect(() => {
         getRunningTrips().then(response => {
             if (response.status === 200) {
-                const allTrips = response?.data;
                 const runningTrips = response?.data.filter(data => data?.tripStatus === 'Trip Running');
-
-                const isGreateThanFirstDay = (dateString) => {
-                    const dateArr = dateString.split(' ');
-                    const datePart = dateArr[0].split('/');
-                    const day = datePart[0];
-                    const month = datePart[1];
-                    const year = datePart[2];
-
-                    return `${year}-${month}-${day}`;
-                };
 
                 // Maruti
                 const marutiMehsana = runningTrips.filter(data => data?.origin.toLowerCase().includes('Mehsana'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
@@ -86,123 +77,61 @@ const PlantInforDash = () => {
                 const marutiGurgaon = runningTrips.filter(data => data?.origin.toLowerCase().includes('gurgaon'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
                 const marutiBangalore = runningTrips.filter(data => data?.origin.toLowerCase().includes('bangalore'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
 
-                const marutiMehsanaTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('mehsana'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
-                const marutiMehsanaLoads = marutiMehsanaTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const marutiManesarTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('manesar'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
-                const marutiManesarLoads = marutiManesarTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const marutiGurgaonTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('gurgaon'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
-                const marutiGurgaonLoads = marutiGurgaonTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const marutiBangaloreTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('bangalore'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
-                const marutibangaloreLoads = marutiBangaloreTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-
                 setMarutiMehsanaRunning(marutiMehsana.length);
                 setMarutiManesarRunning(marutiManesar.length + marutiGurgaon.length);
                 setMarutiBangaloreRunning(marutiBangalore.length);
 
-                setMarutiMehsanaLoads(marutiMehsanaLoads.length);
-                setMarutiManesarLoads(marutiManesarLoads.length + marutiGurgaonLoads.length);
-                setMarutiBangaloreLoads(marutibangaloreLoads.length);
-
                 // Mahindra
                 const mahindraChakan = runningTrips.filter(data => data?.origin.toLowerCase().includes('chakan'.toLowerCase()) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
                 const mahindraHaridwar = runningTrips.filter(data => data?.origin.toLowerCase().includes('haridwar'.toLowerCase()) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
-                const mahindraNasik = runningTrips.filter(data => data?.origin.toLowerCase().includes('nasik'.toLowerCase()) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
-
-                const mahindraChakanTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('chakan'.toLowerCase()) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
-                const mahindraChakanLoads = mahindraChakanTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const mahindraHaridwarTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('haridwar'.toLowerCase()) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
-                const mahindraHaridwarLoads = mahindraHaridwarTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const mahindraNasikTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('nasik'.toLowerCase()) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
-                const mahindraNasikLoads = mahindraNasikTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const mahindraNasik = runningTrips.filter(data => (data?.origin.toLowerCase().includes('nasik'.toLowerCase()) || data?.origin.toLowerCase().includes('nashik'.toLowerCase())) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
 
                 setMahindraChakanRunning(mahindraChakan.length);
                 setMahindraHaridwarRunning(mahindraHaridwar.length);
                 setMahindraNasikRunning(mahindraNasik.length);
 
-                setMahindraChakanLoads(mahindraChakanLoads.length);
-                setMahindraHaridwarLoads(mahindraHaridwarLoads.length);
-                setMahindraNasikLoads(mahindraNasikLoads.length);
-
                 // Honda
                 const hondaTapukara = runningTrips.filter(data => data?.origin?.toLowerCase().includes('tapukara'.toLowerCase()) && data?.consignorName.toLowerCase().includes('honda'.toLowerCase()));
-                const hondaTapukaraTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('tapukara'.toLowerCase()) && data?.consignorName.toLowerCase().includes('honda'.toLowerCase()));
-                const hondaTapukaraLoads = hondaTapukaraTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
 
                 setHondaTapukaraRunning(hondaTapukara.length);
-                setHondaTapukaraLoads(hondaTapukaraLoads.length);
 
                 // Tata Motots
                 const tataRudrapur = runningTrips.filter(data => data?.origin?.toLowerCase().includes('rudrapur'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
                 const tataPune = runningTrips.filter(data => data?.origin?.toLowerCase().includes('pune'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
                 const tataSanand = runningTrips.filter(data => data?.origin?.toLowerCase().includes('sanand'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
 
-                const tataRudrapurTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('rudrapur'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
-                const tataRudrapurLoads = tataRudrapurTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const tataPuneTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('pune'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
-                const tataPuneLoads = tataPuneTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const tataSanandTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('sanand'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
-                const tataSanandLoads = tataSanandTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-
                 setTataRudrapurRunning(tataRudrapur.length);
                 setTataPuneRunning(tataPune.length);
                 setTataSanandRunning(tataSanand.length);
-
-                setTataRudrapurLoads(tataRudrapurLoads.length);
-                setTataPuneLoads(tataPuneLoads.length);
-                setTataSanandLoads(tataSanandLoads.length);
 
                 // Glovis
                 const glovisPenukonda = runningTrips.filter(data => data?.origin?.toLowerCase().includes('penukonda'.toLowerCase()) && data?.consignorName.toLowerCase().includes('glovis'.toLowerCase()));
                 const glovisChennai = runningTrips.filter(data => data?.origin?.toLowerCase().includes('chennai'.toLowerCase()) && data?.consignorName.toLowerCase().includes('glovis'.toLowerCase()));
 
-                const glovisPenukondaTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('penukonda'.toLowerCase()) && data?.consignorName.toLowerCase().includes('glovis'.toLowerCase()));
-                const glovisPenukondaLoads = glovisPenukondaTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const glovisChennaiTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('chennai'.toLowerCase()) && data?.consignorName.toLowerCase().includes('glovis'.toLowerCase()));
-                const glovisChennaiLoads = glovisChennaiTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-
                 setGlovisPenukondaRunning(glovisPenukonda.length);
                 setGlovisChennaiRunning(glovisChennai.length);
 
-                setGlovisPenukondaLoads(glovisPenukondaLoads.length);
-                setGlovisChennaiLoads(glovisChennaiLoads.length);
-
                 // SKODA
                 const SKODAChakan = runningTrips.filter(data => data?.origin?.toLowerCase().includes('chakan'.toLowerCase()) && data?.consignorName.toLowerCase().includes('skoda'.toLowerCase()));
-                const SKODAChakanTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('chakan'.toLowerCase()) && data?.consignorName.toLowerCase().includes('skoda'.toLowerCase()));
-                const SKODAChakanLoads = SKODAChakanTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
 
                 setSKODAChakanRunning(SKODAChakan.length);
-                setSKODAChakanLoads(SKODAChakanLoads.length);
 
                 // FCA
                 const fcaRanjangaon = runningTrips.filter(data => data?.origin?.toLowerCase().includes('ranjangaon'.toLowerCase()) && data?.consignorName.toLowerCase().includes('fca'.toLowerCase()));
-                const fcaRanjangaonTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('ranjangaon'.toLowerCase()) && data?.consignorName.toLowerCase().includes('fca'.toLowerCase()));
-                const fcaRanjangaonLoads = fcaRanjangaonTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
 
                 setFcaRanjanGaonRunning(fcaRanjangaon.length);
-                setFcaRanjanGaonLoads(fcaRanjangaonLoads.length);
 
                 // PCA
                 const pcaChennai = runningTrips.filter(data => data?.origin?.toLowerCase().includes('chennai'.toLowerCase()) && data?.consignorName.toLowerCase().includes('pca'.toLowerCase()));
-                const pcaChennaiTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('chennai'.toLowerCase()) && data?.consignorName.toLowerCase().includes('pca'.toLowerCase()));
-                const pcaChennaiLoads = pcaChennaiTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
 
                 setPcaChennaiRunning(pcaChennai.length);
-                setPcaChennaiLoads(pcaChennaiLoads.length);
 
                 // Transystem
                 const transystemMehsana = runningTrips.filter(data => data?.origin?.toLowerCase().includes('mehsana'.toLowerCase()) && data?.consignorName.toLowerCase().includes('transystem'.toLowerCase()));
                 const transystemBangalore = runningTrips.filter(data => data?.origin?.toLowerCase().includes('bangalore'.toLowerCase()) && data?.consignorName.toLowerCase().includes('transystem'.toLowerCase()));
-                const transystemMehsanaTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('mehsana'.toLowerCase()) && data?.consignorName.toLowerCase().includes('transystem'.toLowerCase()));
-                const tranSystemMehsanaLoads = transystemMehsanaTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
-                const transystemBangaloreTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('bangalore'.toLowerCase()) && data?.consignorName.toLowerCase().includes('transystem'.toLowerCase()));
-                const transystemBangaloreLoads = transystemBangaloreTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
 
                 setTransystemMehsanaRunning(transystemMehsana.length);
                 setTransystemBangaloreRunning(transystemBangalore.length);
-
-                setTransystemMehsanaLoads(tranSystemMehsanaLoads.length);
-                setTransystemBangaloreLoads(transystemBangaloreLoads.length);
 
             } else {
                 setMarutiMehsanaRunning(0);
@@ -217,6 +146,117 @@ const PlantInforDash = () => {
             console.log(err);
         })
     }, []);
+
+    useEffect(() => {
+        getUnloadingReport().then(response => {
+            if (response.status === 200) {
+                console.log("response", response);
+                const allTrips = response?.data;
+
+                const isGreateThanFirstDay = (dateString) => {
+                    const dateArr = dateString.split(' ');
+                    const datePart = dateArr[0].split('/');
+                    const day = datePart[0];
+                    const month = datePart[1];
+                    const year = datePart[2];
+
+                    return `${year}-${month}-${day}`;
+                };
+
+                // Maruti
+
+                const marutiMehsanaTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('mehsana'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
+                const marutiMehsanaLoads = marutiMehsanaTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const marutiManesarTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('manesar'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
+                const marutiManesarLoads = marutiManesarTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const marutiGurgaonTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('gurgaon'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
+                const marutiGurgaonLoads = marutiGurgaonTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const marutiBangaloreTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('bangalore'.toLowerCase()) && data?.consignorName.toLowerCase().includes('maruti'.toLowerCase()));
+                const marutibangaloreLoads = marutiBangaloreTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+                setMarutiMehsanaLoads(marutiMehsanaLoads.length);
+                setMarutiManesarLoads(marutiManesarLoads.length + marutiGurgaonLoads.length);
+                setMarutiBangaloreLoads(marutibangaloreLoads.length);
+
+                // Mahindra
+                const mahindraChakanTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('chakan'.toLowerCase()) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
+                const mahindraChakanLoads = mahindraChakanTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const mahindraHaridwarTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('haridwar'.toLowerCase()) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
+                const mahindraHaridwarLoads = mahindraHaridwarTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const mahindraNasikTrips = allTrips.filter(data => (data?.origin?.toLowerCase().includes('nasik'.toLowerCase()) || data?.origin?.toLowerCase().includes('nashik'.toLowerCase())) && data?.consignorName.toLowerCase().includes('mahindra'.toLowerCase()));
+                const mahindraNasikLoads = mahindraNasikTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+                setMahindraChakanLoads(mahindraChakanLoads.length);
+                setMahindraHaridwarLoads(mahindraHaridwarLoads.length);
+                setMahindraNasikLoads(mahindraNasikLoads.length);
+
+                // Honda
+                const hondaTapukaraTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('tapukara'.toLowerCase()) && data?.consignorName.toLowerCase().includes('honda'.toLowerCase()));
+                const hondaTapukaraLoads = hondaTapukaraTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+                setHondaTapukaraLoads(hondaTapukaraLoads.length);
+
+                // Tata Motots
+                const tataRudrapurTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('rudrapur'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
+                const tataRudrapurLoads = tataRudrapurTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const tataPuneTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('pune'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
+                const tataPuneLoads = tataPuneTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const tataSanandTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('sanand'.toLowerCase()) && data?.consignorName.toLowerCase().includes('tata'.toLowerCase()));
+                const tataSanandLoads = tataSanandTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+                setTataRudrapurLoads(tataRudrapurLoads.length);
+                setTataPuneLoads(tataPuneLoads.length);
+                setTataSanandLoads(tataSanandLoads.length);
+
+                // Glovis
+                const glovisPenukondaTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('penukonda'.toLowerCase()) && data?.consignorName.toLowerCase().includes('glovis'.toLowerCase()));
+                const glovisPenukondaLoads = glovisPenukondaTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const glovisChennaiTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('chennai'.toLowerCase()) && data?.consignorName.toLowerCase().includes('glovis'.toLowerCase()));
+                const glovisChennaiLoads = glovisChennaiTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+                setGlovisPenukondaLoads(glovisPenukondaLoads.length);
+                setGlovisChennaiLoads(glovisChennaiLoads.length);
+
+                // SKODA
+                const SKODAChakanTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('chakan'.toLowerCase()) && data?.consignorName.toLowerCase().includes('skoda'.toLowerCase()));
+                const SKODAChakanLoads = SKODAChakanTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+                setSKODAChakanLoads(SKODAChakanLoads.length);
+
+                // FCA
+                const fcaRanjangaonTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('ranjangaon'.toLowerCase()) && data?.consignorName.toLowerCase().includes('fca'.toLowerCase()));
+                const fcaRanjangaonLoads = fcaRanjangaonTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+                setFcaRanjanGaonLoads(fcaRanjangaonLoads.length);
+
+                // PCA
+                const pcaChennaiTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('chennai'.toLowerCase()) && data?.consignorName.toLowerCase().includes('pca'.toLowerCase()));
+                const pcaChennaiLoads = pcaChennaiTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+                setPcaChennaiLoads(pcaChennaiLoads.length);
+
+                // Transystem
+                const transystemMehsanaTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('mehsana'.toLowerCase()) && data?.consignorName.toLowerCase().includes('transystem'.toLowerCase()));
+                const tranSystemMehsanaLoads = transystemMehsanaTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+                const transystemBangaloreTrips = allTrips.filter(data => data?.origin?.toLowerCase().includes('bangalore'.toLowerCase()) && data?.consignorName.toLowerCase().includes('transystem'.toLowerCase()));
+                const transystemBangaloreLoads = transystemBangaloreTrips.filter(data => (data?.loadingDate !== null && data?.loadingDate !== "") && (new Date(isGreateThanFirstDay(data?.loadingDate)) > firstDay));
+
+
+                setTransystemMehsanaLoads(tranSystemMehsanaLoads.length);
+                setTransystemBangaloreLoads(transystemBangaloreLoads.length);
+
+            } else {
+                setTransystemBangaloreLoads(0);
+            }
+        }).catch(err => {
+            // setMarutiMehsanaRunning(0);
+            // setMarutiManesarRunning(0);
+            // setMarutiBangaloreRunning(0);
+
+            console.log(err);
+        })
+    }, []);
+
 
     const runnings = [
         marutiMehsanaRunning, marutiManesarRunning, marutiBangaloreRunning, mahindraChakanRunning, mahindraHaridwarRunning, mahindraNasikRunning,

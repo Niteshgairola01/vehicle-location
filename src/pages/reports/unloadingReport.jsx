@@ -59,8 +59,8 @@ const UnloadingReport = ({ reportType }) => {
                     );
                 };
 
-                const unloadingTrips = allData.filter(data => isTodayOrYesterday(data?.unloadingDate) && data?.tripStatus === 'Trip Completed');
-                const reportUnloadingTrips = allData.filter(data => isTodayOrYesterday(data?.unloadingReachDate) && data?.tripStatus === 'Trip Running');
+                const unloadingTrips = allData.filter(data => isTodayOrYesterday(data?.unloadingDate) && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Trip Completed');
+                const reportUnloadingTrips = allData.filter(data => isTodayOrYesterday(data?.unloadingReachDate) && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Trip Running');
 
                 setUnloadingTrips(unloadingTrips);
                 setReportUnloadingTrips(reportUnloadingTrips);
@@ -387,7 +387,7 @@ const UnloadingReport = ({ reportType }) => {
         const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
 
         doc.setFontSize(16);
-        doc.text(`${reportType === "Unloading Date Report" ? 'Unloading Date Report' : 'Report Rnloading Report'}`, 130, 10);
+        doc.text(`${reportType === "Unloading Date Report" ? 'Unloading Date Report' : 'Report Unloading Report'}`, 130, 10);
 
         const formattedData = formatData(filteredOEMTrips);
 
