@@ -126,20 +126,36 @@ const UnloadingReport = ({ reportType }) => {
     }, [reportType]);
 
     useEffect(() => {
-        setAttributes(['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'unloadingReachDate', 'routeKM', 'runningKMs',
-            'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
-        ]);
+        if (reportType === "Unloading Date Report") {
+            setAttributes(['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'unloadingDate', 'routeKM', 'runningKMs',
+                'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+            ]);
 
-        setColumnNames(['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
-            'Reach Date', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Estimated Arrival Date', 'Final Status', 'Delayed Hours'
-        ]);
-    }, []);
+            setColumnNames(['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
+                'Unaloding End Date', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Estimated Arrival Date', 'Final Status', 'Delayed Hours'
+            ]);
+        } else {
+            setAttributes(['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'unloadingReachDate', 'routeKM', 'runningKMs',
+                'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+            ]);
+
+            setColumnNames(['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
+                'Report Unloading', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Estimated Arrival Date', 'Final Status', 'Delayed Hours'
+            ]);
+        }
+    }, [reportType]);
 
     useEffect(() => {
-        setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
-            'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
-        ]);
-    }, []);
+        if (reportType === "Unloading Date Report") {
+            setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'unloadingDate', 'routeKM', 'runningKMs',
+                'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+            ]);
+        } else {
+            setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
+                'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+            ]);
+        }
+    }, [reportType]);
 
 
     const handleSelectOEM = (oem) => {
@@ -315,7 +331,7 @@ const UnloadingReport = ({ reportType }) => {
             const formattedItem = {};
             attributes.forEach(attr => {
                 if (attr === 'currVehicleStatus' || attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'oemReachTime'
-                    || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'oemDelayedHours' || attr === 'oemFinalStatus' || attr === 'locationTime' || attr === 'unloadingReachDate') {
+                    || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'oemDelayedHours' || attr === 'oemFinalStatus' || attr === 'locationTime' || attr === 'unloadingReachDate' || attr === 'unloadingDate') {
                     if (attr === 'loadingDate' || attr === 'oemReachTime') {
                         formattedItem[attr] = handleFormateISTDate(item[attr]);
                     }
@@ -350,7 +366,7 @@ const UnloadingReport = ({ reportType }) => {
                         formattedItem[attr] = getGPSTime(item[attr], item['reachPointEntryTime']);
                     }
 
-                    if (attr === 'unloadingReachDate') {
+                    if (attr === 'unloadingReachDate' || attr === 'unloadingDate') {
                         formattedItem[attr] = item[attr] === "" || item[attr] === null ? '' : handleFormatDate(item[attr]);
                     }
 
@@ -467,6 +483,10 @@ const UnloadingReport = ({ reportType }) => {
                 formattedItem.unloadingReachDate = formattedItem?.unloadingReachDate === "" || formattedItem?.unloadingReachDate === null ? '' : handleFormatDate(formattedItem?.unloadingReachDate);
             }
 
+            if (formattedItem.hasOwnProperty('unloadingDate')) {
+                formattedItem.unloadingDate = formattedItem?.unloadingDate === "" || formattedItem?.unloadingDate === null ? '' : handleFormatDate(formattedItem?.unloadingDate);
+            }
+
             if (formattedItem.hasOwnProperty('estimatedArrivalDate')) {
                 formattedItem.estimatedArrivalDate = convertTo24HourFormat(formattedItem?.estimatedArrivalDate);
             }
@@ -496,25 +516,47 @@ const UnloadingReport = ({ reportType }) => {
         formattedData = formatExcelData(formatDataKey(filteredOEMTrips.filter(item => excelAtrributes.includes(Object.keys(item)[0]))));
         let headers = [];
 
-        headers = [
-            {
-                vehicleNo: 'Vehicle No.',
-                loadingDate: 'Loading (Date / Time)',
-                vehicleExitDate: 'Vehicle Exit (Date / Time)',
-                consignorName: 'Consignor Name',
-                origin: 'Origin',
-                destination: 'Destination',
-                staticETA: 'Static ETA',
-                oemReachTime: 'Static ETA(OEM)',
-                unloadingReachDate: 'Reach Date',
-                routeKM: 'Route (KM)',
-                runningKMs: 'KM Covered',
-                kmDifference: 'Difference (Km)',
-                estimatedArrivalDate: 'Estimated Arrival Date',
-                finalStatus: 'Final Status',
-                delayedHours: 'Delayed Hours'
-            }
-        ];
+        if (reportType === "Unloading Date Report") {
+            headers = [
+                {
+                    vehicleNo: 'Vehicle No.',
+                    loadingDate: 'Loading (Date / Time)',
+                    vehicleExitDate: 'Vehicle Exit (Date / Time)',
+                    consignorName: 'Consignor Name',
+                    origin: 'Origin',
+                    destination: 'Destination',
+                    staticETA: 'Static ETA',
+                    oemReachTime: 'Static ETA(OEM)',
+                    unloadingDate: 'Unloading End Date',
+                    routeKM: 'Route (KM)',
+                    runningKMs: 'KM Covered',
+                    kmDifference: 'Difference (Km)',
+                    estimatedArrivalDate: 'Estimated Arrival Date',
+                    finalStatus: 'Final Status',
+                    delayedHours: 'Delayed Hours'
+                }
+            ];
+        } else {
+            headers = [
+                {
+                    vehicleNo: 'Vehicle No.',
+                    loadingDate: 'Loading (Date / Time)',
+                    vehicleExitDate: 'Vehicle Exit (Date / Time)',
+                    consignorName: 'Consignor Name',
+                    origin: 'Origin',
+                    destination: 'Destination',
+                    staticETA: 'Static ETA',
+                    oemReachTime: 'Static ETA(OEM)',
+                    unloadingReachDate: 'Reach Date',
+                    routeKM: 'Route (KM)',
+                    runningKMs: 'KM Covered',
+                    kmDifference: 'Difference (Km)',
+                    estimatedArrivalDate: 'Estimated Arrival Date',
+                    finalStatus: 'Final Status',
+                    delayedHours: 'Delayed Hours'
+                }
+            ];
+        }
 
         formattedData.unshift(headers[0]);
 
