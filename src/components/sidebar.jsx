@@ -22,6 +22,11 @@ const Sidebar = () => {
             icon: <PiPathBold />
         },
         {
+            title: "Vehicle History",
+            path: '/vehicle-history',
+            icon: <PiPathBold />
+        },
+        {
             title: "Polygon",
             path: '/polygon',
             icon: <PiPolygonBold />
@@ -76,7 +81,7 @@ const Sidebar = () => {
                                     menuItems.map((data, index) => (
                                         <Link to={data?.path} key={index} className={`${isSidebarExpanded ? 'px-3' : 'px-1'} ${location.pathname === data?.path ? 'active-menuItem' : 'menuItems'} w-100 py-2 text-center text-decoration-none cursor-pointer`}>
                                             <div className={`sidebar-item ${location.pathname.includes(data?.path) && 'active-item'} w-100 rounded d-flex justify-content-start align-items-center px-3 fw-bold`}
-                                            onClick={() => !data?.items && setShowSubmenu(false)}
+                                                onClick={() => !data?.items && setShowSubmenu(false)}
                                             >
                                                 <span className='fs-6'>{data.icon}</span>
                                                 <span className={`${!isSidebarExpanded && 'd-none'} ${data?.items ? 'ps-2' : 'ps-3'}`}
@@ -90,7 +95,7 @@ const Sidebar = () => {
                                                 {
                                                     (data?.items && showSubmenu) && (
                                                         <div className='rounded submenu-items mt-5 px-2 py-3 bg-thm-dark d-flex justify-content-start align-items-start flex-column'
-                                                            style={{ }}
+                                                            style={{}}
                                                         >
                                                             {
                                                                 data?.items.map((item, i) => (

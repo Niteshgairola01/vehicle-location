@@ -570,7 +570,7 @@ const RouteReport = () => {
         <div className='thm-dark m-0 p-0 p-5 pt-3'>
             <Card>
                 <div className='w-100 d-flex justify-content-between align-items-center'>
-                    <h5 className='m-0 p-0'>Route Report</h5>
+                    <h5 className='m-0 p-0'>Vehicle History</h5>
                 </div>
             </Card>
 

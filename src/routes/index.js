@@ -14,6 +14,7 @@ import DriverForum from '../pages/driver-forum/driverForum';
 import DriverMapping from '../pages/driver-forum/driverMapping';
 import ForecastDashoard from '../pages/forecast/forecast-dashboard';
 import PlantInforDash from '../pages/plantInfo/plantInforDash';
+import VehicleHistoryDash from '../pages/tracking/vehicleHistoryDash';
 
 const AllRoutes = () => {
     const location = useLocation();
@@ -160,6 +161,7 @@ const AllRoutes = () => {
                 {/* Tracking */}
                 <Route path="/track" element={<VehicleTrackDash />} />
                 <Route path="/vehicle-route" element={<VehicleRoute />} />
+                <Route path="/vehicle-history" element={<VehicleHistoryDash />} />
 
                 {/* Polygon */}
                 <Route path="/polygon" element={<PolygonList />} />

@@ -24,7 +24,7 @@ const Default = () => {
                         <div style={{zIndex: 999, height: "100%"}}>
                             <Sidebar />
                         </div>
-                        <div className='m-0 p-0 ms-5 w-100' style={{maxHeight: "100vh", overflowY: "scroll"}}>
+                        <div className='m-0 p-0 ms-5 w-100' style={{height: "100vh", overflowY: "scroll"}}>
                             <AllRoutes />
                         </div>
                     </div>
