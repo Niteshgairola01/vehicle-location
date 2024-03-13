@@ -1010,7 +1010,6 @@ const VehicleTrackDash = () => {
     };
 
     const handleChangeDestination = (selectedValue) => {
-        console.log("selected value", selectedValue);
         setSelectedDestination(selectedValue);
 
         if (selectedValue === null) {
@@ -1025,8 +1024,6 @@ const VehicleTrackDash = () => {
             });
         }
     };
-
-    console.log("form", form);
 
     const handleChangeParty = (selectedValue) => {
         setSelectedParty(selectedValue);

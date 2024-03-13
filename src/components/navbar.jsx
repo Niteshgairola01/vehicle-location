@@ -7,8 +7,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { signOutUser } from '../hooks/authHooks';
 import { ErrorToast, SuccessToast } from './toast/toast';
 import { NavDropdown } from 'react-bootstrap';
+import { MdOutlineMenu } from "react-icons/md";
+import Sidebar from './sidebar';
+import { useState } from 'react';
 
 const NavBar = () => {
+  const [showMenu, setShowMenu] = useState(false);
   const location = useLocation();
   const userId = localStorage.getItem('userId');
   const userRole = localStorage.getItem('role');
@@ -60,56 +64,40 @@ const NavBar = () => {
     }
   };
 
+
   return (
-    <Navbar collapseOnSelect expand="lg" className="bg-white navbar mb-0">
-      <div className='container-fluid navbar-main-container d-flex justify-content-between align-items-center'>
-        <div className='d-flex justify-content-between align-items-center navbar-inner-container'>
-          <Navbar.Brand className='w-5'>
-            <img src={logo} alt='logo' className='nav-logo' />
-          </Navbar.Brand>
-          <Nav className={`w-75 d-flex justify-content-${location.pathname === '/' ? 'end' : 'between'} align-items-center`}>
+    <div>
+      <Navbar collapseOnSelect expand="lg" className="bg-white navbar mb-0" style={{ zIndex: 10 }}>
+        <div className='container-fluid navbar-main-container d-flex justify-content-between align-items-center'>
+          <div className='d-flex justify-content-start align-items-center'>
+            <Navbar.Brand className='w-5'>
+              <img src={logo} alt='logo' className='nav-logo' />
+            </Navbar.Brand>
+          </div>
+          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+          <Navbar.Collapse id="responsive-navbar-nav">
+          </Navbar.Collapse>
+          <div>
             {
-              location.pathname !== "/" && (
-                <div className='d-flex justify-content-start align-items-center'>
-                  {
-                    menuItems.map((data, index) => (
-                      <Link to={data?.path} key={index} className={`${location.pathname === data?.path ? 'active-menuItem' : 'menuItems'} me-3 text-center text-decoration-none cursor-pointer`}>{data?.title}</Link>
-                    ))
-                  }
-                  <NavDropdown title="Driver Forum" id="basic-nav-dropdown">
-                    <NavDropdown.Item className={`${location.pathname === '/create-driver' ? 'bg-thm-dark text-white' : 'bg-white thm-dark'} w-100 text-decoration-none`}>
-                      <Link to='/create-driver' className={`${location.pathname === '/create-driver' ? 'text-white' : 'thm-dark'} w-100 text-decoration-none`}>
-                        Create Driver
-                      </Link>
-                    </NavDropdown.Item>
-                    <NavDropdown.Item className={`${location.pathname === '/driver-mapping' ? 'bg-thm-dark text-white' : 'bg-white thm-dark'} w-100 text-decoration-none`}>
-                      <Link to='/driver-mapping' className={`${location.pathname === '/driver-mapping' ? 'text-white' : 'thm-dark'} w-100 text-decoration-none`}>
-                        Driver Mapping
-                      </Link>
-                    </NavDropdown.Item>
-                  </NavDropdown>
-                </div>
-              )
+              userRole === 'Admin' ? (
+                <Link to='/create-user' className='m-0 p-0'>
+                  <CButton className="px-4 py-1">Create User</CButton>
+                </Link>
+              ) : null
             }
-            <div>
-              {
-                userRole === 'Admin' ? (
-                  <Link to='/create-user' className='m-0 p-0'>
-                    <CButton className="px-4 py-1">Create User</CButton>
-                  </Link>
-                ) : null
-              }
-              <Link className='m-0 ms-3 p-0'>
-                <Button className="px-4 py-1" onClick={() => handleLogOutUser()}>Logout</Button>
-              </Link>
-            </div>
-          </Nav>
+            <Link className='m-0 ms-3 p-0'>
+              <Button className="px-4 py-1" onClick={() => handleLogOutUser()}>Logout</Button>
+            </Link>
+          </div>
         </div>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav">
-        </Navbar.Collapse>
-      </div>
-    </Navbar>
+      </Navbar>
+
+      {/* {
+        showMenu && (
+          <Sidebar showMenu={showMenu} setShowMenu={setShowMenu} />
+        )
+      } */}
+    </div>
   );
 }
 

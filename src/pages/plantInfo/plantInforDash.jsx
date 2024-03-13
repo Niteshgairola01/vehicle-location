@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Card from '../../components/Card/card'
 import { getRunningTrips } from '../../hooks/tripsHooks';
-import { getVehicleRoute } from '../../hooks/vehicleMasterHooks';
 import { getUnloadingReport } from '../../hooks/reportHooks';
 
 const PlantInforDash = () => {

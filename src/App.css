@@ -21,7 +21,7 @@
 
 body {
     font-size: 0.9rem;
-    overflow-x: hidden;
+    overflow: hidden;
     background-color: #e8e8e847;
 }
 
@@ -1502,4 +1502,73 @@ span[class^="dot-"] {
     100% {
         opacity: 1;
     }
+}
+
+
+
+
+.app-container {
+    display: flex;
+}
+
+.sidebar {
+    height: 100vh;
+    background-color: var(--thm-dark);
+    color: #fff;
+    transition: width 0.1s ease;
+    overflow: hidden;
+}
+
+.sidebar.small {
+    width: 50px;
+}
+
+.sidebar.large {
+    width: 250px;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    margin: 0;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px;
+}
+
+.expanded .sidebar.small {
+    width: 250px;
+}
+
+.expanded .sidebar.large {
+    width: 50px;
+}
+
+.sidebar-item{
+    /* background: #fff; */
+    color: var(--thm-white)
+}
+
+
+.sidebar-item:hover, .active-item{
+    background: var(--thm-white);
+    color: var(--thm-dark)
+}
+
+.submenu-items{
+    border-left: 3px solid #fff;
+    width: 200px;
+     position: absolute; 
+     left: 100%
 }
