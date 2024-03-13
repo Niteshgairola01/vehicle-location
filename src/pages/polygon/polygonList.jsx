@@ -40,7 +40,7 @@ const PolygonList = () => {
     useEffect(() => {
         setTimeout(() => {
             setMapLoaded(false); // Clean up when component unmounts
-        }, 500);
+        }, 1000);
     }, []);
 
     useEffect(() => {
