@@ -93,6 +93,7 @@ const VehicleHistoryDash = () => {
         { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
         { label: 'Exit From', value: 'exitFrom', hidden: false },
         { label: 'Trip Status', value: 'tripStatus', hidden: false },
+        { label: 'Track History', value: 'trackHistory', hidden: false },
         { label: 'Force Complete', value: 'forcecomplete', hidden: false }
     ];
 
@@ -549,12 +550,12 @@ const VehicleHistoryDash = () => {
 
     console.log("selected vehicle", selectedVehicleNo);
 
-    const handleShowRoute = () => {
-        if (selectedVehicleNo === "") {
+    const handleShowRoute = (data) => {
+        if (data?.vehicleNo === "") {
             ErrorToast("Select Vehicle First")
         } else {
             setShowRoute(true);
-            setVehicleNo(selectedVehicleNo);
+            setVehicleNo(data?.vehicleNo);
         }
     }
 
@@ -650,7 +651,12 @@ const VehicleHistoryDash = () => {
             </td>
         } else if (column?.label === 'Vehicle No.') {
             return <td key={colIndex} className='fw-bold'>{value}</td>;
-        } else {
+        } else if (column?.label === 'Track History') {
+            return <td key={colIndex} className='h-100 text-center'>
+                <FaRoute className='fs-5 text-success cursor-pointer' onClick={() => handleShowRoute(data)} />
+            </td>
+        }
+        else {
             return <td key={colIndex}>{value}</td>;
         }
     };
@@ -843,9 +849,9 @@ const VehicleHistoryDash = () => {
                         </Form>
                     </div>
 
-                    <div className='d-flex justify-content-end align-items-end mt-3'>
-                        <HoveredButton className='px-4' onClick={() => handleShowRoute()}>View History</HoveredButton>
-                        {/* <FaRoute className='fs-5 text-success me-5 cursor-pointer' onClick={() => handleShowRoute(selectedVehicleNo)} /> */}
+                    <div className='d-flex justify-content-start align-items-start mt-5'>
+                        <span className='fw-bold'>Total Trips:</span>
+                        <span className='ms-2'>{filteredTrips.length}</span>
                     </div>
                     <div className='table-responsive mt-2'>
                         <table className='table table-striped table-bordered w-100 position-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>

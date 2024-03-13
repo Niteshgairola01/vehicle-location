@@ -80,11 +80,11 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     useEffect(() => {
         if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
             setExcelAttributes(['vehicleNo', 'currVehicleStatus', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'oemReachTime', 'locationTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
-                'kmDifference', 'location', 'estimatedArrivalDate', 'oemFinalStatus', 'oemDelayedHours'
+                'kmDifference', 'last10HoursKms', 'location', 'estimatedArrivalDate', 'oemFinalStatus', 'oemDelayedHours'
             ]);
         } else {
             setExcelAttributes(['vehicleNo', 'currVehicleStatus', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'locationTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
-                'kmDifference', 'location', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+                'kmDifference', 'last10HoursKms', 'location', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
             ]);
         }
     }, [selectedFilters]);
@@ -117,7 +117,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                 fontSize: 8
             },
             columnStyles: {
-                12: { cellWidth: 35 },
+                13: { cellWidth: 35 },
             }
         });
 
@@ -1038,7 +1038,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         });
 
         const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
-        const availableHeight = doc.internal.pageSize.getHeight() - doc.autoTable.previous.finalY;
 
         doc.autoTable({
             columns,
@@ -1081,11 +1080,14 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
             rowPageBreak: 'avoid'
         });
 
-        doc.save('Trips-report.pdf');
+        if (filteredOEMTrips.length === 0) {
+            ErrorToast('No data found');
+        } else {
+            doc.save('Trips-report.pdf');
+        }
 
         const pdfBlob = await doc.output('blob');
         setPdfData(pdfBlob);
-        // return pdfBlob;
     };
 
     const formatDate = (dateTimeString) => {
@@ -1268,6 +1270,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                     routeKM: 'Route (KM)',
                     runningKMs: 'KM Covered',
                     kmDifference: 'Difference (Km)',
+                    last10HoursKms: 'Last 10 hrs KM',
                     location: 'Location',
                     estimatedArrivalDate: 'Estimated Arrival Date',
                     oemFinalStatus: 'OEM Final Status',
@@ -1291,6 +1294,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                     routeKM: 'Route (KM)',
                     runningKMs: 'KM Covered',
                     kmDifference: 'Difference (Km)',
+                    last10HoursKms: 'Last 10 hrs KM',
                     location: 'Location',
                     estimatedArrivalDate: 'Estimated Arrival Date',
                     finalStatus: 'Final Status',
@@ -1349,7 +1353,12 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         // });
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'trips_report');
-        XLSX.writeFile(workbook, `trips_report.xlsx`);
+
+        if (formattedData.length === 0) {
+            ErrorToast("No data found");
+        } else {
+            XLSX.writeFile(workbook, `trips_report.xlsx`);
+        }
     }
 
     const constructWhatsAppLink = (pdfDataUri) => {

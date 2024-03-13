@@ -32,7 +32,7 @@ const Sidebar = () => {
             icon: <PiPolygonBold />
         },
         {
-            title: "Route Report",
+            title: "RouteReport",
             path: '/route-report',
             icon: <FaRoute />
         },
@@ -52,7 +52,7 @@ const Sidebar = () => {
             icon: <FaInfo />
         },
         {
-            title: "Driver Forum",
+            title: "DriverForum",
             items: [
                 {
                     title: 'Create Driver',
@@ -79,8 +79,8 @@ const Sidebar = () => {
                             <div className='py-3 d-flex justify-content-start align-items-start flex-column'>
                                 {
                                     menuItems.map((data, index) => (
-                                        <Link to={data?.path} key={index} className={`${isSidebarExpanded ? 'px-3' : 'px-1'} ${location.pathname === data?.path ? 'active-menuItem' : 'menuItems'} w-100 py-2 text-center text-decoration-none cursor-pointer`}>
-                                            <div className={`sidebar-item ${location.pathname.includes(data?.path) && 'active-item'} w-100 rounded d-flex justify-content-start align-items-center px-3 fw-bold`}
+                                        <Link to={data?.path} key={index} className={`${isSidebarExpanded ? 'px-2' : 'px-2'} ${location.pathname === data?.path ? 'active-menuItem' : 'menuItems'} w-100 py-2 text-center text-decoration-none cursor-pointer`}>
+                                            <div className={`sidebar-item ${location.pathname.includes(data?.path) && 'active-item'} w-100 rounded d-flex justify-content-start align-items-center pe-3 ps-1 fw-bold`}
                                                 onClick={() => !data?.items && setShowSubmenu(false)}
                                             >
                                                 <span className='fs-6'>{data.icon}</span>

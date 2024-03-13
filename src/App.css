@@ -1515,7 +1515,7 @@ span[class^="dot-"] {
     height: 100vh;
     background-color: var(--thm-dark);
     color: #fff;
-    transition: width 0.1s ease;
+    /* transition: width 0.s ease; */
     overflow: hidden;
 }
 
