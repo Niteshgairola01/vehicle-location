@@ -93,7 +93,6 @@ const VehicleHistoryDash = () => {
         { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
         { label: 'Exit From', value: 'exitFrom', hidden: false },
         { label: 'Trip Status', value: 'tripStatus', hidden: false },
-        { label: 'Track History', value: 'trackHistory', hidden: false },
         { label: 'Force Complete', value: 'forcecomplete', hidden: false }
     ];
 
