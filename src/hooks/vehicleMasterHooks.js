@@ -7,7 +7,7 @@ export const getAllVehiclesList = async () => {
         url: url,
         method: 'GET',
         headers: { "Content-Type": "application/json" },
-    }
+    };
 
     const response = await axios(config);
     return response;
@@ -20,7 +20,20 @@ export const getVehicleRoute = async (form) => {
         method: 'POST',
         data: form,
         headers: { "Content-Type": "application/json" },
-    }
+    };
+
+    const response = await axios(config);
+    return response;
+};
+
+export const getLogsByDuration = async (form) => {
+    const url = `${APIPort2}/getLogsByDuration`;
+    const config = {
+        url: url,
+        method: 'POST',
+        data: form,
+        headers: { "Content-Type": "application/json" },
+    };
 
     const response = await axios(config);
     return response;

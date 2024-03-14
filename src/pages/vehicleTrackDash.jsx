@@ -1,17 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Select from 'react-select';
-import { Col, Form, Modal, Row } from 'react-bootstrap'
+import Skeleton from '@mui/material/Skeleton';
+import { Col, Form, Modal, Row } from 'react-bootstrap';
+import Placeholder from 'react-bootstrap/Placeholder';
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
 import { FaRoute } from "react-icons/fa";
-import { IoMdRefresh } from 'react-icons/io';
+import { IoIosTimer, IoMdRefresh } from 'react-icons/io';
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
 import { ErrorToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
-import { getAllVehiclesList } from '../hooks/vehicleMasterHooks';
+import { getAllVehiclesList, getLogsByDuration } from '../hooks/vehicleMasterHooks';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
@@ -24,6 +26,7 @@ import '../assets/styles/home.css';
 import '../assets/styles/track-dash.css';
 
 import VehicleRoute from './tracking/vehicleRoute';
+import HistoryModal from './tracking/historyModal';
 
 const VehicleTrackDash = () => {
 
@@ -75,6 +78,8 @@ const VehicleTrackDash = () => {
 
     const [onHoldCounts, setOnHoldCounts] = useState(0);
     const [gpsOffCounts, setGpsOffCounts] = useState(0);
+    const [distanceVehicle, setDistanceVehicle] = useState('');
+    const [showDistanceKMs, setShowDistanceKMs] = useState(false);
 
     const [animationKey, setAnimationKey] = useState(0);
     const intialColumns = [
@@ -105,10 +110,32 @@ const VehicleTrackDash = () => {
         { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
         { label: 'Exit From', value: 'exitFrom', hidden: false },
         { label: 'Trip Status', value: 'tripStatus', hidden: false },
+        // { label: 'Distance KMs', value: 'distanceKMs', hidden: false },
         { label: 'Force Complete', value: 'forcecomplete', hidden: false }
     ];
 
     const [tableColumns, setTableColumns] = useState(intialColumns);
+    const [distanceCoveredIn10Hrs, setDistanceCoveredIn10Hrs] = useState(0);
+    const [distanceCoveredIn24Hrs, setDistanceCoveredIn24Hrs] = useState(0);
+    const [distanceCoveredIn48Hrs, setDistanceCoveredIn48Hrs] = useState(0);
+    const [isDistanceLoading, setIsDistanceLoading] = useState(false);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+
+    const distancesCoveredInHours = [
+        {
+            title: '10 Hrs',
+            distanceCovered: distanceCoveredIn10Hrs,
+        },
+        {
+            title: '24 Hrs',
+            distanceCovered: distanceCoveredIn24Hrs,
+        },
+        {
+            title: '48 Hrs',
+            distanceCovered: distanceCoveredIn48Hrs,
+        },
+    ];
 
     useEffect(() => {
         if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
@@ -820,9 +847,16 @@ const VehicleTrackDash = () => {
     const handleShowOptions = () => {
         !hovered && setShowFilters(false);
         !hovered && setShowLocationOption(false);
+        !hovered && setShowDistanceKMs(false);
         isOpenParty && setIsOpenParty(false);
         isOpenOffice && setIsOpenOffice(false);
         isOpenVehicle && setIsOpenVehicle(false);
+
+        if (showDistanceKMs) {
+            setDistanceCoveredIn10Hrs(0);
+            setDistanceCoveredIn24Hrs(0);
+            setDistanceCoveredIn48Hrs(0);
+        }
     };
 
     const showDelayedIcon = (data, index, colIndex) => {
@@ -1100,6 +1134,76 @@ const VehicleTrackDash = () => {
         setShowLocationOption(true);
     };
 
+    const [allLogs, setAllLogs] = useState([]);
+    const [tenHrs, setTenHrs] = useState([]);
+    const [twentyFourHrs, setTwentyFourHrs] = useState([]);
+    const [foutryEightHrs, setFoutryEightHrs] = useState([]);
+
+    const handleFormatLogsDate = (dateString) => {
+        const date = dateString.getDate();
+        const month = dateString.getMonth() + 1;
+        const year = dateString.getFullYear();
+        const hours = dateString.getHours();
+        const minutes = dateString.getMinutes();
+        const seconds = dateString.getSeconds();
+
+        const formattedDate = `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
+        return formattedDate;
+    };
+
+    const currentDate = new Date();
+    const tenHoursBeforeCurrentDate = new Date(currentDate.getTime() - (10 * 60 * 60 * 1000));
+    const twetyFourHoursBeforeCurrentDate = new Date(currentDate.getTime() - (24 * 60 * 60 * 1000));
+    const fourtyEightHoursBeforeCurrentDate = new Date(currentDate.getTime() - (48 * 60 * 60 * 1000));
+
+    useEffect(() => {
+        const tenHoursData = allLogs.filter(data => new Date(data?.date) >= tenHoursBeforeCurrentDate);
+        const twentyFourHoursData = allLogs.filter(data => new Date(data?.date) >= twetyFourHoursBeforeCurrentDate);
+        const fourtyEightHoursData = allLogs.filter(data => new Date(data?.date) >= fourtyEightHoursBeforeCurrentDate);
+
+        const distanceIn10Hrs = tenHoursData.reduce((prev, curr) => prev + parseFloat(curr?.latLongDistance), 0);
+        const distanceIn24Hrs = twentyFourHoursData.reduce((prev, curr) => prev + parseFloat(curr?.latLongDistance), 0);
+        const distanceIn48Hrs = fourtyEightHoursData.reduce((prev, curr) => prev + parseFloat(curr?.latLongDistance), 0);
+
+        setDistanceCoveredIn10Hrs(Math.round(distanceIn10Hrs));
+        setDistanceCoveredIn24Hrs(Math.round(distanceIn24Hrs));
+        setDistanceCoveredIn48Hrs(Math.round(distanceIn48Hrs));
+    }, [allLogs]);
+
+    const handleShowDistanceCovered = (data) => {
+        setDistanceVehicle(data?.vehicleNo);
+        setShowDistanceKMs(true);
+        setIsDistanceLoading(true);
+
+        const form = {
+            vehicleNo: data?.vehicleNo,
+            fromTime: handleFormatLogsDate(fourtyEightHoursBeforeCurrentDate),
+            toTime: handleFormatLogsDate(currentDate)
+        };
+
+        getLogsByDuration(form).then(response => {
+            if (response?.status === 200) {
+                setAllLogs(response?.data);
+                setIsDistanceLoading(false);
+            } else {
+                setAllLogs([]);
+            }
+        }).catch(err => {
+            console.log(err);
+            setAllLogs([]);
+        })
+    };
+
+    const handleShowDistanceOnMap = (hour) => {
+        if (!isDistanceLoading) {
+            hour?.title?.includes('10') ? setStartDate(handleFormatLogsDate(tenHoursBeforeCurrentDate))
+                : hour?.title?.includes('24') ? setStartDate(handleFormatLogsDate(twetyFourHoursBeforeCurrentDate))
+                    : hour?.title?.includes('48') && setStartDate(handleFormatLogsDate(fourtyEightHoursBeforeCurrentDate));
+
+            setShowMap(true);
+        }
+    };
+
     const [sortOrder, setSortOrder] = useState('asc');
 
     const handleSortData = (columnName) => {
@@ -1252,10 +1356,45 @@ const VehicleTrackDash = () => {
                     <div className={`circle ${data?.currVehicleStatus === "On Hold" ? 'circle-yellow-blink' : data?.currVehicleStatus === 'Running' ? 'circle-green-blink' : data?.currVehicleStatus === 'GPS Off' ? 'circle-red-blink' : data?.currVehicleStatus === null && 'bg-white'}`}></div>
                 </div>
             </td>
-        }
-        else if (column?.label === 'Vehicle No.') {
+        } else if (column?.label === 'Vehicle No.') {
             return <td key={colIndex} className='fw-bold'>{value}</td>;
         }
+
+        // else if (column?.label === 'Distance KMs') {
+        //     return <td key={colIndex} className='text-center vehicle-location position-relative cursor-pointer'
+        //         onMouseOver={() => setHovered(true)}
+        //         onMouseOut={() => setHovered(false)}
+        //         onClick={() => handleShowDistanceCovered(data)}
+        //     >
+        //         <IoIosTimer className='fs-5' />
+        //         {
+        //             (showDistanceKMs && (distanceVehicle === data?.vehicleNo)) && (
+        //                 <Row className='thm-dark position-absolute bg-white p-2 pt-1 mt-3 rounded vehicle-details-popup' style={{ width: "100%", minWidth: "20rem", left: "-50%" }}>
+        //                     <p className='fw-bold text-start m-0 p-0 mb-2'>Distance Covered in hours</p>
+        //                     <hr />
+        //                     {
+        //                         distancesCoveredInHours.map((hour, i) => (
+        //                             <Col md={12} lg={4} className='cursor-pointer' key={i} style={{ borderRight: i < distancesCoveredInHours.length - 1 && "1px solid #09215f" }}
+        //                                 onClick={() => handleShowDistanceOnMap(hour)}
+        //                             >
+        //                                 <p className='m-0 p-0 fw-bold'>{hour?.title}</p>
+
+        //                                 {
+        //                                     isDistanceLoading ? (
+        //                                         <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+        //                                     ) : (
+        //                                         <p className='m-0 p-0'>{hour?.distanceCovered} KMs</p>
+        //                                     )
+        //                                 }
+        //                             </Col>
+        //                         ))
+        //                     }
+        //                 </Row>
+        //             )
+        //         }
+        //     </td>;
+        // }
+
         else {
             return <td key={colIndex}>{value}</td>;
         }
@@ -1268,6 +1407,9 @@ const VehicleTrackDash = () => {
     return (
         <div className='m-0 p-0 position-relative' onClick={() => handleHideOptions()}>
             <Loader show={showLoader} />
+            <Placeholder as='p' animation="glow">
+                <Placeholder size="lg" />
+            </Placeholder>
             <div className='mt-5 my-3 mx-2 px-3 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
                     <DashHead title="Vehicle Tracking Dashboard" />
@@ -1285,6 +1427,7 @@ const VehicleTrackDash = () => {
                         </div>
 
                         <div className='d-flex justify-content-center align-items-center'>
+
                             <div className='mx-1 px-2 thm-dark'>
                                 <span>Current Status </span>
                             </div>
@@ -1304,7 +1447,7 @@ const VehicleTrackDash = () => {
                     </div>
                     <div className='mt-2 px-3'>
                         <Form onSubmit={handleSubmit}>
-                            
+
                             <Row className='dashoard-filter-form rounded'>
                                 {
                                     selectformFields.map((data, index) => (
@@ -1322,29 +1465,34 @@ const VehicleTrackDash = () => {
                                     ))
                                 }
 
-                                <Col sm={12} md={6} lg={1}>
+                                <Col sm={12} md={6} lg={1} className='w-10'>
                                     <Input label="Trip No." type='text' name='tripLogNo' value={form.tripLogNo} onChange={handleChange} placeholder='Trip No.' autocomplete="off" />
                                 </Col>
 
-                                <Col sm={12} md={6} lg={3} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
+                                <Col sm={12} md={6} lg={3} className='w-20 border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
                                     <Button type="button" className="px-3" onClick={() => realTimeDataFilter()}>Show</Button>
                                     <HoveredButton type="button" className="px-3 ms-2"
                                         onClick={() => handleSelectFilter('All')}
                                     >Show All</HoveredButton>
-                                    <div className='ms-3 position-relative w-45'>
-                                        <div className={`${selectedFilter.length > 0 && 'bg-thm-dark'} border border-secondary rounded p-2 cursor-pointer d-flex justify-content-between align-items-center`}
+                                </Col>
+
+                                {/* <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
+                                </Col> */}
+                                <div className='d-flex justify-content-end align-items-center mt-3'>
+                                    <div className='ms-3 position-relative w-20'>
+                                        <div className={`${selectedFilter.length > 0 && 'bg-thm-dark'} border border-secondary rounded p-2 cursor-pointer d-flex justify-content-between align-items-center flex-row`}
                                             onMouseOver={() => setHovered(true)}
                                             onMouseOut={() => setHovered(false)}
                                             onClick={() => setShowFilters(!showFilters)}
                                         >
-                                            <span className={`${selectedFilter.length > 0 && 'bg-thm-dark thm-white'}`} style={{ width: "8rem", fontSize: "0.8rem" }}>
+                                            <span className={`${selectedFilter.length > 0 && 'bg-thm-dark thm-white'}`} style={{ fontSize: "0.8rem" }}>
                                                 {selectedFilter.length > 0 ? 'Filters Applied' : 'Filter'}
                                             </span>
                                             <CiFilter className={`${selectedFilter.length > 0 && 'thm-white'}`} />
                                         </div>
                                         {
                                             showFilters ? (
-                                                <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: 3, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
+                                                <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 50, zIndex: 3, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
                                                     {
                                                         allFilters.map((data, index) => (
                                                             <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} border-bottom cursor-pointer`}
@@ -1361,22 +1509,19 @@ const VehicleTrackDash = () => {
                                                 </div>
                                             ) : null
                                         }
-                                        {
-                                            selectedFilter.length > 0 ? (
-                                                <div>
-                                                    <Tooltip title="Reset Filters">
-                                                        <Link to="#">
-                                                            <MdSettingsBackupRestore onClick={() => handleResetFilters()} className='thm-dark cursor-pointer ms-2 fs-3' />
-                                                        </Link>
-                                                    </Tooltip>
-                                                </div>
-                                            ) : null
-                                        }
                                     </div>
-                                </Col>
-
-                                {/* <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
-                                </Col> */}
+                                    {
+                                        selectedFilter.length > 0 ? (
+                                            <div className=''>
+                                                <Tooltip title="Reset Filters">
+                                                    <Link to="#">
+                                                        <MdSettingsBackupRestore onClick={() => handleResetFilters()} className='thm-dark cursor-pointer ms-2 fs-3' />
+                                                    </Link>
+                                                </Tooltip>
+                                            </div>
+                                        ) : null
+                                    }
+                                </div>
                             </Row>
                         </Form>
                     </div>
@@ -1505,15 +1650,15 @@ const VehicleTrackDash = () => {
                             ) : null
                         }
 
-                        {
-                            currentTrips.length > 0 ? (
-                                <div className='my-5'>
-                                    <Pagination pages={pageCount} currentPage={currentPage} setCurrentPage={setCurrentPage} />
-                                </div>
-                            ) : null
-                        }
                     </div>
 
+                    {
+                        currentTrips.length > 0 ? (
+                            <div className='my-5'>
+                                <Pagination pages={pageCount} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                            </div>
+                        ) : null
+                    }
                     <ForceCompleteForm handleFilterTrips={handleFilterTrips} show={showForceCompleteModal} setShow={setShowForceCompleteModal} data={selectedVehicle} />
 
                     <Modal show={showLocation} fullscreen onHide={() => {
@@ -1545,6 +1690,7 @@ const VehicleTrackDash = () => {
                     </Modal>
 
                     <VehicleRoute show={showRoute} setShow={setShowRoute} />
+                    <HistoryModal show={showMap} setShow={setShowMap} vehicleNo={distanceVehicle} startDate={startDate} endDate={handleFormatLogsDate(new Date())} />
                 </div>
             </div>
         </div>
