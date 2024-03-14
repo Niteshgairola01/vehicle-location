@@ -1154,14 +1154,14 @@ const VehicleHistoryDash = () => {
                             ) : null
                         }
 
-                        {
-                            currentTrips.length > 0 ? (
-                                <div className='my-5'>
-                                    <Pagination pages={pageCount} currentPage={currentPage} setCurrentPage={setCurrentPage} />
-                                </div>
-                            ) : null
-                        }
                     </div>
+                    {
+                        currentTrips.length > 0 ? (
+                            <div className='my-5'>
+                                <Pagination pages={pageCount} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                            </div>
+                        ) : null
+                    }
                 </Card>
             </div>
             <HistoryModal show={showRoute} setShow={setShowRoute} vehicleNo={vehicleNo} startDate={startDate} endDate={endDate} />
