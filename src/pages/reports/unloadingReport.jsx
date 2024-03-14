@@ -574,7 +574,9 @@ const UnloadingReport = ({ reportType }) => {
 
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, `${reportType === "Unloading Date Report" ? 'unloading_date_report' : 'report_unloading_report'}`);
-        XLSX.writeFile(workbook, `${reportType === "Unloading Date Report" ? 'unloading_date_report.xlsx' : 'report_unloading_report.xlsx'}`);
+
+        formattedData.length <= 1 ? ErrorToast("No data found") :
+            XLSX.writeFile(workbook, `${reportType === "Unloading Date Report" ? 'unloading_date_report.xlsx' : 'report_unloading_report.xlsx'}`);
     }
 
 

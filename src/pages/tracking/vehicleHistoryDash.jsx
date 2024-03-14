@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
+import * as XLSX from 'xlsx';
+import { jsPDF } from "jspdf";
+import 'jspdf-autotable';
 import Card from '../../components/Card/card'
 import { Form, Row, Col } from 'react-bootstrap'
 import { Input } from '../../components/form/Input';
-import { getRunningTrips } from '../../hooks/tripsHooks';
 import { getAllPartiesList } from '../../hooks/clientMasterHooks';
 import { getAllVehiclesList } from '../../hooks/vehicleMasterHooks';
 import { ErrorToast } from '../../components/toast/toast';
 import { Link } from 'react-router-dom';
-import { FaRoute } from 'react-icons/fa';
+import { FaFileExcel, FaRoute } from 'react-icons/fa';
 // MUI
 
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
@@ -16,13 +18,13 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { makeStyles } from '@mui/styles';
-import dayjs from 'dayjs'
 import { getUnloadingReport } from '../../hooks/reportHooks';
 import Pagination from '../../components/pagination';
 import Button from '../../components/Button/coloredButton';
-import HoveredButton from '../../components/Button/hoveredButton';
 import Loader from '../../components/loader/loader';
 import HistoryModal from './historyModal';
+import { Tooltip } from '@mui/material';
+import { BsFileEarmarkPdfFill } from 'react-icons/bs';
 
 const useStyles = makeStyles({
     input: {
@@ -38,7 +40,7 @@ const VehicleHistoryDash = () => {
     const classes = useStyles();
 
     const [form, setForm] = useState({});
-    const [allTrips, setAllTrips] = useState([]);
+    const [allTripLogs, setAllTripLogs] = useState([]);
     const [filteredTrips, setFilteredTrips] = useState([]);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -56,6 +58,10 @@ const VehicleHistoryDash = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [vehicleNo, setVehicleNo] = useState('');
 
+    const [attributes, setAttributes] = useState([]);
+    const [columnNames, setColumnNames] = useState([]);
+    const [excelAtrributes, setExcelAttributes] = useState([]);
+
     const [selectedVehicle, setSelectedVehicle] = useState({})
     const [showForceCompleteModal, setShowForceCompleteModal] = useState(false);
     const [showForce, setShowForce] = useState(false);
@@ -67,6 +73,8 @@ const VehicleHistoryDash = () => {
     const [showMap, setShowMap] = useState(false);
     const [showLoader, setShowLoader] = useState(false);
     const [showRoute, setShowRoute] = useState(false);
+    const [pdfDisabled, setPdfDisabled] = useState(false);
+    const [excelDisabled, setExcelDisabled] = useState(false);
 
     const initialColumns = [
         { label: 'S.No.', value: 'tripCount', hidden: false },
@@ -105,16 +113,15 @@ const VehicleHistoryDash = () => {
     let currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost);
     const pageCount = Math.ceil(filteredTrips.length / itemsPerPage);
 
-
-    const getAllTrips = () => {
-        getRunningTrips().then((response) => {
+    useEffect(() => {
+        getUnloadingReport().then(response => {
             if (response.status === 200) {
-                const allData = response?.data;
+                const allTrips = response?.data;
 
                 let allDestinations = [];
                 let finalDestinationsList = [];
 
-                allData.forEach(data => (data?.destination !== null && data?.destination !== '') && allDestinations.push(data?.destination));
+                allTrips.forEach(data => (data?.destination !== null && data?.destination !== '') && allDestinations.push(data?.destination));
 
                 const repeatedDestinations = allDestinations.filter((data, index) => allDestinations.indexOf(data) !== index);
 
@@ -125,27 +132,43 @@ const VehicleHistoryDash = () => {
                     })
                 })
 
-                setDestinationList(finalDestinationsList);
+                let critical = allTrips.filter(data => parseInt(data?.delayedHours) >= 36);
+                let moderate = allTrips.filter(data => (parseInt(data?.delayedHours) >= 19 && parseInt(data?.delayedHours) <= 35));
+                let mild = allTrips.filter(data => parseInt(data?.delayedHours) <= 18);
 
-                setAllTrips(allData);
+                let sortedCritical = sortByValue(critical);
+                let sortedModerate = sortByValue(moderate);
+                let sortedMild = sortByValue(mild);
+
+                let nonDelayed = allTrips.filter(data => data?.finalStatus !== 'Delayed');
+
+                const finalTrips = [...sortedCritical, ...sortedModerate, ...sortedMild, ...nonDelayed];
+
+                setAllTripLogs(finalTrips);
+                setDestinationList(finalDestinationsList);
             } else {
-                setAllTrips([]);
+                setAllTripLogs([]);
+                setDestinationList([]);
             }
-        }).catch((err) => {
+        }).catch(err => {
             console.log(err);
-            setAllTrips([]);
-        });
-    };
+            setAllTripLogs([]);
+            setDestinationList([]);
+        })
+    }, []);
 
     useEffect(() => {
-        getAllTrips();
-    }, []);
+        if (startDate !== "" && endDate !== "") {
+            handleFilterTrips(allTripLogs);
+        }
+    }, [selectedParty, selectedOrigin, selectedDestination, selectedVehicleNo]);
+
 
     useEffect(() => {
         const uniqueOriginsSet = new Set();
 
-        allTrips.forEach(item => {
-            item?.origin !== null && uniqueOriginsSet.add(item.origin.toLowerCase());
+        allTripLogs.forEach(item => {
+            item?.origin !== null && uniqueOriginsSet.add(item?.origin?.trim().toLowerCase());
         });
 
         const uniqueOriginsArray = Array.from(uniqueOriginsSet);
@@ -159,7 +182,7 @@ const VehicleHistoryDash = () => {
         });
 
         setOriginsList(desiredOriginArray);
-    }, [allTrips]);
+    }, [allTripLogs]);
 
     useEffect(() => {
         getAllPartiesList().then((response) => {
@@ -201,6 +224,19 @@ const VehicleHistoryDash = () => {
         }).catch(() => setVehiclesList([]));
     }, []);
 
+    useEffect(() => {
+        setAttributes(['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'unloadingReachDate', 'routeKM', 'runningKMs',
+            'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+        ]);
+        setColumnNames(['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Origin', 'Destination', 'Static ETA',
+            'Reach Date', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Estimated Arrival Date', 'Final Status', 'Delayed Hours'
+        ]);
+
+        setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'locationTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
+            'kmDifference', 'last10HoursKms', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+        ]);
+    }, []);
+
     const handleChangeStartdate = (dateTime) => {
         const day = dateTime?.$D < 10 ? `0${dateTime?.$D}` : dateTime?.$D;
         const month = (dateTime?.$M + 1) < 10 ? `0${dateTime?.$M + 1}` : dateTime?.$M + 1;
@@ -211,11 +247,6 @@ const VehicleHistoryDash = () => {
 
         const formattedDate = `${year}-${month}-${day} ${hours}:${minute}:${seconds}`;
         setStartDate(formattedDate);
-
-        // setForm({
-        //     ...form,
-        //     applicationDate: formattedDate
-        // });
     };
 
     const handleChangeEnddate = (dateTime) => {
@@ -228,11 +259,6 @@ const VehicleHistoryDash = () => {
 
         const formattedDate = `${year}-${month}-${day} ${hours}:${minute}:${seconds}`;
         setEndDate(formattedDate);
-
-        // setForm({
-        //     ...form,
-        //     applicationDate: formattedDate
-        // });
     };
 
     const handleShowLocation = (data) => {
@@ -348,7 +374,6 @@ const VehicleHistoryDash = () => {
             ...provided,
             fontSize: '0.9rem',
         }),
-        // menu: provided => ({...provided, zIndex: 9999})
     };
 
     const handleChange = (e) => {
@@ -400,35 +425,6 @@ const VehicleHistoryDash = () => {
 
 
     const showDelayedIcon = (data, index, colIndex) => {
-        // if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
-        //     if (data?.oemFinalStatus === 'Delayed') {
-        //         if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-        //             const oemDelayedHours = parseInt(data?.oemDelayedHours);
-        //             if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
-        //                 return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
-        //                     id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
-        //                     key={`${index}-${colIndex}-${animationKey}`}
-        //                     style={{ minWidth: "100%" }}>Mild Delayed</span>
-        //             } else if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
-        //                 return <span className={`py-1 px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}
-        //                     id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
-        //                     key={`${index}-${colIndex}-${animationKey}`}
-        //                     style={{ minWidth: "100%" }}>Moderate Delayed</span>
-        //             } else if (oemDelayedHours >= 36) {
-        //                 return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
-        //                     id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
-        //                     key={`${index}-${colIndex}-${animationKey}`}
-        //                     style={{ minWidth: "100%" }}>Critical Delayed</span>
-        //             }
-        //         } else {
-        //             return '';
-        //         }
-        //     } else if (data?.oemFinalStatus === 'On Time' || data?.oemFinalStatus === 'Early' || data?.oemFinalStatus === "") {
-        //         return <span className='px-2 text-center w-100' style={{ fontWeight: '400' }}>{data?.oemFinalStatus}</span>
-        //     }
-        // } else {
-        // }
-
         if (data?.finalStatus === 'Delayed') {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data?.delayedHours);
@@ -520,35 +516,70 @@ const VehicleHistoryDash = () => {
     };
 
     const convertTo24HourFormat = (timeString) => {
+        if (timeString === null || timeString === "") {
+            return "";
+        } else {
+            var timeComponents = timeString.split(" ");
+            var date = timeComponents[0];
+            var time = timeComponents[1];
+            var period = timeComponents[2];
 
-        var timeComponents = timeString.split(" ");
-        var date = timeComponents[0];
-        var time = timeComponents[1];
-        var period = timeComponents[2];
+            var timeParts = time.split(":");
+            var hours = parseInt(timeParts[0]);
+            var minutes = parseInt(timeParts[1]);
+            var seconds = parseInt(timeParts[2]);
 
-        var timeParts = time.split(":");
-        var hours = parseInt(timeParts[0]);
-        var minutes = parseInt(timeParts[1]);
-        var seconds = parseInt(timeParts[2]);
+            if (period === "PM" && hours < 12) {
+                hours += 12;
+            }
 
-        if (period === "PM" && hours < 12) {
-            hours += 12;
+            if (period === "AM" && hours === 12) {
+                hours = 0;
+            }
+
+            hours = String(hours).padStart(2, "0");
+            minutes = String(minutes).padStart(2, "0");
+            seconds = String(seconds).padStart(2, "0");
+
+            var time24Hour = hours + ":" + minutes + ":" + seconds;
+
+            return date + " " + time24Hour;
         }
+    };
 
-        if (period === "AM" && hours === 12) {
-            hours = 0;
+
+    const getDelayedType = (attr, hours) => {
+        if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
+            return attr;
+        } else if (attr === 'Delayed') {
+            if (parseInt(hours) <= 18) {
+                return 'Mild Delayed';
+            } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
+                return 'Moderate Delayed';
+            } else if (parseInt(hours) >= 36) {
+                return 'Critical Delayed';
+            }
         }
+    };
 
-        hours = String(hours).padStart(2, "0");
-        minutes = String(minutes).padStart(2, "0");
-        seconds = String(seconds).padStart(2, "0");
+    const getGPSTime = (date) => {
+        if (date === null) {
+            return '';
+        } else if (date !== null && date?.length === 0) {
+            return '';
+        } else {
+            const originalDate = new Date(date);
+            const day = originalDate.getDate() >= 10 ? originalDate.getDate() : `0${originalDate.getDate()}`;
+            const month = originalDate.getMonth() + 1 >= 10 ? originalDate.getMonth() + 1 : `0${originalDate.getMonth() + 1}`;
+            const year = originalDate.getFullYear() >= 10 ? originalDate.getFullYear() : `0${originalDate.getFullYear()}`;
+            const hours = originalDate.getHours() >= 10 ? originalDate.getHours() : `0${originalDate.getHours()}`;
+            const minutes = originalDate.getMinutes() >= 10 ? originalDate.getMinutes() : `0${originalDate.getMinutes()}`;
+            const seconds = originalDate.getSeconds() >= 10 ? originalDate.getSeconds() : `0${originalDate.getSeconds()}`;
 
-        var time24Hour = hours + ":" + minutes + ":" + seconds;
-
-        return date + " " + time24Hour;
-    }
-
-    console.log("selected vehicle", selectedVehicleNo);
+            const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            return formattedDate;
+        }
+    };
 
     const handleShowRoute = (data) => {
         if (data?.vehicleNo === "") {
@@ -594,7 +625,6 @@ const VehicleHistoryDash = () => {
                                     <Link to={'#'} state={data}
                                         onClick={() => {
                                             setShowRoute(true)
-                                            // localStorage.setItem('filters', JSON.stringify(selectedFilter));
                                             localStorage.setItem("vehicle", data?.vehicleNo);
                                             localStorage.setItem("vehicleExitDbID", data?.vehicleExitDbID);
                                             localStorage.setItem("lastDbID", data?.lastDbID);
@@ -661,6 +691,46 @@ const VehicleHistoryDash = () => {
         }
     };
 
+    const handleFilterTrips = (trips) => {
+        const allFilteredTrips = trips.filter(test => {
+            for (const key in form) {
+                const testValue = String(test[key]).toLowerCase();
+                const formValue = form[key].toLowerCase();
+                if ((testValue !== formValue && formValue.length > 0)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        const formatLoadingDate = (dateString) => {
+            const parts = dateString.split(/[\s/:]+/);
+            const day = parts[0];
+            const month = parts[1];
+            const year = parts[2];
+            const hours = parseInt(parts[3]) + (parts[5] === "PM" ? 12 : 0);
+            const minutes = parts[4];
+            const seconds = parts[5];
+
+            const formattedDate = `${year}-${month}-${day} ${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+            return formattedDate;
+        };
+
+        const filtered = allFilteredTrips.filter(data => data?.loadingDate !== null && data?.loadingDate !== '' && ((new Date(formatLoadingDate(data?.loadingDate)) >= new Date(startDate)) && (new Date(formatLoadingDate(data?.loadingDate)) <= new Date(endDate))))
+        setFilteredTrips(filtered);
+    }
+
+    const sortByValue = (data) => {
+        data.sort((a, b) => {
+            const valueA = parseInt(a?.delayedHours);
+            const valueB = parseInt(b?.delayedHours);
+
+            return valueB - valueA;
+        });
+
+        return data;
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (startDate !== "" && endDate !== "") {
@@ -669,32 +739,20 @@ const VehicleHistoryDash = () => {
             getUnloadingReport().then(response => {
                 if (response.status === 200) {
                     const allTrips = response?.data;
-                    const allFilteredTrips = allTrips.filter(test => {
-                        for (const key in form) {
-                            const testValue = String(test[key]).toLowerCase();
-                            const formValue = form[key].toLowerCase();
-                            if ((testValue !== formValue && formValue.length > 0)) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    });
 
-                    const formatLoadingDate = (dateString) => {
-                        const parts = dateString.split(/[\s/:]+/);
-                        const day = parts[0];
-                        const month = parts[1];
-                        const year = parts[2];
-                        const hours = parseInt(parts[3]) + (parts[5] === "PM" ? 12 : 0);
-                        const minutes = parts[4];
-                        const seconds = parts[5];
+                    let critical = allTrips.filter(data => parseInt(data?.delayedHours) >= 36);
+                    let moderate = allTrips.filter(data => (parseInt(data?.delayedHours) >= 19 && parseInt(data?.delayedHours) <= 35));
+                    let mild = allTrips.filter(data => parseInt(data?.delayedHours) <= 18);
 
-                        const formattedDate = `${year}-${month}-${day} ${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
-                        return formattedDate;
-                    };
+                    let sortedCritical = sortByValue(critical);
+                    let sortedModerate = sortByValue(moderate);
+                    let sortedMild = sortByValue(mild);
 
-                    const filtered = allFilteredTrips.filter(data => ((new Date(formatLoadingDate(data?.loadingDate)) >= new Date(startDate)) && (new Date(formatLoadingDate(data?.loadingDate)) <= new Date(endDate))))
-                    setFilteredTrips(filtered);
+                    let nonDelayed = allTrips.filter(data => data?.finalStatus !== 'Delayed');
+
+                    const finalTrips = [...sortedCritical, ...sortedModerate, ...sortedMild, ...nonDelayed];
+
+                    handleFilterTrips(finalTrips);
                     setShowLoader(false);
                 } else {
                     setFilteredTrips([]);
@@ -715,6 +773,214 @@ const VehicleHistoryDash = () => {
         }
     };
 
+    const formatData = (rowData) => {
+        const formattedData = rowData.map(item => {
+            const formattedItem = {};
+            attributes.forEach(attr => {
+                if (attr === 'currVehicleStatus' || attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'oemReachTime'
+                    || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'oemDelayedHours' || attr === 'oemFinalStatus' || attr === 'locationTime' || attr === 'unloadingReachDate') {
+                    if (attr === 'loadingDate' || attr === 'oemReachTime') {
+                        formattedItem[attr] = handleFormateISTDate(item[attr]);
+                    }
+                    if (attr === 'vehicleExitDate') {
+                        formattedItem[attr] = handleFormatDate(item[attr]);
+                    }
+                    if (attr === 'delayedHours') {
+                        formattedItem[attr] = getDelayedHours(item[attr]);
+                    }
+
+                    if (attr === 'oemDelayedHours') {
+                        formattedItem[attr] = getDelayedHours(item[attr]);
+                    }
+
+                    if (attr === 'staticETA' || attr === 'estimatedArrivalDate') {
+                        formattedItem[attr] = convertTo24HourFormat(item[attr]);
+                    }
+
+                    if (attr === 'finalStatus') {
+                        formattedItem[attr] = getDelayedType(item[attr], item['delayedHours']);
+                    }
+
+                    if (attr === 'oemFinalStatus') {
+                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours']);
+                    }
+
+                    if (attr === 'locationTime') {
+                        formattedItem[attr] = getGPSTime(item[attr], item['locationTime']);
+                    }
+
+                    if (attr === 'reachPointEntryTime') {
+                        formattedItem[attr] = getGPSTime(item[attr], item['reachPointEntryTime']);
+                    }
+
+                    if (attr === 'unloadingReachDate') {
+                        formattedItem[attr] = item[attr] === "" || item[attr] === null ? '' : handleFormatDate(item[attr]);
+                    }
+
+                    if (attr === 'currVehicleStatus') {
+                        formattedItem[attr] = '';
+                    }
+                } else {
+                    formattedItem[attr] = item[attr];
+                }
+            });
+            return formattedItem;
+        });
+        return formattedData;
+    };
+
+    const formatExcelData = (data) => {
+        return data.map((item) => {
+            const formattedItem = { ...item };
+
+            if (formattedItem.hasOwnProperty('loadingDate')) {
+                formattedItem.loadingDate = handleFormateISTDate(formattedItem.loadingDate);
+            }
+
+            if (formattedItem.hasOwnProperty('vehicleExitDate')) {
+                formattedItem.vehicleExitDate = handleFormatDate(formattedItem.vehicleExitDate);
+            }
+
+            if (formattedItem.hasOwnProperty('staticETA')) {
+                formattedItem.staticETA = convertTo24HourFormat(formattedItem?.staticETA);
+            }
+
+            if (formattedItem.hasOwnProperty('oemReachTime')) {
+                formattedItem.oemReachTime = handleFormateISTDate(formattedItem?.oemReachTime);
+            }
+
+            if (formattedItem.hasOwnProperty('locationTime')) {
+                formattedItem.locationTime = getGPSTime(formattedItem?.locationTime);
+            }
+
+            if (formattedItem.hasOwnProperty('unloadingReachDate')) {
+                formattedItem.unloadingReachDate = formattedItem?.unloadingReachDate === "" || formattedItem?.unloadingReachDate === null ? '' : handleFormatDate(formattedItem?.unloadingReachDate);
+            }
+
+            if (formattedItem.hasOwnProperty('estimatedArrivalDate')) {
+                formattedItem.estimatedArrivalDate = convertTo24HourFormat(formattedItem?.estimatedArrivalDate);
+            }
+
+            if (formattedItem.hasOwnProperty('oemFinalStatus')) {
+                formattedItem.oemFinalStatus = getDelayedType(formattedItem?.oemFinalStatus, formattedItem?.oemDelayedHours);
+            }
+
+            if (formattedItem.hasOwnProperty('oemDelayedHours')) {
+                formattedItem.oemDelayedHours = getDelayedHours(formattedItem?.oemDelayedHours);
+            }
+
+            if (formattedItem.hasOwnProperty('finalStatus')) {
+                formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours);
+            }
+
+            if (formattedItem.hasOwnProperty('delayedHours')) {
+                formattedItem.delayedHours = getDelayedHours(formattedItem?.delayedHours);
+            }
+
+            return formattedItem;
+        });
+    };
+
+    const formatDataKey = (data) => {
+        return data.map((item) => {
+            const filteredItem = {};
+            const desiredKeys = excelAtrributes.map(key => key);
+
+            for (const key of desiredKeys) {
+                if (item.hasOwnProperty(key)) {
+                    filteredItem[key] = item[key];
+                }
+            }
+
+            return filteredItem;
+        });
+    };
+
+    const exportToPDF = async () => {
+        const doc = new jsPDF('landscape');
+        const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
+
+        doc.setFontSize(16);
+        doc.text('Trips History Report', 130, 10);
+
+        const formattedData = formatData(filteredTrips);
+
+        formattedData.forEach((row, index) => {
+            row['S.No.'] = index + 1
+        });
+
+        const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
+
+        doc.autoTable({
+            columns,
+            body: formattedData,
+            margin: firstPageMargin,
+            styles: {
+                fontSize: 8,
+                height: 100
+            },
+            rowPageBreak: 'avoid'
+        });
+
+        setPdfDisabled(false);
+        if (filteredTrips.length === 0) {
+            ErrorToast('No data found');
+        } else {
+            doc.save('Trips-History-report.pdf');
+        }
+    };
+
+    const exportToExcel = () => {
+        let formattedData = [];
+        let headers = [];
+
+        formattedData = formatExcelData(formatDataKey(filteredTrips.filter(item => excelAtrributes.includes(Object.keys(item)[0]))));
+
+        headers = [
+            {
+                vehicleNo: 'Vehicle No.',
+                loadingDate: 'Loading (Date / Time)',
+                vehicleExitDate: 'Vehicle Exit (Date / Time)',
+                consignorName: 'Consignor Name',
+                origin: 'Origin',
+                destination: 'Destination',
+                staticETA: 'Static ETA',
+                oemReachTime: 'Static ETA(OEM)',
+                locationTime: 'GPS (Date / Time)',
+                unloadingReachDate: 'Reach Date',
+                routeKM: 'Route (KM)',
+                runningKMs: 'KM Covered',
+                kmDifference: 'Difference (Km)',
+                last10HoursKms: 'Last 10 hrs KM',
+                estimatedArrivalDate: 'Estimated Arrival Date',
+                finalStatus: 'Final Status',
+                delayedHours: 'Delayed Hours'
+            }
+        ];
+
+        formattedData.unshift(headers[0]);
+
+        const numberFormatter = (value) => {
+
+            if (typeof value === 'string' && !isNaN(Number(value))) {
+                return value === "" || value === null ? "" : Number(value);
+            }
+
+            return value;
+        };
+
+        const worksheet = XLSX.utils.json_to_sheet(formattedData.map(row => Object.fromEntries(Object.entries(row).map(([key, value]) => [key, numberFormatter(value)]))),
+            {
+                skipHeader: true,
+            });
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'trips_report');
+
+        setExcelDisabled(false);
+
+        formattedData.length <= 1 ? ErrorToast("No data found") : XLSX.writeFile(workbook, `trips_report.xlsx`);
+    };
 
     return (
         <div>
@@ -793,65 +1059,41 @@ const VehicleHistoryDash = () => {
                                 <Col sm={12} md={6} lg={1} className='pt-4'>
                                     <Button type="submit" className="px-3">Show</Button>
                                 </Col>
-
-                                {/* <Col sm={12} md={6} lg={3} className='border-right border-secondary pt-4 d-flex justify-content-start align-items-center'>
-                                <Button type="button" className="px-3" onClick={() => realTimeDataFilter()}>Show</Button>
-                                <HoveredButton type="button" className="px-3 ms-2"
-                                    onClick={() => handleSelectFilter('All')}
-                                >Show All</HoveredButton>
-                                <div className='ms-3 position-relative w-45'>
-                                    <div className={`${selectedFilter.length > 0 && 'bg-thm-dark'} border border-secondary rounded p-2 cursor-pointer d-flex justify-content-between align-items-center`}
-                                        onMouseOver={() => setHovered(true)}
-                                        onMouseOut={() => setHovered(false)}
-                                        onClick={() => setShowFilters(!showFilters)}
-                                    >
-                                        <span className={`${selectedFilter.length > 0 && 'bg-thm-dark thm-white'}`} style={{ width: "8rem", fontSize: "0.8rem" }}>
-                                            {selectedFilter.length > 0 ? 'Filters Applied' : 'Filter'}
-                                        </span>
-                                        <CiFilter className={`${selectedFilter.length > 0 && 'thm-white'}`} />
-                                    </div>
-                                    {
-                                        showFilters ? (
-                                            <div className='position-absolute bg-white px-0 d-flex justify-content-start align-items-center flex-column' style={{ top: 70, zIndex: 3, boxShadow: "0px 0px 10px 0px #c8c9ca" }}>
-                                                {
-                                                    allFilters.map((data, index) => (
-                                                        <div className={` py-2 ps-3 pe-5 w-100 ${selectedFilter.includes(data) ? 'filter-options-active' : 'filter-options'} border-bottom cursor-pointer`}
-                                                            onMouseOver={() => setHovered(true)}
-                                                            onMouseOut={() => setHovered(false)}
-                                                            key={index}
-                                                            onClick={() => handleSelectFilter(data)}
-                                                        >{data}</div>
-                                                    ))
-                                                }
-                                                <div className='d-flex justify-content-end align-items-center w-100'>
-                                                    <HoveredButton className="me-2 my-2 py-1 px-4">OK</HoveredButton>
-                                                </div>
-                                            </div>
-                                        ) : null
-                                    }
-                                    {
-                                        selectedFilter.length > 0 ? (
-                                            <div>
-                                                <Tooltip title="Reset Filters">
-                                                    <Link to="#">
-                                                        <MdSettingsBackupRestore onClick={() => handleResetFilters()} className='thm-dark cursor-pointer ms-2 fs-3' />
-                                                    </Link>
-                                                </Tooltip>
-                                            </div>
-                                        ) : null
-                                    }
-                                </div>
-                            </Col> */}
-
-                                {/* <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
-                                </Col> */}
                             </Row>
                         </Form>
                     </div>
 
-                    <div className='d-flex justify-content-start align-items-start mt-5'>
-                        <span className='fw-bold'>Total Trips:</span>
-                        <span className='ms-2'>{filteredTrips.length}</span>
+                    <div className='d-flex justify-content-between align-items-center mt-5'>
+                        <div>
+                            <span className='fw-bold'>Total Trips:</span>
+                            <span className='ms-2'>{filteredTrips.length}</span>
+                        </div>
+                        <div className='d-flex justify-content-center align-items-center'>
+                            <Tooltip title="Export As Excel" placement="top">
+                                <Link>
+                                    <FaFileExcel className={`${excelDisabled ? 'text-secondary cursor-not-allowed' : 'text-success cursor-pointer'} ms-2 fs-3`}
+                                        onClick={() => {
+                                            filteredTrips.length > 0 && setExcelDisabled(true);
+                                            setTimeout(() => {
+                                                !excelDisabled && exportToExcel();
+                                            }, 1000)
+                                        }}
+                                    />
+                                </Link>
+                            </Tooltip>
+                            <Tooltip title="Export As PDF" placement="top">
+                                <Link>
+                                    <BsFileEarmarkPdfFill className={`${pdfDisabled ? 'text-secondary cursor-not-allowed' : 'cursor-pointer'} ms-2 fs-3`}
+                                        onClick={() => {
+                                            filteredTrips.length > 0 && setPdfDisabled(true)
+                                            setTimeout(() => {
+                                                !pdfDisabled && exportToPDF();
+                                            }, 1000);
+                                        }}
+                                        style={{ color: "#ed031b" }} />
+                                </Link>
+                            </Tooltip>
+                        </div>
                     </div>
                     <div className='table-responsive mt-2'>
                         <table className='table table-striped table-bordered w-100 position-relative' style={{ overflowY: "scroll", overflowX: 'auto' }}>
