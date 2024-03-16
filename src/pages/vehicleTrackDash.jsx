@@ -387,11 +387,6 @@ const VehicleTrackDash = () => {
             const staticETA = ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)));
             const staticDelayed = staticETA && (delayedHours >= 0 && delayedHours <= 5);
 
-            // if (((delayed || staticDelayed) && data?.tripStatus === 'Trip Running')) {
-
-            //     console.log("delayed", data);
-            // }
-
             return (delayed || staticDelayed) && data?.tripStatus === 'Trip Running';
             // return ((delayedHours >= 0 && delayedHours <= 18) === true && data?.tripStatus === 'Trip Running');
         });
@@ -1844,7 +1839,7 @@ const VehicleTrackDash = () => {
     };
 
     return (
-        <div className='m-0 p-0 position-relative' onClick={() => handleHideOptions()}>
+        <div className='m-0 p-0 position-relative' onClick={() => handleHideOptions()} style={{minHeight: showFilters && '120vh'}}>
             <Loader show={showLoader} />
             <div className='mt-5 my-3 mx-2 px-3 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>

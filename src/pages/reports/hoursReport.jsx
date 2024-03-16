@@ -4,6 +4,7 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { Col } from 'react-bootstrap';
 import Button from '../../components/Button/coloredButton';
+import HoverButton from '../../components/Button/hoveredButton';
 import { getRunningTrips } from '../../hooks/tripsHooks';
 import { ErrorToast } from '../../components/toast/toast';
 import { getHoursReports } from '../../hooks/reportHooks';
@@ -15,6 +16,8 @@ const HoursReport = () => {
     const [runningVehicles, setRunningVehicles] = useState([]);
     const [tripsReport, setTripsReport] = useState([]);
 
+    const [kms30, setKms30] = useState(0);
+    const [drivenLessThan30KMs, setDrivenLessThan30KMs] = useState([]);
     const [vehiclesOnHold, setVehiclesOnHold] = useState([]);
     const [fetchingData, setFetchingData] = useState(true);
     const [holdVehicle, setHoldVehicle] = useState(false);
@@ -42,8 +45,11 @@ const HoursReport = () => {
 
                 setRunningVehicles(runningVehicles);
             }
-        }).catch(err => err?.response?.data && ErrorToast(err?.response?.data))
+        }).catch(err => {
+            err?.response?.data && ErrorToast(err?.response?.data)
+        })
     }, []);
+
 
     useEffect(() => {
         if (runningVehicles.length > 0) {
@@ -55,7 +61,9 @@ const HoursReport = () => {
                     const final = [];
                     const distanceMap = {};
                     const vehiclesOnHold = [];
-                    const holdVehicleData = [];
+                    const vehiclesDrivenLessThan30KMs = [];
+
+                    const allData = response?.data;
 
                     response?.data.forEach((item) => {
                         const { vehicleNo, latLongDistance } = item;
@@ -74,30 +82,57 @@ const HoursReport = () => {
                     };
 
                     final.forEach(data => {
-                        (parseFloat(data?.finalDistance) < 20) && holdVehicleData.push(data);
                         (parseFloat(data?.finalDistance) < 20) && vehiclesOnHold.push(data?.vehicleNo);
+                        (parseFloat(data?.finalDistance) < 30) && vehiclesDrivenLessThan30KMs.push(data?.vehicleNo);
                     });
 
-                    setTripsReport(vehiclesOnHold);
+                    // allData.forEach(data => {
+                    //     if (parseInt(data?.last10HoursKms) < 30) {
+                    //         vehiclesDrivenLessThan30KMs.push(data)
+                    //     }
+                    // })
+                    // const earlyOnTimeIn30KMsRange = vehiclesDrivenLessThan30KMs.filter(data => data?.finalStatus === 'On Time' || data?.finalStatus === "Early");
 
+                    // console.log('vehiclesOnHold', earlyOnTimeIn30KMsRange);
+
+                    // let vehicles = [];
+                    // earlyOnTimeIn30KMsRange.forEach(data => {
+                    //     vehicles.push(data?.vehicleNo);
+                    // });
+
+                    // console.log('30kms', vehicles);
+                    setTripsReport(vehiclesOnHold);
+                    setKms30(vehiclesDrivenLessThan30KMs);
                 } else {
-                    setTripsReport([])
+                    setTripsReport([]);
+                    setKms30([]);
                 }
             }).catch(err => {
-                setTripsReport([])
+                setTripsReport([]);
+                setKms30([]);
                 console.log(err);
             })
-        }
+        };
     }, [runningVehicles]);
+
 
     useEffect(() => {
         if (runningVehicles.length > 0) {
             let filteredTripsOnHold = [];
+            let filtered30Kms = [];
 
             runningTrips.map(data => {
                 tripsReport.includes(data?.vehicleNo) && filteredTripsOnHold.push(data);
             });
+
+            runningTrips.map(data => {
+                kms30.includes(data?.vehicleNo) && filtered30Kms.push(data);
+            });
+
+            const final = filtered30Kms.filter(data => data?.finalStatus === 'On Time' || data?.finalStatus === 'Early')
+
             setVehiclesOnHold(filteredTripsOnHold);
+            setDrivenLessThan30KMs(final);
         };
     }, [fetchingData]);
     useEffect(() => {
@@ -310,11 +345,11 @@ const HoursReport = () => {
         return formattedData;
     };
 
-    const exportToPDF = async () => {
+    const exportToPDF = async (pdfData) => {
         if (fetchingData) {
-            ErrorToast("Please Wait while fetching data");
+            ErrorToast("Please Wait while fetching the data");
         } else {
-            if (vehiclesOnHold.length === 0) {
+            if (pdfData.length === 0) {
                 ErrorToast("No trips found");
             } else {
                 const doc = new jsPDF('landscape');
@@ -323,7 +358,7 @@ const HoursReport = () => {
                 doc.setFontSize(16);
                 doc.text('10 Hours Trips Report', 130, 10);
 
-                const formattedData = formatData(vehiclesOnHold);
+                const formattedData = formatData(pdfData);
 
                 formattedData.forEach((row, index) => {
                     row['S.No.'] = index + 1
@@ -429,7 +464,7 @@ const HoursReport = () => {
 
     return (
         <>
-            <Col sm={5} className='ps-5'>
+            <Col sm={8} className='ps-5'>
                 {
                     fetchingData ? (
                         <p className='fw-bold text-secondary'>Please Wait while fetching the data
@@ -441,7 +476,10 @@ const HoursReport = () => {
                             <span className='ms-2 dot-six'>.</span>
                         </p>
                     ) : (
-                        <Button className="px-5" onClick={() => exportToPDF()}>Download Last 10 Hours Report</Button>
+                        <div className='d-flex justify-content-start align-items-center w-100'>
+                            <Button className="px-5" onClick={() => exportToPDF(vehiclesOnHold)}>Download Last 10 Hours Report</Button>
+                            <HoverButton className="px-5 ms-5" onClick={() => exportToPDF(drivenLessThan30KMs)}>Download 30 KM Report</HoverButton>
+                        </div>
                     )
                 }
             </Col>
