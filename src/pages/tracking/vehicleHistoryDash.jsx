@@ -83,6 +83,7 @@ const VehicleHistoryDash = () => {
         { label: 'Loading Date ', value: 'loadingDate', hidden: false },
         { label: 'Vehicle Exit Date', value: 'vehicleExitDate', hidden: false },
         { label: 'Consignor Name', value: 'consignorName', hidden: false },
+        { label: 'Dealer Name', value: 'dealerName', hidden: false },
         { label: 'Origin', value: 'origin', hidden: false },
         { label: 'Destination', value: 'destination', hidden: false },
         { label: 'Static ETA (PAPL)', value: 'staticETA', hidden: false },
@@ -232,7 +233,7 @@ const VehicleHistoryDash = () => {
             'Reach Date', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Estimated Arrival Date', 'Final Status', 'Delayed Hours'
         ]);
 
-        setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'locationTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
+        setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'dealerName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'locationTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
             'kmDifference', 'last10HoursKms', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
         ]);
     }, []);
@@ -942,6 +943,7 @@ const VehicleHistoryDash = () => {
                 loadingDate: 'Loading (Date / Time)',
                 vehicleExitDate: 'Vehicle Exit (Date / Time)',
                 consignorName: 'Consignor Name',
+                dealerName: 'Dealer Name',
                 origin: 'Origin',
                 destination: 'Destination',
                 staticETA: 'Static ETA',

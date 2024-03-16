@@ -147,11 +147,11 @@ const UnloadingReport = ({ reportType }) => {
 
     useEffect(() => {
         if (reportType === "Unloading Date Report") {
-            setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'unloadingDate', 'routeKM', 'runningKMs',
+            setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'dealerName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'unloadingDate', 'routeKM', 'runningKMs',
                 'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
             ]);
         } else {
-            setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
+            setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'dealerName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
                 'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
             ]);
         }
@@ -523,6 +523,7 @@ const UnloadingReport = ({ reportType }) => {
                     loadingDate: 'Loading (Date / Time)',
                     vehicleExitDate: 'Vehicle Exit (Date / Time)',
                     consignorName: 'Consignor Name',
+                    dealerName: 'Dealer Name',
                     origin: 'Origin',
                     destination: 'Destination',
                     staticETA: 'Static ETA',
@@ -543,6 +544,7 @@ const UnloadingReport = ({ reportType }) => {
                     loadingDate: 'Loading (Date / Time)',
                     vehicleExitDate: 'Vehicle Exit (Date / Time)',
                     consignorName: 'Consignor Name',
+                    dealerName: 'Dealer Name',
                     origin: 'Origin',
                     destination: 'Destination',
                     staticETA: 'Static ETA',

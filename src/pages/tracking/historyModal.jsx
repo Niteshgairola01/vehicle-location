@@ -75,9 +75,7 @@ const HistoryModal = ({ show, setShow, vehicleNo, startDate, endDate }) => {
             startDate: startDate,
             endDate: endDate
         });
-    }, [vehicleNo, startDate, endDate]);
-
-    console.log("selected", form);
+    }, [show, vehicleNo, startDate, endDate]);
 
     useEffect(() => {
         if (geofenceLat === null) {
@@ -206,152 +204,154 @@ const HistoryModal = ({ show, setShow, vehicleNo, startDate, endDate }) => {
 
 
     useEffect(() => {
-        if (show && form?.vehicle) {
-            arrayLocation.current = 0;
-            setPause(true);
-            routeCoords.length > 0 && setCurrentCoordinates({ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng });
-            routeCoords.length > 0 && setCurrentCoordsDetails(routeData[0]);
-            setShowLoader(true);
-            setBtnDisabled(true);
+        setTimeout(() => {
+            if (show && form?.startDate && form?.vehicle) {
+                arrayLocation.current = 0;
+                setPause(true);
+                // routeCoords.length > 0 && setCurrentCoordinates({ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng });
+                // routeCoords.length > 0 && setCurrentCoordsDetails(routeData[0]);
+                setShowLoader(true);
+                setBtnDisabled(true);
 
-            const payload = [form?.vehicle, form?.startDate, form?.endDate];
-            console.log("payload", payload);
+                const payload = [form?.vehicle, form?.startDate, form?.endDate];
+                console.log("payload", payload);
 
-            // if (form?.vehicle) {
-            getVehicleRoute(payload).then((response) => {
-                if (response.status === 200) {
-                    setBtnDisabled(false);
-                    setShowLoader(false);
+                // if (form?.vehicle) {
+                getVehicleRoute(payload).then((response) => {
+                    if (response.status === 200) {
+                        setBtnDisabled(false);
+                        setShowLoader(false);
 
-                    const allData = response?.data;
-                    let coords = [];
+                        const allData = response?.data;
+                        let coords = [];
 
-                    let finalCoords = [];
-                    let finalRouteData = [];
+                        let finalCoords = [];
+                        let finalRouteData = [];
 
-                    allData.map((data, index) => {
-                        if (index < allData?.length - 1) {
-                            if (data?.lat !== allData[index + 1]?.lat) {
-                                finalCoords.push({
-                                    lat: parseFloat(data?.lat),
-                                    lng: parseFloat(data?.long)
-                                });
+                        allData.map((data, index) => {
+                            if (index < allData?.length - 1) {
+                                if (data?.lat !== allData[index + 1]?.lat) {
+                                    finalCoords.push({
+                                        lat: parseFloat(data?.lat),
+                                        lng: parseFloat(data?.long)
+                                    });
 
-                                finalRouteData.push(data);
+                                    finalRouteData.push(data);
+                                };
                             };
-                        };
-                    });
+                        });
 
 
-                    finalCoords.push({
-                        lat: parseFloat(allData[allData?.length - 1]?.lat),
-                        lng: parseFloat(allData[allData?.length - 1]?.long),
-                    });
+                        finalCoords.push({
+                            lat: parseFloat(allData[allData?.length - 1]?.lat),
+                            lng: parseFloat(allData[allData?.length - 1]?.long),
+                        });
 
-                    finalRouteData.push(allData[allData?.length - 1])
+                        finalRouteData.push(allData[allData?.length - 1])
 
-                    setRouteData(finalRouteData);
-                    setRouteCoords(finalCoords);
+                        setRouteData(finalRouteData);
+                        setRouteCoords(finalCoords);
 
-                    allData.map((data) => {
-                        coords.push(
-                            {
-                                lat: parseFloat(data?.lat),
-                                lng: parseFloat(data?.long)
-                            }
-                        )
-                    });
-
-                    // Stop Time 
-
-                    if (form?.time) {
-                        if (includeTime && form?.time.length > 0) {
-                            const latitudesMap = new Map();
-                            const repeatedLatitudes = [];
-
-                            let coords = [];
-
-                            allData.forEach(obj => {
-                                if (!latitudesMap.has(obj.lat)) {
-                                    latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
-                                } else {
-                                    const existingLatData = latitudesMap.get(obj.lat);
-                                    latitudesMap.set(obj.lat, {
-                                        count: existingLatData.count + 1,
-                                        arrival: existingLatData.arrival,
-                                        exit: obj.date,
-                                        lng: obj.long
-                                    });
-                                }
-                            });
-
-                            latitudesMap.forEach((value, key) => {
-                                if (value.count > 1) {
-                                    repeatedLatitudes.push({
-                                        lat: key,
-                                        lng: value.lng,
-                                        arrival: value.arrival,
-                                        exit: value.exit
-                                    });
-                                }
-                            });
-
-                            const filteredTest = repeatedLatitudes.filter(item => {
-                                const arrivalTime = new Date(item.arrival);
-                                const exitTime = new Date(item.exit);
-                                const timeDifferenceInMinutes = (exitTime - arrivalTime) / (1000 * 60); // Convert milliseconds to minutes
-                                return timeDifferenceInMinutes > form?.time;
-                            });
-
-                            filteredTest.map(data => {
-                                coords.push({
-                                    lat: parseFloat(data?.lat),
-                                    lng: parseFloat(data?.lng)
-                                })
-                            })
-
-                            setStoppage(filteredTest);
-                            setStoppageCoords(coords);
-                        }
-                    }
-
-                    // Over Speed
-
-                    if (form?.speed) {
-                        if (includeSpeed && form?.speed.length >= 0) {
-                            const overSpeeded = allData.filter(data => parseFloat(data?.speed) > form?.speed);
-                            let coordinates = [];
-
-                            overSpeeded.map((data) => {
-                                coordinates.push({
+                        allData.map((data) => {
+                            coords.push(
+                                {
                                     lat: parseFloat(data?.lat),
                                     lng: parseFloat(data?.long)
+                                }
+                            )
+                        });
+
+                        // Stop Time 
+
+                        if (form?.time) {
+                            if (includeTime && form?.time.length > 0) {
+                                const latitudesMap = new Map();
+                                const repeatedLatitudes = [];
+
+                                let coords = [];
+
+                                allData.forEach(obj => {
+                                    if (!latitudesMap.has(obj.lat)) {
+                                        latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
+                                    } else {
+                                        const existingLatData = latitudesMap.get(obj.lat);
+                                        latitudesMap.set(obj.lat, {
+                                            count: existingLatData.count + 1,
+                                            arrival: existingLatData.arrival,
+                                            exit: obj.date,
+                                            lng: obj.long
+                                        });
+                                    }
                                 });
-                            });
 
-                            setSpeedMarkerData(overSpeeded);
-                            setOverSpeedMarkers(coordinates);
+                                latitudesMap.forEach((value, key) => {
+                                    if (value.count > 1) {
+                                        repeatedLatitudes.push({
+                                            lat: key,
+                                            lng: value.lng,
+                                            arrival: value.arrival,
+                                            exit: value.exit
+                                        });
+                                    }
+                                });
+
+                                const filteredTest = repeatedLatitudes.filter(item => {
+                                    const arrivalTime = new Date(item.arrival);
+                                    const exitTime = new Date(item.exit);
+                                    const timeDifferenceInMinutes = (exitTime - arrivalTime) / (1000 * 60); // Convert milliseconds to minutes
+                                    return timeDifferenceInMinutes > form?.time;
+                                });
+
+                                filteredTest.map(data => {
+                                    coords.push({
+                                        lat: parseFloat(data?.lat),
+                                        lng: parseFloat(data?.lng)
+                                    })
+                                })
+
+                                setStoppage(filteredTest);
+                                setStoppageCoords(coords);
+                            }
                         }
-                    }
 
-                    if (response?.data.length === 0) {
-                        ErrorToast("No Data Found")
-                    }
+                        // Over Speed
 
-                    // if(route)
+                        if (form?.speed) {
+                            if (includeSpeed && form?.speed.length >= 0) {
+                                const overSpeeded = allData.filter(data => parseFloat(data?.speed) > form?.speed);
+                                let coordinates = [];
 
-                } else {
-                    setRouteData([])
-                };
-            }).catch((err) => {
-                setRouteData([]);
-                setShowLoader(false);
-            })
-            // } else {
-            //     ErrorToast("Select Vehicle")
-            // };
-        }
-    }, [form, show]);
+                                overSpeeded.map((data) => {
+                                    coordinates.push({
+                                        lat: parseFloat(data?.lat),
+                                        lng: parseFloat(data?.long)
+                                    });
+                                });
+
+                                setSpeedMarkerData(overSpeeded);
+                                setOverSpeedMarkers(coordinates);
+                            }
+                        }
+
+                        if (response?.data.length === 0) {
+                            ErrorToast("No Data Found")
+                        }
+
+                        // if(route)
+
+                    } else {
+                        setRouteData([])
+                    };
+                }).catch((err) => {
+                    setRouteData([]);
+                    setShowLoader(false);
+                })
+                // } else {
+                //     ErrorToast("Select Vehicle")
+                // };
+            }
+        }, 1000);
+    }, [show, form]);
 
     const mapContainerStyle = {
         width: '100%',
