@@ -35,7 +35,7 @@ const HoursReport = () => {
             if (response.status === 200) {
                 const allData = response?.data;
 
-                let filteredTrips = allData.filter(data => data?.tripStatus === 'Trip Running' && data?.tripLogNo !== '' && data?.reachPointName === '')
+                let filteredTrips = allData.filter(data => data?.tripStatus === 'Trip Running' && data?.tripLogNo !== '' && data?.reachPointName === '' && data?.unloadingReachDate === "")
                 setRunningTrips(filteredTrips);
 
                 let runningVehicles = [];
@@ -63,8 +63,6 @@ const HoursReport = () => {
                     const vehiclesOnHold = [];
                     const vehiclesDrivenLessThan30KMs = [];
 
-                    const allData = response?.data;
-
                     response?.data.forEach((item) => {
                         const { vehicleNo, latLongDistance } = item;
                         if (!distanceMap[vehicleNo]) {
@@ -86,21 +84,6 @@ const HoursReport = () => {
                         (parseFloat(data?.finalDistance) < 30) && vehiclesDrivenLessThan30KMs.push(data?.vehicleNo);
                     });
 
-                    // allData.forEach(data => {
-                    //     if (parseInt(data?.last10HoursKms) < 30) {
-                    //         vehiclesDrivenLessThan30KMs.push(data)
-                    //     }
-                    // })
-                    // const earlyOnTimeIn30KMsRange = vehiclesDrivenLessThan30KMs.filter(data => data?.finalStatus === 'On Time' || data?.finalStatus === "Early");
-
-                    // console.log('vehiclesOnHold', earlyOnTimeIn30KMsRange);
-
-                    // let vehicles = [];
-                    // earlyOnTimeIn30KMsRange.forEach(data => {
-                    //     vehicles.push(data?.vehicleNo);
-                    // });
-
-                    // console.log('30kms', vehicles);
                     setTripsReport(vehiclesOnHold);
                     setKms30(vehiclesDrivenLessThan30KMs);
                 } else {
@@ -111,10 +94,9 @@ const HoursReport = () => {
                 setTripsReport([]);
                 setKms30([]);
                 console.log(err);
-            })
+            });
         };
     }, [runningVehicles]);
-
 
     useEffect(() => {
         if (runningVehicles.length > 0) {
@@ -135,6 +117,7 @@ const HoursReport = () => {
             setDrivenLessThan30KMs(final);
         };
     }, [fetchingData]);
+
     useEffect(() => {
         if (runningTrips.length > 0) {
 
@@ -388,14 +371,12 @@ const HoursReport = () => {
 
                             const test = vehiclesOnHold.filter(filters => filters?.vehicleNo === data.row.raw.vehicleNo);
 
-                            console.log("test", test[0]);
-
-                            let color = 'black';
-                            if (test[0].currVehicleStatus === 'On Hold') {
+                            let color = '#fff';
+                            if (test[0]?.currVehicleStatus === 'On Hold') {
                                 color = '#fffc00'
-                            } else if (test[0].currVehicleStatus === 'GPS Off') {
+                            } else if (test[0]?.currVehicleStatus === 'GPS Off') {
                                 color = '#ff0000'
-                            } else if (test[0].currVehicleStatus === 'Running') {
+                            } else if (test[0]?.currVehicleStatus === 'Running') {
                                 color = '#00ff00'
                             }
 

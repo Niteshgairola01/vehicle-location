@@ -462,38 +462,54 @@ const VehicleTrackDash = () => {
                 if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                     const delayedHours = parseInt(data?.delayedHours);
                     if (type === 'mild') {
-                        if (delayedHours > 5) {
+                        if (delayedHours >= 0 || delayedHours <= 5) {
                             staticDelayeds.push(data);
-
-                            // staticDelayeds.push(data);
                         }
                     } else if (type === 'moderate') {
                         if (delayedHours <= 5 || delayedHours >= 18) {
                             staticDelayeds.push(data);
-
-                            // staticDelayeds.push(data);
                         }
                     } else if (type === 'critical') {
                         if (delayedHours < 19) {
                             staticDelayeds.push(data);
-
-                            // staticDelayeds.push(data);
                         }
                     }
                 }
             });
 
-            allDelayeds = [...moderateDelayeds, ...staticETA];
+            if (type === 'mild') {
+                allDelayeds = [...moderateDelayeds, ...staticDelayeds];
+            } else {
+                allDelayeds = [...moderateDelayeds, ...staticETA];
+            }
+
 
             staticDelayeds.forEach(data => staticETAVechicles.push(data?.vehicleNo));
-            const filtered = allDelayeds.filter(data => !staticETAVechicles.includes(data?.vehicleNo));
 
-            // console.log("alldelayed", type, allDelayeds);
-            // console.log("moderates", type, moderateDelayeds);
-            // console.log('static', type, staticETA);
-            console.log("vehicles", staticETAVechicles);
-            console.log("filtered", filteredFrom, allDelayeds);
-            return filtered.length;
+            const uniqueVehiclesArr = [];
+            const seen = {};
+
+            allDelayeds.forEach(item => {
+                const vehicle = item.vehicleNo;
+                if (seen[vehicle]) {
+                    uniqueVehiclesArr[seen[vehicle] - 1] = item;
+                } else {
+                    uniqueVehiclesArr.push(item);
+                    seen[vehicle] = uniqueVehiclesArr.length;
+                }
+            });
+
+            if (type === 'mild') {
+                const filtered = uniqueVehiclesArr.filter(data => (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)) && (parseInt(data?.delayedHours) > 5));
+                let filteredVehicles = [];
+                filtered.forEach(data => filteredVehicles.push(data?.vehicleNo));
+
+                const finalTripsList = uniqueVehiclesArr.filter(data => !filteredVehicles.includes(data?.vehicleNo))
+                return finalTripsList.length
+            } else {
+                const filtered = allDelayeds.filter(data => !staticETAVechicles.includes(data?.vehicleNo));
+                return filtered.length;
+            }
         };
 
         // All trips delayed Counts
@@ -525,6 +541,8 @@ const VehicleTrackDash = () => {
             [e.target.name]: e.target.value
         });
     };
+
+    console.log("filtered", filteredTrips);
 
     const handleApplyFilter = (allFilteredTrip) => {
         if (selectedFilter.length > 0) {
@@ -584,17 +602,36 @@ const VehicleTrackDash = () => {
                                 staticETA.forEach(data => {
                                     if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                         const delayedHours = parseInt(data?.delayedHours);
-                                        if (delayedHours > 5) {
+                                        if (delayedHours >= 0 || delayedHours <= 5) {
                                             staticDelayeds.push(data);
                                         }
                                     }
                                 });
 
-                                allDelayeds = [...mildDelayeds, ...staticETA]
+                                allDelayeds = [...mildDelayeds, ...staticDelayeds];
 
                                 staticDelayeds.forEach(data => staticETAVechicles.push(data?.vehicleNo));
-                                const filtered = allDelayeds.filter(data => !staticETAVechicles.includes(data?.vehicleNo));
-                                filtered.forEach(data => finalStatusTrips.push(data));
+
+                                const uniqueVehiclesArr = [];
+                                const seen = {};
+
+                                allDelayeds.forEach(item => {
+                                    const vehicle = item.vehicleNo;
+                                    if (seen[vehicle]) {
+                                        uniqueVehiclesArr[seen[vehicle] - 1] = item;
+                                    } else {
+                                        uniqueVehiclesArr.push(item);
+                                        seen[vehicle] = uniqueVehiclesArr.length;
+                                    }
+                                });
+
+                                const filtered = uniqueVehiclesArr.filter(data => (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)) && (parseInt(data?.delayedHours) > 5));
+                                let filteredVehicles = [];
+                                filtered.forEach(data => filteredVehicles.push(data?.vehicleNo));
+
+                                const finalTripsList = uniqueVehiclesArr.filter(data => !filteredVehicles.includes(data?.vehicleNo))
+
+                                finalTripsList.forEach(data => finalStatusTrips.push(data));
                             } else {
                                 const delayedArr1 = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
                                 const staticETA = delayedArr1.filter(data => (data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)));
@@ -611,22 +648,39 @@ const VehicleTrackDash = () => {
                                             mildDelayeds.push(data);
                                         }
                                     }
-                                });
+                                })
 
                                 staticETA.forEach(data => {
                                     if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                         const delayedHours = parseInt(data?.delayedHours);
-                                        if (delayedHours > 5) {
+                                        if (delayedHours >= 0 || delayedHours <= 5) {
                                             staticDelayeds.push(data);
                                         }
                                     }
                                 });
 
-                                allDelayeds = [...mildDelayeds, ...staticETA]
+                                allDelayeds = [...mildDelayeds, ...staticDelayeds];
 
-                                staticDelayeds.forEach(data => staticETAVechicles.push(data?.vehicleNo));
-                                const filtered = allDelayeds.filter(data => !staticETAVechicles.includes(data?.vehicleNo));
-                                filtered.forEach(data => finalStatusTrips.push(data));
+                                const uniqueVehiclesArr = [];
+                                const seen = {};
+
+                                allDelayeds.forEach(item => {
+                                    const vehicle = item.vehicleNo;
+                                    if (seen[vehicle]) {
+                                        uniqueVehiclesArr[seen[vehicle] - 1] = item;
+                                    } else {
+                                        uniqueVehiclesArr.push(item);
+                                        seen[vehicle] = uniqueVehiclesArr.length;
+                                    }
+                                });
+
+                                const filtered = uniqueVehiclesArr.filter(data => (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)) && (parseInt(data?.delayedHours) > 5));
+                                let filteredVehicles = [];
+                                filtered.forEach(data => filteredVehicles.push(data?.vehicleNo));
+
+                                const finalTripsList = uniqueVehiclesArr.filter(data => !filteredVehicles.includes(data?.vehicleNo))
+
+                                finalTripsList.forEach(data => finalStatusTrips.push(data));
                             }
                         }
 
@@ -877,17 +931,36 @@ const VehicleTrackDash = () => {
                                         staticETA.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
-                                                if (delayedHours < 5) {
+                                                if (delayedHours >= 0 || delayedHours <= 5) {
                                                     staticDelayeds.push(data);
                                                 }
                                             }
                                         });
 
-                                        allDelayeds = [...mildDelayeds, ...staticETA];
+                                        allDelayeds = [...mildDelayeds, ...staticDelayeds];
 
                                         staticDelayeds.forEach(data => staticETAVechicles.push(data?.vehicleNo));
-                                        const filtered = allDelayeds.filter(data => !staticETAVechicles.includes(data?.vehicleNo));
-                                        filtered.forEach(data => finalStatusTrips.push(data));
+
+                                        const uniqueVehiclesArr = [];
+                                        const seen = {};
+
+                                        allDelayeds.forEach(item => {
+                                            const vehicle = item.vehicleNo;
+                                            if (seen[vehicle]) {
+                                                uniqueVehiclesArr[seen[vehicle] - 1] = item;
+                                            } else {
+                                                uniqueVehiclesArr.push(item);
+                                                seen[vehicle] = uniqueVehiclesArr.length;
+                                            }
+                                        });
+
+                                        const filtered = uniqueVehiclesArr.filter(data => (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)) && (parseInt(data?.delayedHours) > 5));
+                                        let filteredVehicles = [];
+                                        filtered.forEach(data => filteredVehicles.push(data?.vehicleNo));
+
+                                        const finalTripsList = uniqueVehiclesArr.filter(data => !filteredVehicles.includes(data?.vehicleNo))
+
+                                        finalTripsList.forEach(data => finalStatusTrips.push(data));
                                     } else {
                                         const delayedArr1 = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
                                         const staticETA = delayedArr1.filter(data => (data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)));
@@ -909,17 +982,36 @@ const VehicleTrackDash = () => {
                                         staticETA.forEach(data => {
                                             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                                                 const delayedHours = parseInt(data?.delayedHours);
-                                                if (delayedHours < 5) {
+                                                if (delayedHours >= 0 || delayedHours <= 5) {
                                                     staticDelayeds.push(data);
                                                 }
                                             }
                                         });
 
-                                        allDelayeds = [...mildDelayeds, ...staticETA];
+                                        allDelayeds = [...mildDelayeds, ...staticDelayeds];
 
                                         staticDelayeds.forEach(data => staticETAVechicles.push(data?.vehicleNo));
-                                        const filtered = allDelayeds.filter(data => !staticETAVechicles.includes(data?.vehicleNo));
-                                        filtered.forEach(data => finalStatusTrips.push(data));
+
+                                        const uniqueVehiclesArr = [];
+                                        const seen = {};
+
+                                        allDelayeds.forEach(item => {
+                                            const vehicle = item.vehicleNo;
+                                            if (seen[vehicle]) {
+                                                uniqueVehiclesArr[seen[vehicle] - 1] = item;
+                                            } else {
+                                                uniqueVehiclesArr.push(item);
+                                                seen[vehicle] = uniqueVehiclesArr.length;
+                                            }
+                                        });
+
+                                        const filtered = uniqueVehiclesArr.filter(data => (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)) && (parseInt(data?.delayedHours) > 5));
+                                        let filteredVehicles = [];
+                                        filtered.forEach(data => filteredVehicles.push(data?.vehicleNo));
+
+                                        const finalTripsList = uniqueVehiclesArr.filter(data => !filteredVehicles.includes(data?.vehicleNo))
+
+                                        finalTripsList.forEach(data => finalStatusTrips.push(data));
                                     }
                                 }
 
