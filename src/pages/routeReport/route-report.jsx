@@ -4,7 +4,7 @@ import Card from '../../components/Card/card'
 import { Col, Form, Row } from 'react-bootstrap'
 import { getAllVehiclesList, getVehicleRoute } from '../../hooks/vehicleMasterHooks';
 import Button from '../../components/Button/coloredButton';
-import { GoogleMap, InfoWindowF, LoadScript, MarkerF, PolylineF } from '@react-google-maps/api';
+import { GoogleMap, InfoWindowF, MarkerF, PolylineF, useJsApiLoader } from '@react-google-maps/api';
 import { ErrorToast } from '../../components/toast/toast';
 import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
@@ -85,6 +85,11 @@ const RouteReport = () => {
 
     const geofenceLat = localStorage.getItem('lat');
     const geofenceLng = localStorage.getItem('lng');
+
+    const { isLoaded } = useJsApiLoader({
+        id: "google-map-script",
+        googleMapsApiKey: key
+    });
 
     useEffect(() => {
         if (!loggedInUser) {
@@ -399,7 +404,7 @@ const RouteReport = () => {
                         }
                     }
 
-                    if(response?.data.length === 0){
+                    if (response?.data.length === 0) {
                         ErrorToast("No Data Found")
                     }
 
@@ -506,7 +511,7 @@ const RouteReport = () => {
 
     const handleGetCoveredDistance = () => {
 
-        if(coveredCoordinates[0] === undefined){
+        if (coveredCoordinates[0] === undefined) {
             // ErrorToast("No data found");
             return '';
         } else {
@@ -684,193 +689,195 @@ const RouteReport = () => {
                     <Col sm={12} md={12} lg={8}>
                         <div className='w-100 position-relative'>
                             <div style={{ minHeight: '50vh' }}>
-                                <LoadScript googleMapsApiKey={key}>
-                                    <GoogleMap
-                                        mapContainerStyle={mapContainerStyle}
-                                        onLoad={(map) => {
-                                            const bounds = boundCenter && getBounds();
-                                            boundCenter && map.fitBounds(bounds);
+                                {
+                                    isLoaded ? (
+                                        < GoogleMap
+                                            mapContainerStyle={mapContainerStyle}
+                                            onLoad={(map) => {
+                                                const bounds = boundCenter && getBounds();
+                                                boundCenter && map.fitBounds(bounds);
 
-                                            boundCenter && setCenter(map.getCenter());
-                                        }}
-                                        center={handleCenter()}
-                                        zoom={11}
-                                        options={{ gestureHandling: 'greedy' }}
-                                        mapContainerClassName='side-map-container'
-                                        onClick={handleShowGeofence}
-                                    >
-                                        {/* Route History */}
+                                                boundCenter && setCenter(map.getCenter());
+                                            }}
+                                            center={handleCenter()}
+                                            zoom={11}
+                                            options={{ gestureHandling: 'greedy' }}
+                                            mapContainerClassName='side-map-container'
+                                            onClick={handleShowGeofence}
+                                        >
+                                            {/* Route History */}
 
-                                        {
-                                            coordinatesAfterMarker.length > 0 && (
-                                                <PolylineF
-                                                    path={coordinatesBeforeMarker}
-                                                    options={{
-                                                        strokeColor: '#000',
-                                                        strokeOpacity: 1.0,
-                                                        strokeWeight: 4
-                                                    }}
-                                                />
-                                            )
-                                        }
-
-                                        {
-                                            coordinatesAfterMarker.length > 0 && (
-                                                <PolylineF
-                                                    path={coordinatesAfterMarker}
-                                                    options={{
-                                                        strokeColor: '#f75f54',
-                                                        strokeOpacity: 1.0,
-                                                        strokeWeight: 4
-                                                    }}
-                                                />
-                                            )
-                                        }
-
-                                        {
-                                            routeCoords.length > 0 && (
-                                                <div className='marker-container'>
-                                                    <MarkerF
-                                                        key={angle}
-                                                        icon={{
-                                                            path: "M 0,-4 L 8,0 L 0,4 L 2,0 Z",
-                                                            scale: 2,
-                                                            rotation: angle
+                                            {
+                                                coordinatesAfterMarker.length > 0 && (
+                                                    <PolylineF
+                                                        path={coordinatesBeforeMarker}
+                                                        options={{
+                                                            strokeColor: '#000',
+                                                            strokeOpacity: 1.0,
+                                                            strokeWeight: 4
                                                         }}
-                                                        position={vehicleCenter()}
-                                                        className='marker-container'
                                                     />
-                                                </div>
-                                            )
-                                        }
+                                                )
+                                            }
 
-                                        {/* Stopage marker */}
-                                        {
-                                            includeSpeed ? (
-                                                <>
-                                                    {
-                                                        speedMarkerData.length > 0 && speedMarkerData.map((data, index) => (
-                                                            <MarkerF
-                                                                icon={{
-                                                                    url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F7F719"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
-                                                                    scaledSize: new window.google.maps.Size(40, 40),
-                                                                    fillColor: "#ffff00",
-                                                                    fillOpacity: 1,
-                                                                }}
-                                                                label={`${index + 1}`}
-                                                                position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.long) }}
-                                                                onClick={() => handleClickSpeedMarker(data, index)}
-                                                            />
+                                            {
+                                                coordinatesAfterMarker.length > 0 && (
+                                                    <PolylineF
+                                                        path={coordinatesAfterMarker}
+                                                        options={{
+                                                            strokeColor: '#f75f54',
+                                                            strokeOpacity: 1.0,
+                                                            strokeWeight: 4
+                                                        }}
+                                                    />
+                                                )
+                                            }
 
-                                                        ))
-                                                    }
-                                                </>
-                                            ) : null
-                                        }
-
-                                        {/* Time marker */}
-
-                                        {
-                                            includeTime ? (
-                                                <>
-                                                    {
-                                                        stoppage.length > 0 && stoppage.map((data, index) => (
-                                                            <MarkerF
-                                                                label={`${index + 1}`}
-                                                                position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.lng) }}
-                                                                onClick={() => handleClickTimeMarker(data, index)}
-                                                            />
-
-                                                        ))
-                                                    }
-                                                </>
-                                            ) : null
-                                        }
-
-                                        {
-                                            routeData?.length > 0 && (
-                                                <MarkerF
-                                                    label="Start"
-                                                    position={{ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng }}
-                                                />
-
-                                            )
-                                        }
-
-
-                                        {
-                                            routeData?.length > 1 && (
-                                                <MarkerF
-                                                    label="End"
-                                                    position={{ lat: routeCoords[routeCoords.length - 1]?.lat, lng: routeCoords[routeCoords.length - 1]?.lng }}
-                                                />
-
-                                            )
-                                        }
-
-
-                                        {/* Marker details */}
-                                        {selectedTimeMarker !== null && (
-                                            <InfoWindowF
-                                                position={{ lat: parseFloat(stoppage[selectedTimeMarker]?.lat), lng: parseFloat(stoppage[selectedTimeMarker]?.lng) }}
-                                                onCloseClick={() => setSelectedTimeMarker(null)}
-                                            >
-                                                <div>
-                                                    <div>
-                                                        <span className='fw-bold'>Arrival Time :</span>
-                                                        <span className='ps-1 fw-400'>{convertMarkerDateTime(timeMarkerDetails?.arrival)}</span>
+                                            {
+                                                routeCoords.length > 0 && (
+                                                    <div className='marker-container'>
+                                                        <MarkerF
+                                                            key={angle}
+                                                            icon={{
+                                                                path: "M 0,-4 L 8,0 L 0,4 L 2,0 Z",
+                                                                scale: 2,
+                                                                rotation: angle
+                                                            }}
+                                                            position={vehicleCenter()}
+                                                            className='marker-container'
+                                                        />
                                                     </div>
+                                                )
+                                            }
 
-                                                    <div className='mt-1'>
-                                                        <span className='fw-bold'>Exit Time :</span>
-                                                        <span className='ps-1 fw-400'>{convertMarkerDateTime(timeMarkerDetails?.exit)}</span>
-                                                    </div>
+                                            {/* Stopage marker */}
+                                            {
+                                                includeSpeed ? (
+                                                    <>
+                                                        {
+                                                            speedMarkerData.length > 0 && speedMarkerData.map((data, index) => (
+                                                                <MarkerF
+                                                                    icon={{
+                                                                        url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F7F719"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
+                                                                        scaledSize: new window.google.maps.Size(40, 40),
+                                                                        fillColor: "#ffff00",
+                                                                        fillOpacity: 1,
+                                                                    }}
+                                                                    label={`${index + 1}`}
+                                                                    position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.long) }}
+                                                                    onClick={() => handleClickSpeedMarker(data, index)}
+                                                                />
 
-                                                    <div className='mt-1'>
-                                                        <span className='fw-bold'>Duration :</span>
-                                                        <span className='ps-1 fw-400'>{getTimeDifferece(timeMarkerDetails?.arrival, timeMarkerDetails?.exit)}</span>
-                                                    </div>
-                                                </div>
-                                            </InfoWindowF>
-                                        )}
+                                                            ))
+                                                        }
+                                                    </>
+                                                ) : null
+                                            }
 
-                                        {selectedSpeedMarker !== null && (
-                                            <InfoWindowF
-                                                position={{ lat: parseFloat(speedMarkerData[selectedSpeedMarker]?.lat), lng: parseFloat(speedMarkerData[selectedSpeedMarker]?.long) }}
-                                                onCloseClick={() => setSelectedSpeedMarker(null)}
-                                            >
-                                                <div>
-                                                    <div>
-                                                        <span className='fw-bold'>Date / Time :</span>
-                                                        <span className='ps-1 fw-400'>{convertSpeedMarkerDateTime(speedMarkerDetails?.date)}</span>
-                                                    </div>
+                                            {/* Time marker */}
 
-                                                    <div>
-                                                        <span className='fw-bold'>Speed :</span>
-                                                        <span className='ps-1 fw-400'>{speedMarkerDetails?.speed} (KM/H)</span>
-                                                    </div>
-                                                </div>
-                                            </InfoWindowF>
-                                        )}
+                                            {
+                                                includeTime ? (
+                                                    <>
+                                                        {
+                                                            stoppage.length > 0 && stoppage.map((data, index) => (
+                                                                <MarkerF
+                                                                    label={`${index + 1}`}
+                                                                    position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.lng) }}
+                                                                    onClick={() => handleClickTimeMarker(data, index)}
+                                                                />
 
-                                        {
-                                            showGeofenceOption && (
+                                                            ))
+                                                        }
+                                                    </>
+                                                ) : null
+                                            }
+
+                                            {
+                                                routeData?.length > 0 && (
+                                                    <MarkerF
+                                                        label="Start"
+                                                        position={{ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng }}
+                                                    />
+
+                                                )
+                                            }
+
+
+                                            {
+                                                routeData?.length > 1 && (
+                                                    <MarkerF
+                                                        label="End"
+                                                        position={{ lat: routeCoords[routeCoords.length - 1]?.lat, lng: routeCoords[routeCoords.length - 1]?.lng }}
+                                                    />
+
+                                                )
+                                            }
+
+
+                                            {/* Marker details */}
+                                            {selectedTimeMarker !== null && (
                                                 <InfoWindowF
-                                                    position={geofencePosition}
-                                                    onCloseClick={() => setShowGeofenceOption(false)}
+                                                    position={{ lat: parseFloat(stoppage[selectedTimeMarker]?.lat), lng: parseFloat(stoppage[selectedTimeMarker]?.lng) }}
+                                                    onCloseClick={() => setSelectedTimeMarker(null)}
                                                 >
-                                                    <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => {
-                                                        localStorage.setItem("geofence", 'true');
-                                                        localStorage.setItem("path", '/route-report')
-                                                    }} state={geofencePosition}>
-                                                        <div>Create Geofence</div>
-                                                    </Link>
-                                                </InfoWindowF>
-                                            )
-                                        }
+                                                    <div>
+                                                        <div>
+                                                            <span className='fw-bold'>Arrival Time :</span>
+                                                            <span className='ps-1 fw-400'>{convertMarkerDateTime(timeMarkerDetails?.arrival)}</span>
+                                                        </div>
 
-                                    </GoogleMap>
-                                </LoadScript>
+                                                        <div className='mt-1'>
+                                                            <span className='fw-bold'>Exit Time :</span>
+                                                            <span className='ps-1 fw-400'>{convertMarkerDateTime(timeMarkerDetails?.exit)}</span>
+                                                        </div>
+
+                                                        <div className='mt-1'>
+                                                            <span className='fw-bold'>Duration :</span>
+                                                            <span className='ps-1 fw-400'>{getTimeDifferece(timeMarkerDetails?.arrival, timeMarkerDetails?.exit)}</span>
+                                                        </div>
+                                                    </div>
+                                                </InfoWindowF>
+                                            )}
+
+                                            {selectedSpeedMarker !== null && (
+                                                <InfoWindowF
+                                                    position={{ lat: parseFloat(speedMarkerData[selectedSpeedMarker]?.lat), lng: parseFloat(speedMarkerData[selectedSpeedMarker]?.long) }}
+                                                    onCloseClick={() => setSelectedSpeedMarker(null)}
+                                                >
+                                                    <div>
+                                                        <div>
+                                                            <span className='fw-bold'>Date / Time :</span>
+                                                            <span className='ps-1 fw-400'>{convertSpeedMarkerDateTime(speedMarkerDetails?.date)}</span>
+                                                        </div>
+
+                                                        <div>
+                                                            <span className='fw-bold'>Speed :</span>
+                                                            <span className='ps-1 fw-400'>{speedMarkerDetails?.speed} (KM/H)</span>
+                                                        </div>
+                                                    </div>
+                                                </InfoWindowF>
+                                            )}
+
+                                            {
+                                                showGeofenceOption && (
+                                                    <InfoWindowF
+                                                        position={geofencePosition}
+                                                        onCloseClick={() => setShowGeofenceOption(false)}
+                                                    >
+                                                        <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => {
+                                                            localStorage.setItem("geofence", 'true');
+                                                            localStorage.setItem("path", '/route-report')
+                                                        }} state={geofencePosition}>
+                                                            <div>Create Geofence</div>
+                                                        </Link>
+                                                    </InfoWindowF>
+                                                )
+                                            }
+
+                                        </GoogleMap>
+                                    ) : <></>
+                                }
                             </div>
 
                             <div className='w-100 mt-2'>
@@ -944,10 +951,10 @@ const RouteReport = () => {
                                 </div>
                             </div>
                         </div>
-                    </Col>
-                </Row>
-            </Card>
-        </div>
+                    </Col >
+                </Row >
+            </Card >
+        </div >
     )
 }
 

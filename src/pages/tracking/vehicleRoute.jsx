@@ -1,13 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Card from '../../components/Card/card'
-import { GoogleMap, InfoWindow, InfoWindowF, LoadScript, MarkerF, Polyline, PolylineF } from '@react-google-maps/api'
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { GoogleMap, InfoWindowF, MarkerF, PolylineF, useJsApiLoader } from '@react-google-maps/api'
+import { Link, useNavigate } from 'react-router-dom';
 import { getVehicleRoute } from '../../hooks/vehicleMasterHooks';
 import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
-import { truck } from '../../assets/images';
 import { Modal } from 'react-bootstrap';
-import { ReactSVG } from 'react-svg';
 
 const VehicleRoute = ({ show, setShow }) => {
 
@@ -46,6 +44,11 @@ const VehicleRoute = ({ show, setShow }) => {
     const [boundCenter, setBoundCenter] = useState(false);
 
     const navigate = useNavigate();
+
+    const { isLoaded } = useJsApiLoader({
+        id: "google-map-script",
+        googleMapsApiKey: key
+    });
 
     const mapContainerStyle = {
         width: '100%',
@@ -502,110 +505,112 @@ const VehicleRoute = ({ show, setShow }) => {
                 <div className='thm-dark mx-5'>
                     <Card>
                         <div className=' side-map-container' style={{ minHeight: "95%" }}>
-                            <LoadScript googleMapsApiKey={key}>
-                                <GoogleMap
-                                    mapContainerStyle={mapContainerStyle}
-                                    onLoad={(map) => {
-                                        const bounds = boundCenter && getBounds();
-                                        boundCenter && map.fitBounds(bounds);
+                            {
+                                isLoaded ? (
+                                    <GoogleMap
+                                        mapContainerStyle={mapContainerStyle}
+                                        onLoad={(map) => {
+                                            const bounds = boundCenter && getBounds();
+                                            boundCenter && map.fitBounds(bounds);
 
-                                        boundCenter && setCenter(map.getCenter());
-                                    }}
-                                    center={handleCenter()}
-                                    zoom={9}
-                                    options={{ gestureHandling: 'greedy' }}
-                                    onClick={handleShowGeofence}
-                                // mapContainerClassName='side-map-container'
-                                >
-                                    <PolylineF
-                                        path={coordinatesBeforeMarker}
-                                        options={{
-                                            strokeColor: '#000',
-                                            strokeOpacity: 1.0,
-                                            strokeWeight: 4
+                                            boundCenter && setCenter(map.getCenter());
                                         }}
-                                    />
+                                        center={handleCenter()}
+                                        zoom={9}
+                                        options={{ gestureHandling: 'greedy' }}
+                                        onClick={handleShowGeofence}
+                                    // mapContainerClassName='side-map-container'
+                                    >
+                                        <PolylineF
+                                            path={coordinatesBeforeMarker}
+                                            options={{
+                                                strokeColor: '#000',
+                                                strokeOpacity: 1.0,
+                                                strokeWeight: 4
+                                            }}
+                                        />
 
-                                    <PolylineF
-                                        path={coordinatesAfterMarker}
-                                        options={{
-                                            strokeColor: '#f75f54',
-                                            strokeOpacity: 1.0,
-                                            strokeWeight: 4
-                                        }}
-                                    />
+                                        <PolylineF
+                                            path={coordinatesAfterMarker}
+                                            options={{
+                                                strokeColor: '#f75f54',
+                                                strokeOpacity: 1.0,
+                                                strokeWeight: 4
+                                            }}
+                                        />
 
-                                    {
-                                        coordinates.length > 0 && (
-                                            <MarkerF
-                                                key={angle} // Force re-render when angle changes
-                                                icon={{
-                                                    path: "M 0,-4 L 8,0 L 0,4 L 2,0 Z",
-                                                    scale: 2,
-                                                    rotation: angle
-                                                }}
-                                                position={vehicleCenter()}
-                                            />
-                                        )
-                                    }
+                                        {
+                                            coordinates.length > 0 && (
+                                                <MarkerF
+                                                    key={angle} // Force re-render when angle changes
+                                                    icon={{
+                                                        path: "M 0,-4 L 8,0 L 0,4 L 2,0 Z",
+                                                        scale: 2,
+                                                        rotation: angle
+                                                    }}
+                                                    position={vehicleCenter()}
+                                                />
+                                            )
+                                        }
 
-                                    <MarkerF
-                                        label="Start"
-                                        position={handleStartPosition()}
-                                    />
+                                        <MarkerF
+                                            label="Start"
+                                            position={handleStartPosition()}
+                                        />
 
-                                    <MarkerF
-                                        label="End"
-                                        position={handleEndPosition()}
-                                    />
+                                        <MarkerF
+                                            label="End"
+                                            position={handleEndPosition()}
+                                        />
 
-                                    {
-                                        stoppage.length > 0 && stoppage.map((data, index) => (
-                                            <MarkerF
-                                                label={`${index + 1}`}
-                                                position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.lng) }}
-                                                onClick={() => handleSelectMarker(data, index)}
-                                            />
+                                        {
+                                            stoppage.length > 0 && stoppage.map((data, index) => (
+                                                <MarkerF
+                                                    label={`${index + 1}`}
+                                                    position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.lng) }}
+                                                    onClick={() => handleSelectMarker(data, index)}
+                                                />
 
-                                        ))
-                                    }
+                                            ))
+                                        }
 
-                                    {selectedMarker !== null && (
-                                        <InfoWindowF
-                                            position={{ lat: parseFloat(stoppage[selectedMarker]?.lat), lng: parseFloat(stoppage[selectedMarker]?.lng) }}
-                                            onCloseClick={() => setSelectedMarker(null)}
-                                        >
-                                            <div>
-                                                <div>
-                                                    <span className='fw-bold'>Arrival Time :</span>
-                                                    <span className='ps-1 fw-400'>{convertMarkerDateTime(markerDetails?.arrival)}</span>
-                                                </div>
-
-                                                <div className='mt-1'>
-                                                    <span className='fw-bold'>Exit Time :</span>
-                                                    <span className='ps-1 fw-400'>{convertMarkerDateTime(markerDetails?.exit)}</span>
-                                                </div>
-                                            </div>
-                                        </InfoWindowF>
-                                    )}
-
-                                    {
-                                        showGeofenceOption && (
+                                        {selectedMarker !== null && (
                                             <InfoWindowF
-                                                position={geofencePosition}
-                                                onCloseClick={() => setShowGeofenceOption(false)}
+                                                position={{ lat: parseFloat(stoppage[selectedMarker]?.lat), lng: parseFloat(stoppage[selectedMarker]?.lng) }}
+                                                onCloseClick={() => setSelectedMarker(null)}
                                             >
-                                                <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => {
-                                                    localStorage.setItem("geofence", 'true');
-                                                    localStorage.setItem("path", '/vehicle-route')
-                                                }} state={geofencePosition}>
-                                                    <div>Create Geofence</div>
-                                                </Link>
+                                                <div>
+                                                    <div>
+                                                        <span className='fw-bold'>Arrival Time :</span>
+                                                        <span className='ps-1 fw-400'>{convertMarkerDateTime(markerDetails?.arrival)}</span>
+                                                    </div>
+
+                                                    <div className='mt-1'>
+                                                        <span className='fw-bold'>Exit Time :</span>
+                                                        <span className='ps-1 fw-400'>{convertMarkerDateTime(markerDetails?.exit)}</span>
+                                                    </div>
+                                                </div>
                                             </InfoWindowF>
-                                        )
-                                    }
-                                </GoogleMap>
-                            </LoadScript>
+                                        )}
+
+                                        {
+                                            showGeofenceOption && (
+                                                <InfoWindowF
+                                                    position={geofencePosition}
+                                                    onCloseClick={() => setShowGeofenceOption(false)}
+                                                >
+                                                    <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => {
+                                                        localStorage.setItem("geofence", 'true');
+                                                        localStorage.setItem("path", '/vehicle-route')
+                                                    }} state={geofencePosition}>
+                                                        <div>Create Geofence</div>
+                                                    </Link>
+                                                </InfoWindowF>
+                                            )
+                                        }
+                                    </GoogleMap>
+                                ) : <></>
+                            }
                         </div>
 
                         <div className='w-100'>

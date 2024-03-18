@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import Select from 'react-select';
 import Skeleton from '@mui/material/Skeleton';
 import { Col, Form, Modal, Row } from 'react-bootstrap';
-import Placeholder from 'react-bootstrap/Placeholder';
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
@@ -20,7 +19,7 @@ import Pagination from '../components/pagination';
 import ForceCompleteForm from './forceCompleteForm';
 import Loader from '../components/loader/loader';
 import DashHead from '../components/dashboardHead';
-import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
+import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
 import { FaSort } from "react-icons/fa";
 import '../assets/styles/home.css';
 import '../assets/styles/track-dash.css';
@@ -124,6 +123,11 @@ const VehicleTrackDash = () => {
     const today = new Date();
     const twoDaysAfter = new Date(today);
     twoDaysAfter.setDate(twoDaysAfter.getDate() + 2);
+
+    const { isLoaded } = useJsApiLoader({
+        id: "google-map-script",
+        googleMapsApiKey: key
+    });
 
     const distancesCoveredInHours = [
         {
@@ -1839,7 +1843,7 @@ const VehicleTrackDash = () => {
     };
 
     return (
-        <div className='m-0 p-0 position-relative' onClick={() => handleHideOptions()} style={{minHeight: showFilters && '120vh'}}>
+        <div className='m-0 p-0 position-relative' onClick={() => handleHideOptions()} style={{ minHeight: showFilters && '120vh' }}>
             <Loader show={showLoader} />
             <div className='mt-5 my-3 mx-2 px-3 pt-2 pb-5 bg-white rounded dashboard-main-container' onClick={() => handleShowOptions()}>
                 <div className='w-100'>
@@ -2102,20 +2106,18 @@ const VehicleTrackDash = () => {
                         </Modal.Header>
                         <Modal.Body>
                             {
-                                showMap ? (
-                                    <LoadScript googleMapsApiKey={key}>
-                                        <GoogleMap
-                                            mapContainerStyle={mapContainerStyle}
-                                            center={center}
-                                            zoom={11}
-                                            options={{ gestureHandling: 'greedy' }}
-                                        >
-                                            <MarkerF
-                                                // icon={truck}
-                                                position={center} />
-                                        </GoogleMap>
-                                    </LoadScript>
-                                ) : null
+                                isLoaded ? (
+                                    <GoogleMap
+                                        mapContainerStyle={mapContainerStyle}
+                                        center={center}
+                                        zoom={11}
+                                        options={{ gestureHandling: 'greedy' }}
+                                    >
+                                        <MarkerF
+                                            // icon={truck}
+                                            position={center} />
+                                    </GoogleMap>
+                                ) : <></>
                             }
                         </Modal.Body>
                     </Modal>

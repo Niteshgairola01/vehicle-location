@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import '../../assets/styles/polygon.css';
 import { Col, Row } from 'react-bootstrap';
 import { Tooltip } from '@mui/material';
 import Card from '../../components/Card/card';
-import { CircleF, DirectionsService, GoogleMap, LoadScript, MarkerF, PolygonF } from '@react-google-maps/api';
+import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF, useJsApiLoader } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton';
 import { CiEdit } from "react-icons/ci";
 import { Link, useNavigate } from 'react-router-dom';
@@ -31,9 +31,15 @@ const PolygonList = () => {
     const navigate = useNavigate();
 
     const [partiesList, setPartiesList] = useState([]);
+    // const [map, setMap] = useState(null);
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
+    const { isLoaded } = useJsApiLoader({
+        id: "google-map-script",
+        googleMapsApiKey: key
+    });
+
 
     const [mapLoaded, setMapLoaded] = useState(true);
 
@@ -310,38 +316,24 @@ const PolygonList = () => {
                             </Col>
                             <Col sm={8} className='' style={{ minHeight: "50vh", height: "65vh" }}>
                                 {
-                                    !mapLoaded && (
-                                        <LoadScript googleMapsApiKey={key}>
-                                            <GoogleMap
-                                                mapContainerStyle={mapContainerStyle}
-                                                center={handleMapCenter()}
-                                                onLoad={(map) => {
-                                                    const bounds = selectedCoordinates.length < 0 && getBounds();
-                                                    selectedCoordinates.length < 0 && map.fitBounds(bounds);
-                                                    selectedCoordinates.length < 0 && setCenter(map.getCenter);
-                                                }}
-                                                zoom={12}
-                                                options={{ gestureHandling: 'greedy' }}
-                                            >
-                                                {
-                                                    selectedCoordinates.length === 1 ? (
-                                                        <>
-                                                            <CircleF
-                                                                center={selectedCoordinates[0]}
-                                                                radius={500} // 500 meters radius (adjust as needed)
-                                                                options={{
-                                                                    fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
-                                                                    strokeColor: 'red',
-                                                                    strokeOpacity: 0.8,
-                                                                    strokeWeight: 2,
-                                                                }}
-                                                            />
-
-                                                            <MarkerF position={selectedCoordinates[0]} />
-                                                        </>
-                                                    ) : (
-                                                        <PolygonF
-                                                            paths={selectedCoordinates}
+                                    isLoaded ? (
+                                        <GoogleMap
+                                            mapContainerStyle={mapContainerStyle}
+                                            center={handleMapCenter()}
+                                            onLoad={(map) => {
+                                                const bounds = selectedCoordinates.length < 0 && getBounds();
+                                                selectedCoordinates.length < 0 && map.fitBounds(bounds);
+                                                selectedCoordinates.length < 0 && setCenter(map.getCenter);
+                                            }}
+                                            zoom={12}
+                                            options={{ gestureHandling: 'greedy' }}
+                                        >
+                                            {
+                                                selectedCoordinates.length === 1 ? (
+                                                    <>
+                                                        <CircleF
+                                                            center={selectedCoordinates[0]}
+                                                            radius={500} // 500 meters radius (adjust as needed)
                                                             options={{
                                                                 fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
                                                                 strokeColor: 'red',
@@ -349,11 +341,23 @@ const PolygonList = () => {
                                                                 strokeWeight: 2,
                                                             }}
                                                         />
-                                                    )
-                                                }
-                                            </GoogleMap>
-                                        </LoadScript>
-                                    )
+
+                                                        <MarkerF position={selectedCoordinates[0]} />
+                                                    </>
+                                                ) : (
+                                                    <PolygonF
+                                                        paths={selectedCoordinates}
+                                                        options={{
+                                                            fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
+                                                            strokeColor: 'red',
+                                                            strokeOpacity: 0.8,
+                                                            strokeWeight: 2,
+                                                        }}
+                                                    />
+                                                )
+                                            }
+                                        </GoogleMap>
+                                    ) : <></>
                                 }
                             </Col>
                         </Row>
