@@ -1253,7 +1253,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     };
 
     const handleFormateISTDate = (givenDate) => {
-        console.log("given", givenDate);
         if (givenDate === null || givenDate === "" || givenDate === undefined) {
             return givenDate;
         } else {
@@ -1353,27 +1352,31 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     };
 
     const getDelayedType = (attr, hours, eta) => {
+        // console.log(eta, new Date(formatStaticETADate(eta)) > (twoDaysAfter), parseInt(hours));
         if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
             return attr;
         } else if (attr === 'Delayed') {
-            if (parseInt(hours) <= 18) {
-                return 'Mild Delayed';
-            } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
-                return 'Moderate Delayed';
-            } else if (parseInt(hours) >= 36) {
-                return 'Critical Delayed';
-            }
 
-            if ((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > (twoDaysAfter))) {
+            if ((eta !== null && eta !== "" && eta !== " ") && (new Date(formatStaticETADate(eta)) > (twoDaysAfter))) {
                 if (parseInt(hours) <= 5) {
-                    console.log("attr", attr, eta);
                     return 'Mild Delayed';
-                } else if ((parseInt(hours) >= 6 && parseInt(hours) <= 18)) {
+                } else if (parseInt(hours) >= 6 && parseInt(hours) <= 18) {
                     return 'Moderate Delayed';
                 } else if (parseInt(hours) >= 19) {
                     return 'Critical Delayed';
                 }
+            } else {
+                if (parseInt(hours) <= 18) {
+                    return 'Mild Delayed';
+                } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
+                    return 'Moderate Delayed';
+                } else if (parseInt(hours) >= 36) {
+                    return 'Critical Delayed';
+                }
             }
+
+            // if ((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > (twoDaysAfter))) {
+            // }
         }
     };
 
@@ -1699,6 +1702,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
         formattedData = formatExcelData(formatDataKey(filteredOEMTrips.filter(item => excelAtrributes.includes(Object.keys(item)[0]))));
 
+        console.log("formatted", formattedData);
         let headers = [];
 
         if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
