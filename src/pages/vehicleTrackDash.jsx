@@ -242,7 +242,6 @@ const VehicleTrackDash = () => {
 
                 const gpsOff = allData.filter(data => data?.currVehicleStatus === 'GPS Off');
                 const onHold = allData.filter(data => data?.currVehicleStatus === 'On Hold');
-                // const onHold = allData.filter(data => data?.tripStatus === 'Trip Running' && data?.currVehicleStatus === 'On Hold');
 
                 let allDestinations = [];
                 let finalDestinationsList = [];
@@ -1848,7 +1847,7 @@ const VehicleTrackDash = () => {
                                             onClick={() => {
                                                 setShowLocation(true);
                                                 setSelectedVehicle(data);
-                                                setShowMap(true);
+                                                // setShowMap(true);
                                             }}
                                         >
                                             <FaRoute />
