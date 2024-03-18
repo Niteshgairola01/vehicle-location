@@ -60,7 +60,7 @@ const UnloadingReport = ({ reportType }) => {
                 };
 
                 const unloadingTrips = allData.filter(data => isTodayOrYesterday(data?.unloadingDate) && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Trip Completed');
-                const reportUnloadingTrips = allData.filter(data => isTodayOrYesterday(data?.unloadingReachDate) && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Trip Running');
+                const reportUnloadingTrips = allData.filter(data => data?.unloadingReachDate && data?.unloadingDate === "" && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Trip Running');
 
                 setUnloadingTrips(unloadingTrips);
                 setReportUnloadingTrips(reportUnloadingTrips);
