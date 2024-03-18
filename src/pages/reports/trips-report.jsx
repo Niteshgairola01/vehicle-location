@@ -1362,12 +1362,15 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                 return 'Moderate Delayed';
             } else if (parseInt(hours) >= 36) {
                 return 'Critical Delayed';
-            } else if ((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > (twoDaysAfter))) {
-                if (hours <= 5) {
+            }
+
+            if ((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > (twoDaysAfter))) {
+                if (parseInt(hours) <= 5) {
+                    console.log("attr", attr, eta);
                     return 'Mild Delayed';
-                } else if ((hours >= 6 && hours <= 18)) {
+                } else if ((parseInt(hours) >= 6 && parseInt(hours) <= 18)) {
                     return 'Moderate Delayed';
-                } else if (hours >= 19) {
+                } else if (parseInt(hours) >= 19) {
                     return 'Critical Delayed';
                 }
             }
@@ -1435,7 +1438,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                     }
 
                     if (attr === 'oemFinalStatus') {
-                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours'], item['estimatedArrivalDate']);
+                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours'], item['staticETA']);
                     }
 
                     if (attr === 'locationTime') {

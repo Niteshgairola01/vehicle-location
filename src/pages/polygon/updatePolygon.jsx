@@ -26,6 +26,7 @@ import { getAllPartiesList } from '../../hooks/clientMasterHooks';
 
 
 const UpdatePolygon = () => {
+    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     const [prevoiusValues, setPreviousValues] = useState({});
     const [form, setForm] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -88,7 +89,6 @@ const UpdatePolygon = () => {
         }).catch(() => setPartiesList([]));
     }, []);
 
-    const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
     const fullScreen = useRef(null);
 
@@ -748,7 +748,7 @@ const UpdatePolygon = () => {
                                                         <>
                                                             <CircleF options={{
                                                                 center: selectedCoordinates[0],
-                                                                radius: 1000,
+                                                                radius: 3500,
                                                                 fillColor: 'rgba(255, 0, 0, 0.2)',
                                                                 strokeColor: 'red',
                                                                 strokeOpacity: 0.8,

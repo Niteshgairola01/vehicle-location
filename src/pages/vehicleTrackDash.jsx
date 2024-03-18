@@ -541,8 +541,6 @@ const VehicleTrackDash = () => {
         });
     };
 
-    console.log("filtered", filteredTrips);
-
     const handleApplyFilter = (allFilteredTrip) => {
         if (selectedFilter.length > 0) {
             let tripsFilteredByTripStatus = [];

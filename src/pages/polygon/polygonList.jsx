@@ -333,9 +333,9 @@ const PolygonList = () => {
                                                     <>
                                                         <CircleF
                                                             center={selectedCoordinates[0]}
-                                                            radius={500} // 500 meters radius (adjust as needed)
+                                                            radius={3500}
                                                             options={{
-                                                                fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
+                                                                fillColor: 'rgba(255, 0, 0, 0.2)',
                                                                 strokeColor: 'red',
                                                                 strokeOpacity: 0.8,
                                                                 strokeWeight: 2,
