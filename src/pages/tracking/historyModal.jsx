@@ -4,10 +4,10 @@ import { GoogleMap, InfoWindowF, MarkerF, PolylineF, useJsApiLoader } from '@rea
 import { ErrorToast } from '../../components/toast/toast';
 import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Modal } from 'react-bootstrap';
 
-const HistoryModal = ({ show, setShow, vehicleNo, startDate, endDate }) => {
+const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, endDate }) => {
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
@@ -58,6 +58,7 @@ const HistoryModal = ({ show, setShow, vehicleNo, startDate, endDate }) => {
 
     const loggedInUser = localStorage.getItem('userId');
     const navigate = useNavigate();
+    const location = useLocation();
 
     const geofenceLat = localStorage.getItem('lat');
     const geofenceLng = localStorage.getItem('lng');
@@ -143,57 +144,59 @@ const HistoryModal = ({ show, setShow, vehicleNo, startDate, endDate }) => {
     }, [rangeValue]);
 
     useEffect(() => {
-        let timeoutIds = [];
-        setBoundCenter(false);
+        if (routeData.length > 0) {
+            let timeoutIds = [];
+            setBoundCenter(false);
 
-        const setNextCoordinate = (index) => {
-            if (index < routeCoords.length) {
-                setCurrentCoordinates(routeCoords[index]);
+            const setNextCoordinate = (index) => {
+                if (index < routeCoords.length) {
+                    setCurrentCoordinates(routeCoords[index]);
 
-                index < routeCoords.length ? setNextCoordinates(routeCoords[index + 1]) : setNextCoordinates(routeCoords[0]);
-                arrayLocation.current = index;
-                timeoutIds.push(setTimeout(() => setNextCoordinate(index + 1), playbackSpeed));
-            }
-        };
+                    index < routeCoords.length ? setNextCoordinates(routeCoords[index + 1]) : setNextCoordinates(routeCoords[0]);
+                    arrayLocation.current = index;
+                    timeoutIds.push(setTimeout(() => setNextCoordinate(index + 1), playbackSpeed));
+                }
+            };
 
-        const setNextCoord = (index) => {
-            if (index < routeData.length) {
-                setCurrentCoordsDetails(routeData[index]);
-                timeoutIds.push(setTimeout(() => setNextCoord(index + 1), playbackSpeed));
-            }
-        };
+            const setNextCoord = (index) => {
+                if (index < routeData.length) {
+                    setCurrentCoordsDetails(routeData[index]);
+                    timeoutIds.push(setTimeout(() => setNextCoord(index + 1), playbackSpeed));
+                }
+            };
 
-        if (pause === false) {
-            timeoutIds = [];
-            setNextCoord(arrayLocation.current);
-            setNextCoordinate(arrayLocation.current);
-        } else {
-            timeoutIds.forEach(clearTimeout);
-            if (routeCoords.length > 0 && currentCoordDetails?.lat === undefined) {
-                if (arrayLocation.current < routeCoords.length - 1) {
-                    setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
-                } else {
-                    setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
+            if (pause === false) {
+                timeoutIds = [];
+                setNextCoord(arrayLocation.current);
+                setNextCoordinate(arrayLocation.current);
+            } else {
+                timeoutIds.forEach(clearTimeout);
+                if (routeCoords.length > 0 && currentCoordDetails?.lat === undefined) {
+                    if (arrayLocation.current < routeCoords.length - 1) {
+                        setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
+                    } else {
+                        setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
+                    }
+
+                    setCurrentCoordsDetails(routeData[arrayLocation.current]);
+                    setCurrentCoordinates(routeCoords[arrayLocation.current]);
                 }
 
-                setCurrentCoordsDetails(routeData[arrayLocation.current]);
-                setCurrentCoordinates(routeCoords[arrayLocation.current]);
+                if (routeCoords.length > 0 && currentCoordDetails.lat !== undefined) {
+                    if (arrayLocation.current < routeCoords.length - 1) {
+                        setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
+                    } else {
+                        setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
+                    }
+                    setCurrentCoordsDetails(routeData[arrayLocation.current]);
+                    setCurrentCoordinates(routeCoords[arrayLocation.current]);
+                }
             }
 
-            if (routeCoords.length > 0 && currentCoordDetails.lat !== undefined) {
-                if (arrayLocation.current < routeCoords.length - 1) {
-                    setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
-                } else {
-                    setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
-                }
-                setCurrentCoordsDetails(routeData[arrayLocation.current]);
-                setCurrentCoordinates(routeCoords[arrayLocation.current]);
-            }
+            return () => {
+                timeoutIds.forEach(clearTimeout);
+            };
         }
-
-        return () => {
-            timeoutIds.forEach(clearTimeout);
-        };
     }, [pause, playbackSpeed, rangeValue, routeData]);
 
     const handleChangeRange = (e) => {
@@ -209,159 +212,165 @@ const HistoryModal = ({ show, setShow, vehicleNo, startDate, endDate }) => {
 
 
     useEffect(() => {
-        setTimeout(() => {
-            if (show && form?.startDate && form?.vehicle) {
-                arrayLocation.current = 0;
-                setPause(true);
-                // routeCoords.length > 0 && setCurrentCoordinates({ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng });
-                // routeCoords.length > 0 && setCurrentCoordsDetails(routeData[0]);
-                setShowLoader(true);
-                setBtnDisabled(true);
 
-                const payload = [form?.vehicle, form?.startDate, form?.endDate];
-                console.log("payload", payload);
+        const handleGetRoute = (allData) => {
+            arrayLocation.current = 0;
 
-                if (!singleLoad) {
-                    getVehicleRoute(payload).then((response) => {
-                        if (response.status === 200) {
-                            setBtnDisabled(false);
-                            setShowLoader(false);
-                            setSingleLoad(true);
-                            const allData = response?.data;
-                            let coords = [];
+            // const allData = selectedRouteData;
+            let coords = [];
 
-                            let finalCoords = [];
-                            let finalRouteData = [];
+            let finalCoords = [];
+            let finalRouteData = [];
 
-                            allData.map((data, index) => {
-                                if (index < allData?.length - 1) {
-                                    if (data?.lat !== allData[index + 1]?.lat) {
-                                        finalCoords.push({
-                                            lat: parseFloat(data?.lat),
-                                            lng: parseFloat(data?.long)
-                                        });
+            allData.map((data, index) => {
+                if (index < allData?.length - 1) {
+                    if (parseFloat(data?.lat) !== parseFloat(allData[index + 1]?.lat)) {
+                        finalCoords.push({
+                            lat: parseFloat(data?.lat),
+                            lng: parseFloat(data?.long)
+                        });
 
-                                        finalRouteData.push(data);
-                                    };
-                                };
-                            });
+                        finalRouteData.push(data);
+                    };
+                };
+            });
 
 
-                            finalCoords.push({
-                                lat: parseFloat(allData[allData?.length - 1]?.lat),
-                                lng: parseFloat(allData[allData?.length - 1]?.long),
-                            });
+            finalCoords.push({
+                lat: parseFloat(allData[allData?.length - 1]?.lat),
+                lng: parseFloat(allData[allData?.length - 1]?.long),
+            });
 
-                            finalRouteData.push(allData[allData?.length - 1])
+            finalRouteData.push(allData[allData?.length - 1])
 
-                            setRouteData(finalRouteData);
-                            setRouteCoords(finalCoords);
+            console.log("finalRoutedata", allData);
 
-                            allData.map((data) => {
-                                coords.push(
-                                    {
-                                        lat: parseFloat(data?.lat),
-                                        lng: parseFloat(data?.long)
-                                    }
-                                )
-                            });
+            setRouteData(finalRouteData);
+            setRouteCoords(finalCoords);
 
-                            // Stop Time 
+            allData.map((data) => {
+                coords.push(
+                    {
+                        lat: parseFloat(data?.lat),
+                        lng: parseFloat(data?.long)
+                    }
+                )
+            });
 
-                            if (form?.time) {
-                                if (includeTime && form?.time.length > 0) {
-                                    const latitudesMap = new Map();
-                                    const repeatedLatitudes = [];
+            // Stop Time 
 
-                                    let coords = [];
+            if (form?.time) {
+                if (includeTime && form?.time.length > 0) {
+                    const latitudesMap = new Map();
+                    const repeatedLatitudes = [];
 
-                                    allData.forEach(obj => {
-                                        if (!latitudesMap.has(obj.lat)) {
-                                            latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
-                                        } else {
-                                            const existingLatData = latitudesMap.get(obj.lat);
-                                            latitudesMap.set(obj.lat, {
-                                                count: existingLatData.count + 1,
-                                                arrival: existingLatData.arrival,
-                                                exit: obj.date,
-                                                lng: obj.long
-                                            });
-                                        }
-                                    });
+                    let coords = [];
 
-                                    latitudesMap.forEach((value, key) => {
-                                        if (value.count > 1) {
-                                            repeatedLatitudes.push({
-                                                lat: key,
-                                                lng: value.lng,
-                                                arrival: value.arrival,
-                                                exit: value.exit
-                                            });
-                                        }
-                                    });
-
-                                    const filteredTest = repeatedLatitudes.filter(item => {
-                                        const arrivalTime = new Date(item.arrival);
-                                        const exitTime = new Date(item.exit);
-                                        const timeDifferenceInMinutes = (exitTime - arrivalTime) / (1000 * 60); // Convert milliseconds to minutes
-                                        return timeDifferenceInMinutes > form?.time;
-                                    });
-
-                                    filteredTest.map(data => {
-                                        coords.push({
-                                            lat: parseFloat(data?.lat),
-                                            lng: parseFloat(data?.lng)
-                                        })
-                                    })
-
-                                    setStoppage(filteredTest);
-                                    setStoppageCoords(coords);
-                                }
-                            }
-
-                            // Over Speed
-
-                            if (form?.speed) {
-                                if (includeSpeed && form?.speed.length >= 0) {
-                                    const overSpeeded = allData.filter(data => parseFloat(data?.speed) > form?.speed);
-                                    let coordinates = [];
-
-                                    overSpeeded.map((data) => {
-                                        coordinates.push({
-                                            lat: parseFloat(data?.lat),
-                                            lng: parseFloat(data?.long)
-                                        });
-                                    });
-
-                                    setSpeedMarkerData(overSpeeded);
-                                    setOverSpeedMarkers(coordinates);
-                                }
-                            }
-
-                            if (response?.data.length === 0) {
-                                ErrorToast("No Data Found")
-                            }
-
-                            // if(route)
-
+                    allData.forEach(obj => {
+                        if (!latitudesMap.has(obj.lat)) {
+                            latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
                         } else {
+                            const existingLatData = latitudesMap.get(obj.lat);
+                            latitudesMap.set(obj.lat, {
+                                count: existingLatData.count + 1,
+                                arrival: existingLatData.arrival,
+                                exit: obj.date,
+                                lng: obj.long
+                            });
+                        }
+                    });
+
+                    latitudesMap.forEach((value, key) => {
+                        if (value.count > 1) {
+                            repeatedLatitudes.push({
+                                lat: key,
+                                lng: value.lng,
+                                arrival: value.arrival,
+                                exit: value.exit
+                            });
+                        }
+                    });
+
+                    const filteredTest = repeatedLatitudes.filter(item => {
+                        const arrivalTime = new Date(item.arrival);
+                        const exitTime = new Date(item.exit);
+                        const timeDifferenceInMinutes = (exitTime - arrivalTime) / (1000 * 60); // Convert milliseconds to minutes
+                        return timeDifferenceInMinutes > form?.time;
+                    });
+
+                    filteredTest.map(data => {
+                        coords.push({
+                            lat: parseFloat(data?.lat),
+                            lng: parseFloat(data?.lng)
+                        })
+                    })
+
+                    setStoppage(filteredTest);
+                    setStoppageCoords(coords);
+                }
+            }
+
+            // Over Speed
+
+            if (form?.speed) {
+                if (includeSpeed && form?.speed.length >= 0) {
+                    const overSpeeded = allData.filter(data => parseFloat(data?.speed) > form?.speed);
+                    let coordinates = [];
+
+                    overSpeeded.map((data) => {
+                        coordinates.push({
+                            lat: parseFloat(data?.lat),
+                            lng: parseFloat(data?.long)
+                        });
+                    });
+
+                    setSpeedMarkerData(overSpeeded);
+                    setOverSpeedMarkers(coordinates);
+                }
+            }
+
+            if (selectedRouteData === 0) {
+                ErrorToast("No Data Found")
+            }
+        };
+
+        if (location.pathname === '/track') {
+            if (show && selectedRouteData.length > 0) {
+                handleGetRoute(selectedRouteData);
+            }
+        } else {
+            setTimeout(() => {
+                if (show && form?.startDate && form?.vehicle) {
+                    arrayLocation.current = 0;
+                    setPause(true);
+                    setShowLoader(true);
+                    setBtnDisabled(true);
+
+                    const payload = [form?.vehicle, form?.startDate, form?.endDate];
+
+                    if (!singleLoad) {
+                        getVehicleRoute(payload).then((response) => {
+                            if (response.status === 200) {
+                                setBtnDisabled(false);
+                                setShowLoader(false);
+                                setSingleLoad(true);
+
+                                handleGetRoute(response?.data);
+                            } else {
+                                setRouteData([]);
+                                setSingleLoad(true);
+                            };
+                        }).catch((err) => {
                             setRouteData([]);
                             setSingleLoad(true);
-                        };
-                    }).catch((err) => {
-                        setRouteData([]);
-                        setSingleLoad(true);
-                        setShowLoader(false);
-                        console.log(err);
-                    })
+                            setShowLoader(false);
+                            console.log(err);
+                        })
+                    }
                 }
-                // if (form?.vehicle) {
-                // } else {
-                //     ErrorToast("Select Vehicle")
-                // };
-            }
-        }, 1000);
-    }, [show, form]);
+            }, 1000);
+        }
+    }, [show, form, selectedRouteData]);
 
     const mapContainerStyle = {
         width: '100%',

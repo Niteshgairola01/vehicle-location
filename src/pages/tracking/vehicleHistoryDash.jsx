@@ -76,6 +76,8 @@ const VehicleHistoryDash = () => {
     const [pdfDisabled, setPdfDisabled] = useState(false);
     const [excelDisabled, setExcelDisabled] = useState(false);
 
+    const [selectedRouteData, setSelectedRouteData] = useState([]);
+
     const initialColumns = [
         { label: 'S.No.', value: 'tripCount', hidden: false },
         { label: 'Vehicle No.', value: 'vehicleNo', hidden: false },

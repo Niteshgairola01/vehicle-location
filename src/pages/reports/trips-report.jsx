@@ -1352,11 +1352,9 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     };
 
     const getDelayedType = (attr, hours, eta) => {
-        // console.log(eta, new Date(formatStaticETADate(eta)) > (twoDaysAfter), parseInt(hours));
         if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
             return attr;
         } else if (attr === 'Delayed') {
-
             if ((eta !== null && eta !== "" && eta !== " ") && (new Date(formatStaticETADate(eta)) > (twoDaysAfter))) {
                 if (parseInt(hours) <= 5) {
                     return 'Mild Delayed';
@@ -1374,9 +1372,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                     return 'Critical Delayed';
                 }
             }
-
-            // if ((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > (twoDaysAfter))) {
-            // }
         }
     };
 
@@ -1418,6 +1413,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
             attributes.forEach(attr => {
                 if (attr === 'currVehicleStatus' || attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'oemReachTime'
                     || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'oemDelayedHours' || attr === 'oemFinalStatus' || attr === 'locationTime' || attr === 'unloadingReachDate') {
+
                     if (attr === 'loadingDate' || attr === 'oemReachTime') {
                         formattedItem[attr] = handleFormateISTDate(item[attr]);
                     }
