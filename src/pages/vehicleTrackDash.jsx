@@ -1542,16 +1542,19 @@ const VehicleTrackDash = () => {
     };
 
     const formatStaticETADate = (givenDate) => {
-        const [datePart, timePart, AM] = givenDate.split(' ');
-        const [day, month, year] = datePart.split('/');
-        const time = timePart.split(':');
+        console.log("givn date", givenDate);
+        if (givenDate !== null && givenDate !== "" && givenDate !== " ") {
+            const [datePart, timePart, AM] = givenDate.split(' ');
+            const [day, month, year] = datePart.split('/');
+            const time = timePart.split(':');
 
-        const hour = parseInt(time) % 12 + (AM === 'PM' ? 12 : 0);
-        const minutes = parseInt(time[1]);
-        const seconds = parseInt(time[2]);
+            const hour = parseInt(time) % 12 + (AM === 'PM' ? 12 : 0);
+            const minutes = parseInt(time[1]);
+            const seconds = parseInt(time[2]);
 
-        const formattedDate = `${year}-${month}-${day} ${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        return formattedDate;
+            const formattedDate = `${year}-${month}-${day} ${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            return formattedDate;
+        }
     };
 
     const handleFilter = () => {
