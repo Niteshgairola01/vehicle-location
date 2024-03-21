@@ -6,13 +6,13 @@ import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
 import { FaRoute } from "react-icons/fa";
-import { IoIosTimer, IoMdLocate, IoMdRefresh } from 'react-icons/io';
+import { IoIosTimer, IoMdRefresh } from 'react-icons/io';
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
 import { ErrorToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
-import { getAllVehiclesList, getLogsByDuration } from '../hooks/vehicleMasterHooks';
+import { getAllVehiclesList, getLogsById } from '../hooks/vehicleMasterHooks';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
@@ -49,6 +49,7 @@ const VehicleTrackDash = () => {
     const [showForceCompleteModal, setShowForceCompleteModal] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState({});
     const [hovered, setHovered] = useState(false);
+    const [distanceHovered, setDistanceHovered] = useState(false);
     const [selectedParty, setSelectedParty] = useState('');
     const [selectedOrigin, setSelectedOrigin] = useState('');
     const [selectedDestination, setSelectedDestination] = useState('');
@@ -138,6 +139,12 @@ const VehicleTrackDash = () => {
     let date = new Date(today);
     date.setDate(date.getDate(23, 59, 59, 0));
 
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const twoDaysBefore = new Date(today);
+    twoDaysBefore.setDate(twoDaysBefore.getDate() - 2);
+
     const twoDaysAfter = new Date(today);
     twoDaysAfter.setDate(twoDaysAfter.getDate() + 2);
 
@@ -149,17 +156,29 @@ const VehicleTrackDash = () => {
         googleMapsApiKey: key
     });
 
+
+    const getFormattedDistanceDate = (dateString) => {
+        const date = (new Date(dateString).getDate()) < 10 ? `0${new Date(dateString).getDate()}` : new Date(dateString).getDate();
+        const month = (new Date(dateString).getMonth() + 1) < 10 ? `0${new Date(dateString).getMonth() + 1}` : new Date(dateString).getMonth() + 1;
+        const year = new Date(dateString).getFullYear();
+
+        return `${date}/${month}/${year}`;
+    };
+
     const distancesCoveredInHours = [
         {
-            title: '10 Hrs',
+            range: 'twoDaysBefore',
+            title: getFormattedDistanceDate(twoDaysBefore),
             distanceCovered: distanceCoveredIn10Hrs,
         },
         {
-            title: '24 Hrs',
+            range: 'yesterday',
+            title: getFormattedDistanceDate(yesterday),
             distanceCovered: distanceCoveredIn24Hrs,
         },
         {
-            title: '48 Hrs',
+            range: 'today',
+            title: getFormattedDistanceDate(currentDay),
             distanceCovered: distanceCoveredIn48Hrs,
         },
     ];
@@ -1272,23 +1291,43 @@ const VehicleTrackDash = () => {
         return formattedDate;
     };
 
-    const currentDate = new Date();
-    const tenHoursBeforeCurrentDate = new Date(currentDate.getTime() - (10 * 60 * 60 * 1000));
-    const twetyFourHoursBeforeCurrentDate = new Date(currentDate.getTime() - (24 * 60 * 60 * 1000));
-    const fourtyEightHoursBeforeCurrentDate = new Date(currentDate.getTime() - (48 * 60 * 60 * 1000));
-
     useEffect(() => {
-        const tenHoursData = allLogs.filter(data => new Date(data?.date) >= tenHoursBeforeCurrentDate);
-        const twentyFourHoursData = allLogs.filter(data => new Date(data?.date) >= twetyFourHoursBeforeCurrentDate);
-        const fourtyEightHoursData = allLogs.filter(data => new Date(data?.date) >= fourtyEightHoursBeforeCurrentDate);
+
+        const today = new Date();
+
+        const currentDateStart = new Date(today.setHours(0, 0, 0, 0));
+        currentDateStart.setDate(currentDateStart.getDate() - 2);
+
+        const currentDateEnd = new Date(today.setHours(23, 59, 59, 0));
+        currentDateEnd.setDate(currentDateEnd.getDate() - 2);
+
+        const tommorrowStart = new Date(today.setHours(0, 0, 0, 0));
+        tommorrowStart.setDate(tommorrowStart.getDate() - 1);
+
+        const tommorrowEnd = new Date(today.setHours(23, 59, 59, 0));
+        tommorrowEnd.setDate(tommorrowEnd.getDate() - 1);
+
+        const twoDaysAfterStart = new Date(today.setHours(0, 0, 0, 0));
+        twoDaysAfterStart.setDate(twoDaysAfterStart.getDate());
+
+        const twoDaysAfterEnd = new Date(today.setHours(23, 59, 59, 0));
+        twoDaysAfterEnd.setDate(twoDaysAfterEnd.getDate());
+
+        const tenHoursData = allLogs.filter(data => (new Date(data?.date) >= currentDateStart) && (new Date(data?.date) <= currentDateEnd));
+        const twentyFourHoursData = allLogs.filter(data => (new Date(data?.date) >= tommorrowStart) && (new Date(data?.date) <= tommorrowEnd));
+        const fourtyEightHoursData = allLogs.filter(data => (new Date(data?.date) >= twoDaysAfterStart) && (new Date(data?.date) <= twoDaysAfterEnd));
 
         const distanceIn10Hrs = tenHoursData.reduce((prev, curr) => prev + parseFloat(curr?.latLongDistance), 0);
         const distanceIn24Hrs = twentyFourHoursData.reduce((prev, curr) => prev + parseFloat(curr?.latLongDistance), 0);
         const distanceIn48Hrs = fourtyEightHoursData.reduce((prev, curr) => prev + parseFloat(curr?.latLongDistance), 0);
 
-        setTenHrsRoute(tenHoursData);
-        setTwentyFourRoute(twentyFourHoursData);
-        setFourtyEightHrsRoute(fourtyEightHoursData);
+        const twoDaysBeforeData = tenHoursData.length > 0 ? tenHoursData : [];
+        const yesterdayData = twentyFourHoursData.length > 0 ? twentyFourHoursData : [];
+        const todayData = fourtyEightHoursData.length > 0 ? fourtyEightHoursData : [];
+
+        setTenHrsRoute(twoDaysBeforeData);
+        setTwentyFourRoute(yesterdayData);
+        setFourtyEightHrsRoute(todayData);
 
         setDistanceCoveredIn10Hrs(Math.round(distanceIn10Hrs));
         setDistanceCoveredIn24Hrs(Math.round(distanceIn24Hrs));
@@ -1299,45 +1338,63 @@ const VehicleTrackDash = () => {
         setDistanceVehicle(data?.vehicleNo);
         setShowDistanceKMs(true);
 
-        if (!showDistanceKMs) {
+        if (!distanceHovered) {
             setIsDistanceLoading(true);
 
             const form = {
                 vehicleNo: data?.vehicleNo,
-                fromTime: handleFormatLogsDate(fourtyEightHoursBeforeCurrentDate),
-                toTime: handleFormatLogsDate(currentDate)
+                fromId: data?.vehicleExitDbID
             };
-            getLogsByDuration(form).then(response => {
-                if (response?.status === 200) {
-                    setAllLogs(response?.data);
-                    setIsDistanceLoading(false);
-                } else {
+
+            if (data?.vehicleExitDbID === null || data?.vehicleExitDbID === "" || data?.vehicleExitDbID === undefined || data?.vehicleExitDbID === " ") {
+                ErrorToast("No Exit id found");
+                setIsDistanceLoading(false);
+            } else {
+                getLogsById(form).then(response => {
+                    if (response?.status === 200) {
+                        setAllLogs(response?.data);
+                        setIsDistanceLoading(false);
+                    } else {
+                        setAllLogs([]);
+                    }
+                }).catch(err => {
+                    console.log(err);
                     setAllLogs([]);
-                }
-            }).catch(err => {
-                console.log(err);
-                setAllLogs([]);
-            })
+                })
+            }
         }
     };
 
     useEffect(() => {
-        selectedHourType === '10 Hrs' ? setSelectedRouteData(tenHrsRoute)
-            : selectedHourType === '24 Hrs' ? setSelectedRouteData(twentyFourHrsRoute)
-                : selectedHourType === '48 Hrs' && setSelectedRouteData(fourtyEightHrsRoute)
+
+        if (selectedHourType === 'twoDaysBefore') {
+            tenHrsRoute.length > 0 ? setSelectedRouteData(tenHrsRoute) : setSelectedRouteData([]);
+        } else if (selectedHourType === 'yesterday') {
+            twentyFourHrsRoute.length > 0 ? setSelectedRouteData(twentyFourHrsRoute) : setSelectedRouteData([]);
+        } else if (selectedHourType === 'today') {
+            fourtyEightHrsRoute.length > 0 ? setSelectedRouteData(fourtyEightHrsRoute) : setSelectedRouteData([]);
+        }
     }, [selectedHourType]);
 
+
     const handleShowDistanceOnMap = (hour) => {
+        const selectedHourType = hour?.range;
+        let routeData = [];
 
-        setSelectedHourType(hour?.title);
+        if (selectedHourType === 'twoDaysBefore') {
+            routeData = tenHrsRoute;
+            tenHrsRoute.length > 0 ? setSelectedRouteData(tenHrsRoute) : setSelectedRouteData([]);
 
-        if (!isDistanceLoading) {
-            hour?.title?.includes('10') ? setStartDate(handleFormatLogsDate(tenHoursBeforeCurrentDate))
-                : hour?.title?.includes('24') ? setStartDate(handleFormatLogsDate(twetyFourHoursBeforeCurrentDate))
-                    : hour?.title?.includes('48') && setStartDate(handleFormatLogsDate(fourtyEightHoursBeforeCurrentDate));
+        } else if (selectedHourType === 'yesterday') {
+            routeData = twentyFourHrsRoute;
+            twentyFourHrsRoute.length > 0 ? setSelectedRouteData(twentyFourHrsRoute) : setSelectedRouteData([]);
 
-            setShowMap(true);
+        } else if (selectedHourType === 'today') {
+            routeData = fourtyEightHrsRoute;
+            fourtyEightHrsRoute.length > 0 ? setSelectedRouteData(fourtyEightHrsRoute) : setSelectedRouteData([]);
         }
+
+        (routeData?.length === 0) ? ErrorToast("No data found") : setShowMap(true);
     };
 
     const [sortOrder, setSortOrder] = useState('asc');
@@ -1506,7 +1563,10 @@ const VehicleTrackDash = () => {
                 <IoIosTimer className='fs-5' />
                 {
                     (showDistanceKMs && (distanceVehicle === data?.vehicleNo)) && (
-                        <Row className='thm-dark position-absolute bg-white p-2 pt-1 mt-3 rounded vehicle-details-popup' style={{ width: "100%", minWidth: "20rem", left: "-50%" }}>
+                        <Row className='thm-dark position-absolute bg-white p-2 pt-1 mt-3 rounded vehicle-details-popup'
+                            onMouseOver={() => setDistanceHovered(true)}
+                            onMouseOut={() => setDistanceHovered(false)}
+                            style={{ width: "100%", minWidth: "20rem", left: "-50%" }}>
                             <p className='fw-bold text-start m-0 p-0 mb-2'>Distance Covered in hours</p>
                             <hr />
                             {
@@ -1824,7 +1884,7 @@ const VehicleTrackDash = () => {
                     <VehicleRoute show={showRoute} setShow={setShowRoute} />
                 </div>
             </div>
-            <HistoryModal show={showMap} setShow={setShowMap} selectedRouteData={selectedRouteData} vehicleNo={distanceVehicle} startDate={startDate} endDate={handleFormatLogsDate(new Date())} />
+            <HistoryModal show={showMap} setShow={setShowMap} selectedRouteData={selectedRouteData} vehicleNo={distanceVehicle} />
         </div>
     )
 }

@@ -26,8 +26,8 @@ export const getVehicleRoute = async (form) => {
     return response;
 };
 
-export const getLogsByDuration = async (form) => {
-    const url = `${APIPort2}/getLogsByDuration`;
+export const getLogsById = async (form) => {
+    const url = `${APIPort2}/getLogsById`;
     const config = {
         url: url,
         method: 'POST',

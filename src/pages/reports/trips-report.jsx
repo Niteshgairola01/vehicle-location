@@ -590,7 +590,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
             const lateTrips = getLateCounts(filteredTrips, true);
             const nominalTrips = getDelayedCounts(filteredTrips, 'Nominal', true);
             const criticalTrips = getDelayedCounts(filteredTrips, 'Critical', true);
-            console.log("filtered", criticalTrips);
 
             const sortedLateTrips = sortByOEMValue(lateTrips);
             const sortedNominalTrips = sortByOEMValue(nominalTrips);
@@ -1442,7 +1441,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
         formattedData = formatExcelData(formatDataKey(filteredOEMTrips.filter(item => excelAtrributes.includes(Object.keys(item)[0]))));
 
-        console.log("formatted", formattedData);
         let headers = [];
 
         if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {

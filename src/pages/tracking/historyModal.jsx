@@ -243,8 +243,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
 
             finalRouteData.push(allData[allData?.length - 1])
 
-            console.log("finalRoutedata", allData);
-
             setRouteData(finalRouteData);
             setRouteCoords(finalCoords);
 
@@ -515,6 +513,8 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
             setForm({})
             setShow(false);
             setSingleLoad(false);
+            setPause(true);
+            setPlayBackSpeed(1000);
             setRouteCoords([]);
         }} fullscreen centered size="xl">
             <Modal.Header closeButton>
@@ -697,7 +697,7 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
                                             </InfoWindowF>
                                         )}
 
-                                        {
+                                        {/* {
                                             showGeofenceOption && (
                                                 <InfoWindowF
                                                     position={geofencePosition}
@@ -711,7 +711,7 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
                                                     </Link>
                                                 </InfoWindowF>
                                             )
-                                        }
+                                        } */}
 
                                     </GoogleMap>
                                 ) : <></>
