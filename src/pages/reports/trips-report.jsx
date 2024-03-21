@@ -1180,7 +1180,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                     }
 
                     if (attr === 'oemFinalStatus') {
-                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours'], item['staticETA']);
+                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours'], item['oemReachTime']);
                     }
 
                     if (attr === 'locationTime') {

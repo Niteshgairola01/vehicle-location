@@ -103,7 +103,6 @@ const RouteReport = () => {
         if (geofenceLat === null) {
             setGeofencePosition({ lat: 26.858192, lng: 75.669163 })
         } else {
-            setShowGeofenceOption(true);
             setBoundCenter(true);
             setGeofencePosition({ lat: parseFloat(geofenceLat), lng: parseFloat(geofenceLng) });
         }

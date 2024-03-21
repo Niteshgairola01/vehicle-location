@@ -1002,7 +1002,6 @@ const VehicleTrackDash = () => {
                             id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                             key={`${index}-${colIndex}-${animationKey}`}
                             style={{ minWidth: "100%" }}>Late</span>
-
                     }
 
                     if (((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))) {

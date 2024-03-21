@@ -30,6 +30,15 @@ const UnloadingReport = ({ reportType }) => {
     const [columnNames, setColumnNames] = useState([]);
     const [excelAtrributes, setExcelAttributes] = useState([]);
 
+    const today = new Date();
+
+    let currentDay = new Date(today.setHours(0, 0, 0, 0));
+    // let nextDay = new Date(today.set)
+
+    const twoDaysAfter = new Date(today);
+    twoDaysAfter.setDate(twoDaysAfter.getDate() + 2);
+
+
     const finalTrips = reportType === "Unloading Date Report" ? unloadingTrips : reportUnloadingTrips;
 
     const tripsFilteredByOEM = finalTrips.length > 0 ? ((selectedOEMs.length === 0 || selectedOEMs.includes(undefined)) ? finalTrips : finalTrips.filter(data => {
@@ -293,16 +302,54 @@ const UnloadingReport = ({ reportType }) => {
         }
     };
 
-    const getDelayedType = (attr, hours) => {
+    const formatStaticETADate = (givenDate) => {
+        if (givenDate !== null && givenDate !== "" && givenDate !== " ") {
+            const [datePart, timePart, AM] = givenDate.split(' ');
+            const [day, month, year] = datePart.split('/');
+            const time = timePart.split(':');
+
+            const hour = parseInt(time) % 12 + (AM === 'PM' ? 12 : 0);
+            const minutes = parseInt(time[1]);
+            const seconds = parseInt(time[2]);
+
+            const formattedDate = `${year}-${month}-${day} ${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            return formattedDate;
+        }
+    };
+
+    const getDelayedType = (attr, hours, eta) => {
+        // if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
+        //     return attr;
+        // } else if (attr === 'Delayed') {
+        //     if (parseInt(hours) <= 18) {
+        //         return 'Mild Delayed';
+        //     } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
+        //         return 'Moderate Delayed';
+        //     } else if (parseInt(hours) >= 36) {
+        //         return 'Critical Delayed';
+        //     }
+        // }
+
         if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
             return attr;
         } else if (attr === 'Delayed') {
-            if (parseInt(hours) <= 18) {
-                return 'Mild Delayed';
-            } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
-                return 'Moderate Delayed';
-            } else if (parseInt(hours) >= 36) {
-                return 'Critical Delayed';
+
+            if (((eta !== null && eta !== "") && new Date(formatStaticETADate(eta)) < currentDay)) {
+                return 'Late';
+            } else {
+                if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > currentDay) && (new Date(formatStaticETADate(eta)) < twoDaysAfter))) {
+                    if (parseInt(hours) >= 0 && parseInt(hours) <= 10) {
+                        return 'Nominal Delayed';
+                    } else if (parseInt(hours) >= 11) {
+                        return 'Critical Delayed';
+                    }
+                } else if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > twoDaysAfter))) {
+                    if (parseInt(hours) >= 0 && parseInt(hours) <= 18) {
+                        return 'Nominal Delayed';
+                    } else if (parseInt(hours) >= 19) {
+                        return 'Critical Delayed';
+                    }
+                }
             }
         }
     };
@@ -351,11 +398,11 @@ const UnloadingReport = ({ reportType }) => {
                     }
 
                     if (attr === 'finalStatus') {
-                        formattedItem[attr] = getDelayedType(item[attr], item['delayedHours']);
+                        formattedItem[attr] = getDelayedType(item[attr], item['delayedHours'], item['staticETA']);
                     }
 
                     if (attr === 'oemFinalStatus') {
-                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours']);
+                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours'], item['oemReachTime']);
                     }
 
                     if (attr === 'locationTime') {
@@ -492,7 +539,7 @@ const UnloadingReport = ({ reportType }) => {
             }
 
             if (formattedItem.hasOwnProperty('oemFinalStatus')) {
-                formattedItem.oemFinalStatus = getDelayedType(formattedItem?.oemFinalStatus, formattedItem?.oemDelayedHours);
+                formattedItem.oemFinalStatus = getDelayedType(formattedItem?.oemFinalStatus, formattedItem?.oemDelayedHours, formattedItem?.oemReachTime);
             }
 
             if (formattedItem.hasOwnProperty('oemDelayedHours')) {
@@ -500,7 +547,7 @@ const UnloadingReport = ({ reportType }) => {
             }
 
             if (formattedItem.hasOwnProperty('finalStatus')) {
-                formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours);
+                formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours, formattedItem?.staticETA);
             }
 
             if (formattedItem.hasOwnProperty('delayedHours')) {
