@@ -579,16 +579,20 @@ const VehicleTrackDash = () => {
                                 const getLateTrips = (status) => {
 
                                     let delayedTrips = [];
+
                                     (status === 'included') ? delayedTrips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed')
                                         : delayedTrips = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
 
                                     const lateTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay));
+
                                     lateTrips.forEach(data => finalStatusTrips.push(data));
                                 }
 
                                 if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
                                     getLateTrips('included');
-                                } else getLateTrips('excluded');
+                                } else {
+                                    getLateTrips('excluded');
+                                }
                             }
 
                             if (selectedFilter.includes('Nominal Delayed') || selectedFilter.includes('Critical Delayed')) {
@@ -694,6 +698,37 @@ const VehicleTrackDash = () => {
                             }
 
                             if (selectedFilter.includes('Delayed (As per OEM)')) {
+
+                                if (selectedFilter.includes('Delayed (As per OEM)') && selectedFilter.length <= 2) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        const OEMDealyeds = allFilteredTrip.filter(data => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
+                                        finalStatusTrips = OEMDealyeds;
+                                    } else {
+                                        const OEMDealyeds = allFilteredTrip.filter(data => data?.oemFinalStatus === 'Delayed');
+                                        finalStatusTrips = OEMDealyeds;
+                                    }
+                                }
+
+                                if (selectedFilter.includes('Late')) {
+
+                                    const getLateTrips = (status) => {
+
+                                        let delayedTrips = [];
+
+                                        (status === 'included') ? delayedTrips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed')
+                                            : delayedTrips = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
+
+                                        const lateTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay));
+                                        lateTrips.forEach(data => finalStatusTrips.push(data));
+                                    }
+
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        getLateTrips('included');
+                                    } else {
+                                        getLateTrips('excluded');
+                                    }
+                                }
+
                                 if (selectedFilter.includes('Nominal Delayed') || selectedFilter.includes('Critical Delayed')) {
                                     const getDelayedTrips = (status, type) => {
                                         let delayedTrips = [];
@@ -730,15 +765,6 @@ const VehicleTrackDash = () => {
                                         selectedFilter.includes('Critical Delayed') && getDelayedTrips('included', 'Critical', true);
                                     }
                                 }
-
-                                // else {
-                                //     allFilteredTrip.forEach(data => {
-                                //         const testData = (data?.oemFinalStatus === 'Delayed');
-                                //         if (testData === true) {
-                                //             finalStatusTrips.push(data)
-                                //         }
-                                //     })
-                                // }
                             }
                         }
 
@@ -763,8 +789,6 @@ const VehicleTrackDash = () => {
             setFilteredTrips(allFilteredTrip);
         }
     };
-
-    console.log("filtered", filteredTrips);
 
     const realTimeDataFilter = () => {
         if (!showFilters) {

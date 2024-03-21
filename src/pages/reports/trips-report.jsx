@@ -740,22 +740,24 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                                 (selectedFilters.includes('Late') || selectedFilters.includes('Nominal Delayed') || selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed')) &&
                                 (!selectedFilters.includes('On Time & Early (As per OEM)') && !selectedFilters.includes('Delayed (As per OEM)'))
                             ) {
-
                                 if (selectedFilters.includes('Late')) {
-
                                     const getLateTrips = (status) => {
 
                                         let delayedTrips = [];
+
                                         (status === 'included') ? delayedTrips = allTrips.filter((data) => selectedFilters.includes(data?.tripStatus) && data?.finalStatus === 'Delayed')
                                             : delayedTrips = allTrips.filter((data) => data?.finalStatus === 'Delayed');
 
                                         const lateTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay));
+
                                         lateTrips.forEach(data => finalStatusTrips.push(data));
                                     }
 
                                     if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
                                         getLateTrips('included');
-                                    } else getLateTrips('excluded');
+                                    } else {
+                                        getLateTrips('excluded');
+                                    }
                                 }
 
                                 if (selectedFilters.includes('Nominal Delayed') || selectedFilters.includes('Critical Delayed')) {
@@ -859,6 +861,38 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                                 }
 
                                 if (selectedFilters.includes('Delayed (As per OEM)')) {
+
+                                    if (selectedFilters.includes('Delayed (As per OEM)') && selectedFilters.length <= 2) {
+                                        if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
+                                            const OEMDealyeds = allTrips.filter(data => selectedFilters.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
+                                            finalStatusTrips = OEMDealyeds;
+                                        } else {
+                                            const OEMDealyeds = allTrips.filter(data => data?.oemFinalStatus === 'Delayed');
+                                            finalStatusTrips = OEMDealyeds;
+                                        }
+                                    }
+
+                                    if (selectedFilters.includes('Late')) {
+
+                                        const getLateTrips = (status) => {
+
+                                            let delayedTrips = [];
+
+                                            (status === 'included') ? delayedTrips = allTrips.filter((data) => selectedFilters.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed')
+                                                : delayedTrips = allTrips.filter((data) => data?.oemFinalStatus === 'Delayed');
+
+                                            const lateTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay));
+                                            lateTrips.forEach(data => finalStatusTrips.push(data));
+                                        }
+
+                                        if (selectedFilters.includes('Trip Running') || selectedFilters.includes('Trip Completed')) {
+                                            getLateTrips('included');
+                                        } else {
+                                            getLateTrips('excluded');
+                                        }
+                                    }
+
+
                                     if (selectedFilters.includes('Nominal Delayed') || selectedFilters.includes('Critical Delayed')) {
                                         const getDelayedTrips = (status, type) => {
                                             let delayedTrips = [];
