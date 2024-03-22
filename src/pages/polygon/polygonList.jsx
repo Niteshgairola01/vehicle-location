@@ -341,7 +341,6 @@ const PolygonList = () => {
                                                                 strokeWeight: 2,
                                                             }}
                                                         />
-
                                                         <MarkerF position={selectedCoordinates[0]} />
                                                     </>
                                                 ) : (

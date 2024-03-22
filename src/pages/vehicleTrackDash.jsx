@@ -26,6 +26,7 @@ import '../assets/styles/track-dash.css';
 
 import VehicleRoute from './tracking/vehicleRoute';
 import HistoryModal from './tracking/historyModal';
+import { getAllPolygonAreas } from '../hooks/polygonHooks';
 
 const VehicleTrackDash = () => {
 
@@ -38,6 +39,9 @@ const VehicleTrackDash = () => {
     const [showMap, setShowMap] = useState(false);
 
     const [form, setForm] = useState({});
+    const [dealers, setDealers] = useState([]);
+    const [selectedTripDealer, setSelectedTripDealer] = useState('');
+    const [dealerCoordinates, setDealerCoordinates] = useState([]);
     const [allTrips, setAllTrips] = useState([]);
     const [filteredTrips, setFilteredTrips] = useState([]);
     const [selectedFilter, setSelectedFilter] = useState([]);
@@ -212,6 +216,43 @@ const VehicleTrackDash = () => {
             setTableColumns(intialColumns);
         }
     }, [selectedFilter]);
+
+    useEffect(() => {
+        getAllPolygonAreas().then((response) => {
+            if (response.status === 200) {
+                const filteredAreas = response?.data.filter(data => data?.geofenceType === 'Dealer');
+                setDealers(filteredAreas);
+            }
+            else {
+                setDealers([]);
+            }
+        }).catch((err) => {
+            setDealers([]);
+            console.log(err);
+        })
+    }, []);
+
+    useEffect(() => {
+        if (selectedTripDealer !== null) {
+            if (selectedTripDealer.length > 0) {
+                if (selectedTripDealer !== null || selectedTripDealer !== "" || selectedTripDealer !== " " || selectedTripDealer !== undefined) {
+                    const filteredDealer = dealers.filter(data => selectedTripDealer === data?.geoName);
+                    const coords = filteredDealer[0]?.coordinates;
+
+                    let dealerCoords = [];
+                    coords.forEach(data => {
+                        const splittedCoords = data.split(', ');
+                        dealerCoords.push({
+                            lat: parseFloat(splittedCoords[0]),
+                            lng: parseFloat(splittedCoords[1])
+                        })
+                    });
+
+                    setDealerCoordinates(dealerCoords);
+                };
+            }
+        }
+    }, [selectedTripDealer]);
 
     const closed = localStorage.getItem('reload');
     const filtersArr = localStorage.getItem('filters');
@@ -1492,7 +1533,8 @@ const VehicleTrackDash = () => {
                                 <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
                                     <Link to={'#'} state={data}
                                         onClick={() => {
-                                            setShowRoute(true)
+                                            setShowRoute(true);
+                                            setSelectedTripDealer(data?.dealerName);
                                             localStorage.setItem('filters', JSON.stringify(selectedFilter));
                                             localStorage.setItem("vehicle", data?.vehicleNo);
                                             localStorage.setItem("vehicleExitDbID", data?.vehicleExitDbID);
@@ -1668,8 +1710,6 @@ const VehicleTrackDash = () => {
                                     >Show All</HoveredButton>
                                 </Col>
 
-                                {/* <Col sm={12} md={6} lg={2} className='pt-4 d-flex justify-content-start align-items-center position-relative'>
-                                </Col> */}
                                 <div className='d-flex justify-content-end align-items-center mt-3'>
                                     <div className='ms-3 position-relative w-20'>
                                         <div className={`${selectedFilter.length > 0 && 'bg-thm-dark'} border border-secondary rounded p-2 cursor-pointer d-flex justify-content-between align-items-center flex-row`}
@@ -1720,6 +1760,14 @@ const VehicleTrackDash = () => {
 
                     <hr />
 
+                    <div className='d-flex justify-content-end align-items-center'>
+                        {
+                            selectedFilter.map((data, index) => (
+                                <span className='rounded mb-2 text-success text-center bg-white border border-success fw-bold border-2 px-3 me-2' style={{ fontSize: "0.8rem" }} key={index}>{data}</span>
+                            ))
+                        }
+                    </div>
+
                     <div className='w-100 mt-5 d-flex justify-content-between align-items-center'>
                         <div className='d-flex justify-content-start align-items-start'>
                             <div className=''>
@@ -1762,18 +1810,46 @@ const VehicleTrackDash = () => {
                         </div>
                         <div className='me-5 d-flex jsutify-conent-end align-items-center'>
                             <div className='d-flex me-3 justify-content-cennter align-items-center'>
-                                <div className='mx-1 thm-white bg-secondary px-2'>
-                                    <span>Late Trips: </span>
-                                    <span>{filteredLateTripsCount}</span>
-                                </div>
-                                <div className='mx-1 px-2 text-dark bg-warning'>
-                                    <span>Nominal Delayed: </span>
-                                    <span>{selectedFilter.includes('Delayed (As per OEM') ? oemNominalCounts : filteredNominalCounts}</span>
-                                </div>
-                                <div className='mx-1 px-2 bg-danger text-white'>
-                                    <span>Critical Delayed: </span>
-                                    <span>{selectedFilter.includes('Delayed (As per OEM') ? oemCriticalCounts : filteredCriticalCounts}</span>
-                                </div>
+                                {
+                                    filteredLateTripsCount > 0 && (
+                                        <div className='mx-1 thm-white bg-secondary px-2'>
+                                            <span>Late Trips: </span>
+                                            <span>{filteredLateTripsCount}</span>
+                                        </div>
+                                    )
+                                }
+                                {
+                                    (selectedFilter.includes('Delayed (As per OEM') && oemNominalCounts > 0) && (
+                                        <div className='mx-1 px-2 text-dark bg-warning'>
+                                            <span>Nominal Delayed: </span>
+                                            <span>{selectedFilter.includes('Delayed (As per OEM') ? oemNominalCounts : filteredNominalCounts}</span>
+                                        </div>
+                                    )
+                                }
+                                {
+                                    (!selectedFilter.includes('Delayed (As per OEM') && filteredNominalCounts) > 0 && (
+                                        <div className='mx-1 px-2 text-dark bg-warning'>
+                                            <span>Nominal Delayed: </span>
+                                            <span>{selectedFilter.includes('Delayed (As per OEM') ? oemNominalCounts : filteredNominalCounts}</span>
+                                        </div>
+                                    )
+                                }
+                                {
+                                    (selectedFilter.includes('Delayed (As per OEM') && oemCriticalCounts > 0) && (
+                                        <div className='mx-1 px-2 bg-danger text-white'>
+                                            <span>Critical Delayed: </span>
+                                            <span>{selectedFilter.includes('Delayed (As per OEM') ? oemCriticalCounts : filteredCriticalCounts}</span>
+                                        </div>
+                                    )
+                                }
+                                {
+                                    (!selectedFilter.includes('Delayed (As per OEM') && filteredCriticalCounts > 0) && (
+                                        <div className='mx-1 px-2 bg-danger text-white'>
+                                            <span>Critical Delayed: </span>
+                                            <span>{selectedFilter.includes('Delayed (As per OEM') ? oemCriticalCounts : filteredCriticalCounts}</span>
+                                        </div>
+                                    )
+                                }
                             </div>
                             <Tooltip title="Refresh Data">
                                 <Link>
@@ -1879,7 +1955,7 @@ const VehicleTrackDash = () => {
                         </Modal.Body>
                     </Modal>
 
-                    <VehicleRoute show={showRoute} setShow={setShowRoute} />
+                    <VehicleRoute show={showRoute} setShow={setShowRoute} dealerCoords={dealerCoordinates} />
                 </div>
             </div>
             <HistoryModal show={showMap} setShow={setShowMap} selectedRouteData={selectedRouteData} vehicleNo={distanceVehicle} />

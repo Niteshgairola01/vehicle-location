@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Card from '../../components/Card/card'
-import { GoogleMap, InfoWindowF, MarkerF, PolylineF, useJsApiLoader } from '@react-google-maps/api'
+import { CircleF, GoogleMap, InfoWindowF, MarkerF, PolygonF, PolylineF, useJsApiLoader } from '@react-google-maps/api'
 import { Link, useNavigate } from 'react-router-dom';
 import { getVehicleRoute } from '../../hooks/vehicleMasterHooks';
 import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
 import { Modal } from 'react-bootstrap';
 
-const VehicleRoute = ({ show, setShow }) => {
+const VehicleRoute = ({ show, setShow, dealerCoords }) => {
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
@@ -247,9 +247,6 @@ const VehicleRoute = ({ show, setShow }) => {
         }
     }, [form]);
 
-    // console.log("marker", markerDetails);
-
-    // const [arrayLocation, setArrayLocation] = useState(0);
     let arrayLocation = useRef(0);
 
     useEffect(() => {
@@ -336,13 +333,8 @@ const VehicleRoute = ({ show, setShow }) => {
         const formattedDate = selectedMarker === null ? '' : `${day}-${month}-${year}`;
         const formattedDateTime = selectedMarker === null ? '' : `${formattedDate} ${timePart}`;
 
-        console.log("formatted", year, day, month, originalDateTime);
-
         return selectedMarker === null ? '' : formattedDateTime;
     };
-
-
-    const [markerRotation, setMarkerRotation] = useState(0);
 
     // useEffect(() => {
     //     if (coordinates.length > 1) {
@@ -606,6 +598,35 @@ const VehicleRoute = ({ show, setShow }) => {
                                                         <div>Create Geofence</div>
                                                     </Link>
                                                 </InfoWindowF>
+                                            )
+                                        }
+
+                                        {/* Dealer */}
+                                        {
+                                            dealerCoords.length === 1 ? (
+                                                <>
+                                                    <CircleF
+                                                        center={dealerCoords[0]}
+                                                        radius={3500}
+                                                        options={{
+                                                            fillColor: 'rgba(255, 0, 0, 0.2)',
+                                                            strokeColor: 'red',
+                                                            strokeOpacity: 0.8,
+                                                            strokeWeight: 2,
+                                                        }}
+                                                    />
+                                                    <MarkerF position={dealerCoords[0]} />
+                                                </>
+                                            ) : (
+                                                <PolygonF
+                                                    paths={dealerCoords}
+                                                    options={{
+                                                        fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
+                                                        strokeColor: 'red',
+                                                        strokeOpacity: 0.8,
+                                                        strokeWeight: 2,
+                                                    }}
+                                                />
                                             )
                                         }
                                     </GoogleMap>
