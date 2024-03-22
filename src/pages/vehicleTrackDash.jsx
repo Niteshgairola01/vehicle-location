@@ -310,10 +310,7 @@ const VehicleTrackDash = () => {
         currentPage > pageCount && setCurrentPage(1);
     }, [filteredTrips]);
 
-    // const allFilters = ['Trip Running', 'Trip Completed', 'Trip not Assgined', 'Early', 'On Time', 'Mild Delayed', 'Moderate Delayed',
-    //     'Critical Delayed', 'On Time & Early (As per OEM)', 'Delayed (As per OEM)', 'Manual Bind', '10 Hrs On Time Report'];
-
-    const allFilters = ['Trip Running', 'Trip Completed', 'Trip not Assgined', 'Early', 'On Time', 'Late', 'Nominal Delayed',
+    const allFilters = ['Trip Running', 'Trip Completed', 'Waiting for Unload', 'Trip not Assgined', 'Early', 'On Time', 'Late', 'Nominal Delayed',
         'Critical Delayed', 'On Time & Early (As per OEM)', 'Delayed (As per OEM)', 'Manual Bind', '10 Hrs On Time Report'];
 
     const getAllTrips = () => {
@@ -620,7 +617,7 @@ const VehicleTrackDash = () => {
                         let finalStatusTrips = [];
 
                         if (selectedFilter.includes("Early") || selectedFilter.includes("On Time")) {
-                            if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                            if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) {
                                 const trips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && selectedFilter.includes(data?.finalStatus));
                                 trips.map((data) => finalStatusTrips.push(data));
                             } else {
@@ -648,14 +645,14 @@ const VehicleTrackDash = () => {
                                     lateTrips.forEach(data => finalStatusTrips.push(data));
                                 }
 
-                                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) {
                                     getLateTrips('included');
                                 } else {
                                     getLateTrips('excluded');
                                 }
                             }
 
-                            if (selectedFilter.includes('Nominal Delayed') || selectedFilter.includes('Critical Delayed')) {
+                            if (selectedFilter.includes('Nominal Delayed') || selectedFilter.includes('Critical Delayed') || selectedFilter.includes('Waiting for Unload')) {
                                 const getDelayedTrips = (status, type) => {
                                     let delayedTrips = [];
 
@@ -682,7 +679,7 @@ const VehicleTrackDash = () => {
                                     staticDelayeds.forEach(data => finalStatusTrips.push(data));
                                 };
 
-                                if (selectedFilter.includes('Trip running') || selectedFilter.includes('Trip Completed')) {
+                                if (selectedFilter.includes('Trip running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) {
                                     selectedFilter.includes('Nominal Delayed') && getDelayedTrips('included', 'Nominal');
                                     selectedFilter.includes('Critical Delayed') && getDelayedTrips('included', 'Critical');
                                 } else {
@@ -694,7 +691,7 @@ const VehicleTrackDash = () => {
 
                         if (selectedFilter.includes("On Time & Early (As per OEM)") || selectedFilter.includes("Delayed (As per OEM)")) {
                             if (selectedFilter.includes('On Time & Early (As per OEM)')) {
-                                if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) &&
+                                if ((selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) &&
                                     (!selectedFilter.includes('On Time') && !selectedFilter.includes('Early') && !selectedFilter.includes('Mild Delayed') && !selectedFilter.includes('Moderate Delayed') && !selectedFilter.includes('Critical Delayed'))
                                 ) {
                                     allFilteredTrip.forEach(data => {
@@ -709,7 +706,7 @@ const VehicleTrackDash = () => {
                                 } else if (selectedFilter.includes('On Time') || selectedFilter.includes('Early')) {
                                     let onTimeEarly = [];
                                     if (selectedFilter.includes('On Time')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) {
                                             allFilteredTrip.forEach(data => {
                                                 const filtered = selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'On Time';
                                                 if (filtered === true) {
@@ -727,7 +724,7 @@ const VehicleTrackDash = () => {
                                     }
 
                                     if (selectedFilter.includes('Early')) {
-                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                        if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) {
                                             allFilteredTrip.forEach(data => {
                                                 const filtered = selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Early';
                                                 if (filtered === true) {
@@ -759,7 +756,7 @@ const VehicleTrackDash = () => {
                             if (selectedFilter.includes('Delayed (As per OEM)')) {
 
                                 if (selectedFilter.includes('Delayed (As per OEM)') && selectedFilter.length <= 2) {
-                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) {
                                         const OEMDealyeds = allFilteredTrip.filter(data => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed');
                                         finalStatusTrips = OEMDealyeds;
                                     } else {
@@ -781,7 +778,7 @@ const VehicleTrackDash = () => {
                                         lateTrips.forEach(data => finalStatusTrips.push(data));
                                     }
 
-                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed')) {
+                                    if (selectedFilter.includes('Trip Running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) {
                                         getLateTrips('included');
                                     } else {
                                         getLateTrips('excluded');
@@ -816,7 +813,7 @@ const VehicleTrackDash = () => {
                                         staticDelayeds.forEach(data => finalStatusTrips.push(data));
                                     };
 
-                                    if (selectedFilter.includes('Trip running') || selectedFilter.includes('Trip Completed')) {
+                                    if (selectedFilter.includes('Trip running') || selectedFilter.includes('Trip Completed') || selectedFilter.includes('Waiting for Unload')) {
                                         selectedFilter.includes('Nominal Delayed') && getDelayedTrips('included', 'Nominal', true);
                                         selectedFilter.includes('Critical Delayed') && getDelayedTrips('included', 'Critical', true);
                                     } else {
@@ -969,7 +966,7 @@ const VehicleTrackDash = () => {
             setShowForce(true);
         } else if (data?.tripStatus.length === 0 || data?.operationUniqueID.length === 0) {
             ErrorToast("Not Trip found");
-        } else if (data?.tripStatus === 'Trip Completed') {
+        } else if ((data?.tripStatus === 'Trip Completed') || (data?.tripStatus === 'Waiting for Unload')) {
             ErrorToast("Trip already completed");
         }
     };
