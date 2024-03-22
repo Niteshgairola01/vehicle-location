@@ -622,7 +622,6 @@ const VehicleTrackDash = () => {
                                         : delayedTrips = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
 
                                     const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
-
                                     const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
 
                                     let staticDelayeds = [];

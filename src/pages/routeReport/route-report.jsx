@@ -98,11 +98,11 @@ const RouteReport = () => {
         }
     }, []);
 
-
     useEffect(() => {
         if (geofenceLat === null) {
             setGeofencePosition({ lat: 26.858192, lng: 75.669163 })
         } else {
+            setShowGeofenceOption(true);
             setBoundCenter(true);
             setGeofencePosition({ lat: parseFloat(geofenceLat), lng: parseFloat(geofenceLng) });
         }
@@ -862,7 +862,11 @@ const RouteReport = () => {
                                                 showGeofenceOption && (
                                                     <InfoWindowF
                                                         position={geofencePosition}
-                                                        onCloseClick={() => setShowGeofenceOption(false)}
+                                                        onCloseClick={() => {
+                                                            setShowGeofenceOption(false);
+                                                            localStorage.removeItem('lat');
+                                                            localStorage.removeItem('lng');
+                                                        }}
                                                     >
                                                         <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => {
                                                             localStorage.setItem("geofence", 'true');

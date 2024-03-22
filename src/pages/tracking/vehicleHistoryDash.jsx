@@ -76,8 +76,6 @@ const VehicleHistoryDash = () => {
     const [pdfDisabled, setPdfDisabled] = useState(false);
     const [excelDisabled, setExcelDisabled] = useState(false);
 
-    const [selectedRouteData, setSelectedRouteData] = useState([]);
-
     const initialColumns = [
         { label: 'S.No.', value: 'tripCount', hidden: false },
         { label: 'Vehicle No.', value: 'vehicleNo', hidden: false },
@@ -104,17 +102,22 @@ const VehicleHistoryDash = () => {
         { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
         { label: 'Exit From', value: 'exitFrom', hidden: false },
         { label: 'Trip Status', value: 'tripStatus', hidden: false },
-        { label: 'Track History', value: 'trackHistory', hidden: false },
-        { label: 'Force Complete', value: 'forcecomplete', hidden: false }
+        { label: 'Track History', value: 'trackHistory', hidden: false }
     ];
-
-    const [tableColumns, setTableColumns] = useState(initialColumns);
 
     const itemsPerPage = 20;
     const indexOfLastPost = currentPage * itemsPerPage;
     const indexOfFirstPost = indexOfLastPost - itemsPerPage;
     let currentTrips = filteredTrips.slice(indexOfFirstPost, indexOfLastPost);
     const pageCount = Math.ceil(filteredTrips.length / itemsPerPage);
+
+    const today = new Date();
+
+    let currentDay = new Date(today.setHours(0, 0, 0, 0));
+
+    const twoDaysAfter = new Date(today);
+    twoDaysAfter.setDate(twoDaysAfter.getDate() + 2);
+
 
     useEffect(() => {
         getUnloadingReport().then(response => {
@@ -165,7 +168,6 @@ const VehicleHistoryDash = () => {
             handleFilterTrips(allTripLogs);
         }
     }, [selectedParty, selectedOrigin, selectedDestination, selectedVehicleNo]);
-
 
     useEffect(() => {
         const uniqueOriginsSet = new Set();
@@ -413,7 +415,6 @@ const VehicleHistoryDash = () => {
         },
     ];
 
-
     const handleShowForceComplete = (data) => {
         if (data?.tripStatus === 'Trip Running' && data?.operationUniqueID.length > 0) {
             setSelectedVehicle(data);
@@ -426,26 +427,59 @@ const VehicleHistoryDash = () => {
         }
     };
 
+    const formatStaticETADate = (givenDate) => {
+        if (givenDate !== null && givenDate !== "" && givenDate !== " ") {
+            const [datePart, timePart, AM] = givenDate.split(' ');
+            const [day, month, year] = datePart.split('/');
+            const time = timePart.split(':');
+
+            const hour = parseInt(time) % 12 + (AM === 'PM' ? 12 : 0);
+            const minutes = parseInt(time[1]);
+            const seconds = parseInt(time[2]);
+
+            const formattedDate = `${year}-${month}-${day} ${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            return formattedDate;
+        }
+    };
+
 
     const showDelayedIcon = (data, index, colIndex) => {
         if (data?.finalStatus === 'Delayed') {
             if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                 const delayedHours = parseInt(data?.delayedHours);
-                if (delayedHours >= 0 && delayedHours <= 18) {
+                if (((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay)) {
                     return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
                         id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                         key={`${index}-${colIndex}-${animationKey}`}
-                        style={{ minWidth: "100%" }}>Mild Delayed</span>
-                } else if (delayedHours >= 19 && delayedHours <= 35) {
-                    return <span className={`py-1 px-2 m-0 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded`}
-                        id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
-                        key={`${index}-${colIndex}-${animationKey}`}
-                        style={{ minWidth: "100%" }}>Moderate Delayed</span>
-                } else if (delayedHours >= 36) {
-                    return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
-                        id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
-                        key={`${index}-${colIndex}-${animationKey}`}
-                        style={{ minWidth: "100%" }}>Critical Delayed</span>
+                        style={{ minWidth: "100%" }}>Late</span>
+                }
+
+                if (((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))) {
+                    if ((delayedHours >= 0 && delayedHours <= 10)) {
+                        return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Nominal Delayed</span>
+                    } else if (delayedHours > 10) {
+                        return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Critical Delayed</span>
+                    }
+                }
+
+                if (((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter))) {
+                    if ((delayedHours >= 0 && delayedHours <= 18)) {
+                        return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Nominal Delayed</span>
+                    } else if (delayedHours > 18) {
+                        return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
+                            id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
+                            key={`${index}-${colIndex}-${animationKey}`}
+                            style={{ minWidth: "100%" }}>Critical Delayed</span>
+                    }
                 }
             } else {
                 return '';
@@ -550,17 +584,26 @@ const VehicleHistoryDash = () => {
         }
     };
 
-
-    const getDelayedType = (attr, hours) => {
+    const getDelayedType = (attr, hours, eta) => {
         if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
             return attr;
         } else if (attr === 'Delayed') {
-            if (parseInt(hours) <= 18) {
-                return 'Mild Delayed';
-            } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
-                return 'Moderate Delayed';
-            } else if (parseInt(hours) >= 36) {
-                return 'Critical Delayed';
+            if (((eta !== null && eta !== "") && new Date(formatStaticETADate(eta)) < currentDay)) {
+                return 'Late';
+            } else {
+                if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > currentDay) && (new Date(formatStaticETADate(eta)) < twoDaysAfter))) {
+                    if (parseInt(hours) >= 0 && parseInt(hours) <= 10) {
+                        return 'Nominal Delayed';
+                    } else if (parseInt(hours) >= 11) {
+                        return 'Critical Delayed';
+                    }
+                } else if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > twoDaysAfter))) {
+                    if (parseInt(hours) >= 0 && parseInt(hours) <= 18) {
+                        return 'Nominal Delayed';
+                    } else if (parseInt(hours) >= 19) {
+                        return 'Critical Delayed';
+                    }
+                }
             }
         }
     };
@@ -801,11 +844,11 @@ const VehicleHistoryDash = () => {
                     }
 
                     if (attr === 'finalStatus') {
-                        formattedItem[attr] = getDelayedType(item[attr], item['delayedHours']);
+                        formattedItem[attr] = getDelayedType(item[attr], item['delayedHours'], item['staticETA']);
                     }
 
                     if (attr === 'oemFinalStatus') {
-                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours']);
+                        formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours'], item['oemReachTime']);
                     }
 
                     if (attr === 'locationTime') {
@@ -865,7 +908,7 @@ const VehicleHistoryDash = () => {
             }
 
             if (formattedItem.hasOwnProperty('oemFinalStatus')) {
-                formattedItem.oemFinalStatus = getDelayedType(formattedItem?.oemFinalStatus, formattedItem?.oemDelayedHours);
+                formattedItem.oemFinalStatus = getDelayedType(formattedItem?.oemFinalStatus, formattedItem?.oemDelayedHours, formattedItem?.oemReachTime);
             }
 
             if (formattedItem.hasOwnProperty('oemDelayedHours')) {
@@ -873,7 +916,7 @@ const VehicleHistoryDash = () => {
             }
 
             if (formattedItem.hasOwnProperty('finalStatus')) {
-                formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours);
+                formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours, formattedItem?.staticETA);
             }
 
             if (formattedItem.hasOwnProperty('delayedHours')) {
@@ -1104,7 +1147,7 @@ const VehicleHistoryDash = () => {
                             <thead className='table-head text-white' style={{ zIndex: 2, position: "sticky", top: 0 }}>
                                 <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                     {
-                                        tableColumns.map((data, index) => (
+                                        initialColumns.map((data, index) => (
                                             <>
                                                 {
                                                     data?.hidden === false ? (
@@ -1115,7 +1158,7 @@ const VehicleHistoryDash = () => {
                                                             `}
                                                             key={index}
                                                             style={{
-                                                                borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px"
+                                                                borderRadius: index === 0 ? "10px 0px 0px 0px" : index === initialColumns.length - 1 && "0px 10px 0px 0px"
                                                             }}>
                                                             <div className='d-flex justify-content-between align-items-center cursor-pointer'
                                                             // onClick={() => handleSortData(data?.value)}
@@ -1138,7 +1181,7 @@ const VehicleHistoryDash = () => {
                             <tbody>
                                 {currentTrips.length > 0 && currentTrips.map((data, index) => (
                                     <tr key={index}>
-                                        {tableColumns.map((column, colIndex) => (
+                                        {initialColumns.map((column, colIndex) => (
                                             <>
                                                 {
                                                     column?.hidden === false && handleTableColumns(data, column, data[column.value], index, colIndex)
