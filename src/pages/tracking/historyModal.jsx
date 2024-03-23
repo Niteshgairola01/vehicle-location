@@ -7,12 +7,12 @@ import { IoMdPause } from 'react-icons/io';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Modal } from 'react-bootstrap';
 
-const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, endDate }) => {
+const HistoryModal = ({ show, setShow, selectedRange, selectedRouteData, vehicleNo, selectedTrip, startDate, endDate }) => {
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
     const [form, setForm] = useState({});
-    
+
     let arrayLocation = useRef(0);
     const [angle, setAngle] = useState(180);
     const [routeData, setRouteData] = useState([]);
@@ -247,7 +247,7 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
 
     const mapContainerStyle = {
         width: '100%',
-        height: "70vh"
+        height: "60vh"
     };
 
     const getBounds = () => {
@@ -361,15 +361,31 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
             setRouteCoords([]);
         }} fullscreen centered size="xl">
             <Modal.Header closeButton>
-                <Modal.Title>
-                    <h5 className='thm-dark'>Vehicle History</h5>
-                </Modal.Title>
+                <div className='m-0 w-100 px-5 d-flex justify-content-between align-items-center'>
+                    <h4>Trip Route</h4>
+                    <div className='d-flex justify-content-between align-items-center'>
+                        <div className='me-2 pe-2' style={{ borderRight: "2px solid #000" }}>
+                            <span className='fw-bold mx-1 ps-2'>Trip No.</span>
+                            <span className='m-0 p-0'>{selectedTrip?.tripLogNo !== null && selectedTrip?.tripLogNo}</span>
+                        </div>
+                        <div className='me-2'>
+                            <span className='fw-bold me-1'>Vehicle : </span>
+                            <span>{vehicleNo}</span>
+                        </div>
+
+                        <div className='ps-2' style={{ borderLeft: "2px solid #000" }}>
+                            <span className='fw-bold me-1'>Date: </span>
+                            <span>{selectedRange}</span>
+
+                        </div>
+                    </div>
+                </div>
             </Modal.Header>
 
             <Modal.Body>
                 <div className='thm-dark m-0 p-0 p-5 pt-3'>
                     <div className='w-100 position-relative'>
-                        <div style={{ minHeight: '50vh' }}>
+                        <div style={{ minHeight: '60vh' }}>
                             {
                                 isLoaded ? (
                                     <GoogleMap

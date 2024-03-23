@@ -94,6 +94,7 @@ const VehicleTrackDash = () => {
     const [onHoldCounts, setOnHoldCounts] = useState(0);
     const [gpsOffCounts, setGpsOffCounts] = useState(0);
     const [distanceVehicle, setDistanceVehicle] = useState('');
+    const [selectedTrip, setSelectedTrip] = useState({});
     const [showDistanceKMs, setShowDistanceKMs] = useState(false);
 
     const [animationKey, setAnimationKey] = useState(0);
@@ -108,6 +109,9 @@ const VehicleTrackDash = () => {
         { label: 'Dealer Name', value: 'dealerName', hidden: false },
         { label: 'Origin', value: 'origin', hidden: false },
         { label: 'Destination', value: 'destination', hidden: false },
+        { label: 'Delayed Hours', value: 'delayedHours', hidden: false },
+        { label: 'Final Status', value: 'finalStatus', hidden: false },
+        { label: 'OEM Status', value: 'oemFinalStatus', hidden: false },
         { label: 'Static ETA (PAPL)', value: 'staticETA', hidden: false },
         { label: 'Static ETA (OEM)', value: "oemReachTime", hidden: false },
         { label: 'Estimated Arrival Date', value: 'estimatedArrivalDate', hidden: false },
@@ -119,9 +123,6 @@ const VehicleTrackDash = () => {
         { label: 'Last 10 hrs KM', value: 'last10HoursKms', hidden: false },
         { label: 'Report Unloading', value: 'unloadingReachDate', hidden: false },
         { label: 'Unloading End Date', value: 'unloadingDate', hidden: false },
-        { label: 'Final Status', value: 'finalStatus', hidden: false },
-        { label: 'OEM Status', value: 'oemFinalStatus', hidden: false },
-        { label: 'Delayed Hours', value: 'delayedHours', hidden: false },
         { label: 'Driver Name', value: 'driverName', hidden: false },
         { label: 'Driver Mobile No.', value: 'driverMobileNo', hidden: false },
         { label: 'Exit From', value: 'exitFrom', hidden: false },
@@ -182,16 +183,19 @@ const VehicleTrackDash = () => {
     const distancesCoveredInHours = [
         {
             range: 'twoDaysBefore',
+            rangeDate: twoDaysBefore,
             title: getFormattedDistanceDate(twoDaysBefore),
             distanceCovered: distanceCoveredIn10Hrs,
         },
         {
             range: 'yesterday',
+            rangeDate: yesterday,
             title: getFormattedDistanceDate(yesterday),
             distanceCovered: distanceCoveredIn24Hrs,
         },
         {
             range: 'today',
+            rangeDate: currentDay,
             title: getFormattedDistanceDate(currentDay),
             distanceCovered: distanceCoveredIn48Hrs,
         },
@@ -590,8 +594,8 @@ const VehicleTrackDash = () => {
             todayTrips.forEach(data => {
                 const delayedHours = oem ? parseFloat(data?.oemDelayedHours) : parseFloat(data?.delayedHours);
 
-                if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 10) && staticDelayeds.push(data)
-                else (delayedHours > 10) && staticDelayeds.push(data);
+                if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && staticDelayeds.push(data)
+                else (delayedHours > 5) && staticDelayeds.push(data);
             });
 
             upcomingTrips.forEach(data => {
@@ -702,8 +706,8 @@ const VehicleTrackDash = () => {
 
                                     todayTrips.forEach(data => {
                                         const delayedHours = parseFloat(data?.delayedHours);
-                                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 10) && staticDelayeds.push(data)
-                                        else (delayedHours > 10) && staticDelayeds.push(data);
+                                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && staticDelayeds.push(data)
+                                        else (delayedHours > 5) && staticDelayeds.push(data);
                                     });
 
                                     upcomingTrips.forEach(data => {
@@ -836,8 +840,8 @@ const VehicleTrackDash = () => {
 
                                         todayTrips.forEach(data => {
                                             const delayedHours = parseFloat(data?.oemDelayedHours);
-                                            if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 10) && staticDelayeds.push(data)
-                                            else (delayedHours > 10) && staticDelayeds.push(data);
+                                            if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && staticDelayeds.push(data)
+                                            else (delayedHours > 5) && staticDelayeds.push(data);
                                         });
 
                                         upcomingTrips.forEach(data => {
@@ -1032,12 +1036,12 @@ const VehicleTrackDash = () => {
                     }
 
                     if (((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter))) {
-                        if ((delayedHours >= 0 && delayedHours <= 10)) {
+                        if ((delayedHours >= 0 && delayedHours <= 5)) {
                             return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
                                 id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                                 key={`${index}-${colIndex}-${animationKey}`}
                                 style={{ minWidth: "100%" }}>Nominal Delayed</span>
-                        } else if (delayedHours > 10) {
+                        } else if (delayedHours > 5) {
                             return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
                                 id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                                 key={`${index}-${colIndex}-${animationKey}`}
@@ -1079,12 +1083,12 @@ const VehicleTrackDash = () => {
                     }
 
                     if (((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))) {
-                        if ((delayedHours >= 0 && delayedHours <= 10)) {
+                        if ((delayedHours >= 0 && delayedHours <= 5)) {
                             return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
                                 id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                                 key={`${index}-${colIndex}-${animationKey}`}
                                 style={{ minWidth: "100%" }}>Nominal Delayed</span>
-                        } else if (delayedHours > 10) {
+                        } else if (delayedHours > 5) {
                             return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
                                 id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                                 key={`${index}-${colIndex}-${animationKey}`}
@@ -1424,6 +1428,7 @@ const VehicleTrackDash = () => {
 
     const handleShowDistanceCovered = (data) => {
         setDistanceVehicle(data?.vehicleNo);
+        setSelectedTrip(data);
         setShowDistanceKMs(true);
 
         if (!distanceHovered) {
@@ -1464,9 +1469,11 @@ const VehicleTrackDash = () => {
         }
     }, [selectedHourType]);
 
+    const [selectedRange, setSelectedRange] = useState('');
 
     const handleShowDistanceOnMap = (hour) => {
         const selectedHourType = hour?.range;
+        setSelectedRange(hour?.title)
         let routeData = [];
 
         if (selectedHourType === 'twoDaysBefore') {
@@ -1659,19 +1666,25 @@ const VehicleTrackDash = () => {
                             <hr />
                             {
                                 distancesCoveredInHours.map((hour, i) => (
-                                    <Col md={12} lg={4} className='cursor-pointer' key={i} style={{ borderRight: i < distancesCoveredInHours.length - 1 && "1px solid #09215f" }}
-                                        onClick={() => handleShowDistanceOnMap(hour)}
-                                    >
-                                        <p className='m-0 p-0 fw-bold'>{hour?.title}</p>
-
+                                    <>
                                         {
-                                            isDistanceLoading ? (
-                                                <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
-                                            ) : (
-                                                <p className='m-0 p-0'>{hour?.distanceCovered} KMs</p>
+                                            new Date(formatStaticETADate(data?.loadingDate)) <= new Date(hour?.rangeDate) && (
+                                                <Col md={12} lg={4} className='cursor-pointer' key={i} style={{ borderRight: i < distancesCoveredInHours.length - 1 && "1px solid #09215f" }}
+                                                    onClick={() => handleShowDistanceOnMap(hour)}
+                                                >
+                                                    <p className='m-0 p-0 fw-bold'>{hour?.title}</p>
+
+                                                    {
+                                                        isDistanceLoading ? (
+                                                            <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+                                                        ) : (
+                                                            <p className='m-0 p-0'>{hour?.distanceCovered} KMs</p>
+                                                        )
+                                                    }
+                                                </Col>
                                             )
                                         }
-                                    </Col>
+                                    </>
                                 ))
                             }
                         </Row>
@@ -2046,7 +2059,7 @@ const VehicleTrackDash = () => {
                     <VehicleRoute show={showRoute} setShow={setShowRoute} dealerCoords={dealerCoordinates} plantCoordinates={plantCoordinates} />
                 </div>
             </div>
-            <HistoryModal show={showMap} setShow={setShowMap} selectedRouteData={selectedRouteData} vehicleNo={distanceVehicle} />
+            <HistoryModal show={showMap} setShow={setShowMap} selectedRange={selectedRange} selectedRouteData={selectedRouteData} vehicleNo={distanceVehicle} selectedTrip={selectedTrip} />
         </div>
     )
 }

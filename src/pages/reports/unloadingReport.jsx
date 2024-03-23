@@ -338,9 +338,9 @@ const UnloadingReport = ({ reportType }) => {
                 return 'Late';
             } else {
                 if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > currentDay) && (new Date(formatStaticETADate(eta)) < twoDaysAfter))) {
-                    if (parseInt(hours) >= 0 && parseInt(hours) <= 10) {
+                    if (parseInt(hours) >= 0 && parseInt(hours) <= 5) {
                         return 'Nominal Delayed';
-                    } else if (parseInt(hours) >= 11) {
+                    } else if (parseInt(hours) >= 6) {
                         return 'Critical Delayed';
                     }
                 } else if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > twoDaysAfter))) {

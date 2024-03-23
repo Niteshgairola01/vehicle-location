@@ -455,12 +455,12 @@ const VehicleHistoryDash = () => {
                 }
 
                 if (((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))) {
-                    if ((delayedHours >= 0 && delayedHours <= 10)) {
+                    if ((delayedHours >= 0 && delayedHours <= 5)) {
                         return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
                             id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                             key={`${index}-${colIndex}-${animationKey}`}
                             style={{ minWidth: "100%" }}>Nominal Delayed</span>
-                    } else if (delayedHours > 10) {
+                    } else if (delayedHours > 5) {
                         return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-danger text-white' : 'text-dark'} rounded text-center`}
                             id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                             key={`${index}-${colIndex}-${animationKey}`}
@@ -592,9 +592,9 @@ const VehicleHistoryDash = () => {
                 return 'Late';
             } else {
                 if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > currentDay) && (new Date(formatStaticETADate(eta)) < twoDaysAfter))) {
-                    if (parseInt(hours) >= 0 && parseInt(hours) <= 10) {
+                    if (parseInt(hours) >= 0 && parseInt(hours) <= 5) {
                         return 'Nominal Delayed';
-                    } else if (parseInt(hours) >= 11) {
+                    } else if (parseInt(hours) >= 6) {
                         return 'Critical Delayed';
                     }
                 } else if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > twoDaysAfter))) {
