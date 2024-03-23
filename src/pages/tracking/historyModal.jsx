@@ -11,31 +11,13 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
+    const [form, setForm] = useState({});
+    
     let arrayLocation = useRef(0);
     const [angle, setAngle] = useState(180);
-
-    const [vehicleList, setVehiclesList] = useState([]);
-    const [selectedVehicle, setSelectedVehicle] = useState('');
-    const [form, setForm] = useState({});
-
     const [routeData, setRouteData] = useState([]);
-    const [stoppage, setStoppage] = useState([]);
-    const [stoppageCoords, setStoppageCoords] = useState([]);
     const [routeCoords, setRouteCoords] = useState([]);
     const [center, setCenter] = useState({ lat: 26.858192, lng: 75.669163 });
-
-    const [speedMarkerData, setSpeedMarkerData] = useState([]);
-    const [overSpeedMarkers, setOverSpeedMarkers] = useState([]);
-    const [timeMakers, setTimeMakrkers] = useState([]);
-
-    const [includeSpeed, setIncludeSpeed] = useState(false);
-    const [includeTime, setIncludeTime] = useState(false);
-
-    const [selectedTimeMarker, setSelectedTimeMarker] = useState(null);
-    const [timeMarkerDetails, setTimeMarkerDetails] = useState({});
-
-    const [selectedSpeedMarker, setSelectedSpeedMarker] = useState(null);
-    const [speedMarkerDetails, setSpeedMarkerDetails] = useState({});
 
     const [pause, setPause] = useState(true);
     const [nextCoordinates, setNextCoordinates] = useState({});
@@ -50,7 +32,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
 
     const [showLoader, setShowLoader] = useState(false)
     const [boundCenter, setBoundCenter] = useState(false);
-    const [btnDisabled, setBtnDisabled] = useState(false);
     const [singleLoad, setSingleLoad] = useState(false);
 
     const [showGeofenceOption, setShowGeofenceOption] = useState(false);
@@ -120,26 +101,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
     }, [currentCoordinates, nextCoordinates]);
 
     useEffect(() => {
-        getAllVehiclesList().then((response) => {
-            if (response.status === 200) {
-                if (response?.data.length > 0) {
-                    const filteredData = response?.data.map(data => ({
-                        ...data,
-                        label: data?.vehicleNo,
-                        value: data?.vehicleNo
-                    }));
-
-                    setVehiclesList(filteredData);
-                } else {
-                    setVehiclesList([]);
-                }
-            } else {
-                setVehiclesList([]);
-            }
-        }).catch(() => setVehiclesList([]));
-    }, []);
-
-    useEffect(() => {
         arrayLocation.current = rangeValue;
     }, [rangeValue]);
 
@@ -203,22 +164,11 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
         setRangeValue(parseInt(e.target.value));
     };
 
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        });
-    };
-
-
     useEffect(() => {
 
         const handleGetRoute = (allData) => {
             arrayLocation.current = 0;
-
-            // const allData = selectedRouteData;
             let coords = [];
-
             let finalCoords = [];
             let finalRouteData = [];
 
@@ -234,7 +184,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
                     };
                 };
             });
-
 
             finalCoords.push({
                 lat: parseFloat(allData[allData?.length - 1]?.lat),
@@ -255,78 +204,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
                 )
             });
 
-            // Stop Time 
-
-            if (form?.time) {
-                if (includeTime && form?.time.length > 0) {
-                    const latitudesMap = new Map();
-                    const repeatedLatitudes = [];
-
-                    let coords = [];
-
-                    allData.forEach(obj => {
-                        if (!latitudesMap.has(obj.lat)) {
-                            latitudesMap.set(obj.lat, { count: 1, arrival: obj.date, exit: obj.date });
-                        } else {
-                            const existingLatData = latitudesMap.get(obj.lat);
-                            latitudesMap.set(obj.lat, {
-                                count: existingLatData.count + 1,
-                                arrival: existingLatData.arrival,
-                                exit: obj.date,
-                                lng: obj.long
-                            });
-                        }
-                    });
-
-                    latitudesMap.forEach((value, key) => {
-                        if (value.count > 1) {
-                            repeatedLatitudes.push({
-                                lat: key,
-                                lng: value.lng,
-                                arrival: value.arrival,
-                                exit: value.exit
-                            });
-                        }
-                    });
-
-                    const filteredTest = repeatedLatitudes.filter(item => {
-                        const arrivalTime = new Date(item.arrival);
-                        const exitTime = new Date(item.exit);
-                        const timeDifferenceInMinutes = (exitTime - arrivalTime) / (1000 * 60); // Convert milliseconds to minutes
-                        return timeDifferenceInMinutes > form?.time;
-                    });
-
-                    filteredTest.map(data => {
-                        coords.push({
-                            lat: parseFloat(data?.lat),
-                            lng: parseFloat(data?.lng)
-                        })
-                    })
-
-                    setStoppage(filteredTest);
-                    setStoppageCoords(coords);
-                }
-            }
-
-            // Over Speed
-
-            if (form?.speed) {
-                if (includeSpeed && form?.speed.length >= 0) {
-                    const overSpeeded = allData.filter(data => parseFloat(data?.speed) > form?.speed);
-                    let coordinates = [];
-
-                    overSpeeded.map((data) => {
-                        coordinates.push({
-                            lat: parseFloat(data?.lat),
-                            lng: parseFloat(data?.long)
-                        });
-                    });
-
-                    setSpeedMarkerData(overSpeeded);
-                    setOverSpeedMarkers(coordinates);
-                }
-            }
-
             if (selectedRouteData === 0) {
                 ErrorToast("No Data Found")
             }
@@ -342,14 +219,12 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
                     arrayLocation.current = 0;
                     setPause(true);
                     setShowLoader(true);
-                    setBtnDisabled(true);
 
                     const payload = [form?.vehicle, form?.startDate, form?.endDate];
 
                     if (!singleLoad) {
                         getVehicleRoute(payload).then((response) => {
                             if (response.status === 200) {
-                                setBtnDisabled(false);
                                 setShowLoader(false);
                                 setSingleLoad(true);
 
@@ -434,18 +309,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
         setBoundCenter(true);
     };
 
-    const handleClickTimeMarker = (data, index) => {
-        setSelectedTimeMarker(index);
-        setTimeMarkerDetails(data);
-        setBoundCenter(true);
-    };
-
-    const handleClickSpeedMarker = (data, index) => {
-        setSelectedSpeedMarker(index);
-        setSpeedMarkerDetails(data);
-        setBoundCenter(true);
-    };
-
     const handleGetCoveredDistance = () => {
 
         if (coveredCoordinates[0] === undefined) {
@@ -454,26 +317,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
         } else {
             return (coveredCoordinates.reduce((prev, curr) => prev + parseFloat(curr.latLongDistance), 0)).toFixed(2)
         }
-    };
-
-    const convertMarkerDateTime = (originalDateTime) => {
-        const [datePart, timePart] = selectedTimeMarker === null ? '' : originalDateTime.split(' ');
-        const [year, month, day] = selectedTimeMarker === null ? '' : datePart.split('-');
-
-        const formattedDate = selectedTimeMarker === null ? '' : `${day}-${month}-${year}`;
-        const formattedDateTime = selectedTimeMarker === null ? '' : `${formattedDate} ${timePart}`;
-
-        return selectedTimeMarker === null ? '' : formattedDateTime;
-    };
-
-    const convertSpeedMarkerDateTime = (originalDateTime) => {
-        const [datePart, timePart] = selectedSpeedMarker === null ? '' : originalDateTime.split(' ');
-        const [year, month, day] = selectedSpeedMarker === null ? '' : datePart.split('-');
-
-        const formattedDate = selectedSpeedMarker === null ? '' : `${day}-${month}-${year}`;
-        const formattedDateTime = selectedSpeedMarker === null ? '' : `${formattedDate} ${timePart}`;
-
-        return selectedSpeedMarker === null ? '' : formattedDateTime;
     };
 
     const convertCurrentDateTime = (originalDateTime) => {
@@ -588,49 +431,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
                                             )
                                         }
 
-                                        {/* Stopage marker */}
-                                        {
-                                            includeSpeed ? (
-                                                <>
-                                                    {
-                                                        speedMarkerData.length > 0 && speedMarkerData.map((data, index) => (
-                                                            <MarkerF
-                                                                icon={{
-                                                                    url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F7F719"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
-                                                                    scaledSize: new window.google.maps.Size(40, 40),
-                                                                    fillColor: "#ffff00",
-                                                                    fillOpacity: 1,
-                                                                }}
-                                                                label={`${index + 1}`}
-                                                                position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.long) }}
-                                                                onClick={() => handleClickSpeedMarker(data, index)}
-                                                            />
-
-                                                        ))
-                                                    }
-                                                </>
-                                            ) : null
-                                        }
-
-                                        {/* Time marker */}
-
-                                        {
-                                            includeTime ? (
-                                                <>
-                                                    {
-                                                        stoppage.length > 0 && stoppage.map((data, index) => (
-                                                            <MarkerF
-                                                                label={`${index + 1}`}
-                                                                position={{ lat: parseFloat(data?.lat), lng: parseFloat(data?.lng) }}
-                                                                onClick={() => handleClickTimeMarker(data, index)}
-                                                            />
-
-                                                        ))
-                                                    }
-                                                </>
-                                            ) : null
-                                        }
-
                                         {
                                             routeData?.length > 0 && (
                                                 <MarkerF
@@ -651,68 +451,6 @@ const HistoryModal = ({ show, setShow, selectedRouteData, vehicleNo, startDate, 
 
                                             )
                                         }
-
-
-                                        {/* Marker details */}
-                                        {selectedTimeMarker !== null && (
-                                            <InfoWindowF
-                                                position={{ lat: parseFloat(stoppage[selectedTimeMarker]?.lat), lng: parseFloat(stoppage[selectedTimeMarker]?.lng) }}
-                                                onCloseClick={() => setSelectedTimeMarker(null)}
-                                            >
-                                                <div>
-                                                    <div>
-                                                        <span className='fw-bold'>Arrival Time :</span>
-                                                        <span className='ps-1 fw-400'>{convertMarkerDateTime(timeMarkerDetails?.arrival)}</span>
-                                                    </div>
-
-                                                    <div className='mt-1'>
-                                                        <span className='fw-bold'>Exit Time :</span>
-                                                        <span className='ps-1 fw-400'>{convertMarkerDateTime(timeMarkerDetails?.exit)}</span>
-                                                    </div>
-
-                                                    <div className='mt-1'>
-                                                        <span className='fw-bold'>Duration :</span>
-                                                        <span className='ps-1 fw-400'>{getTimeDifferece(timeMarkerDetails?.arrival, timeMarkerDetails?.exit)}</span>
-                                                    </div>
-                                                </div>
-                                            </InfoWindowF>
-                                        )}
-
-                                        {selectedSpeedMarker !== null && (
-                                            <InfoWindowF
-                                                position={{ lat: parseFloat(speedMarkerData[selectedSpeedMarker]?.lat), lng: parseFloat(speedMarkerData[selectedSpeedMarker]?.long) }}
-                                                onCloseClick={() => setSelectedSpeedMarker(null)}
-                                            >
-                                                <div>
-                                                    <div>
-                                                        <span className='fw-bold'>Date / Time :</span>
-                                                        <span className='ps-1 fw-400'>{convertSpeedMarkerDateTime(speedMarkerDetails?.date)}</span>
-                                                    </div>
-
-                                                    <div>
-                                                        <span className='fw-bold'>Speed :</span>
-                                                        <span className='ps-1 fw-400'>{speedMarkerDetails?.speed} (KM/H)</span>
-                                                    </div>
-                                                </div>
-                                            </InfoWindowF>
-                                        )}
-
-                                        {/* {
-                                            showGeofenceOption && (
-                                                <InfoWindowF
-                                                    position={geofencePosition}
-                                                    onCloseClick={() => setShowGeofenceOption(false)}
-                                                >
-                                                    <Link to="/create-polygon" className='text-decoration-none thm-dark fw-500' onClick={() => {
-                                                        localStorage.setItem("geofence", 'true');
-                                                        localStorage.setItem("path", '/route-report')
-                                                    }} state={geofencePosition}>
-                                                        <div>Create Geofence</div>
-                                                    </Link>
-                                                </InfoWindowF>
-                                            )
-                                        } */}
-
                                     </GoogleMap>
                                 ) : <></>
                             }

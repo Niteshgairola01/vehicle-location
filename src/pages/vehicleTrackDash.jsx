@@ -6,13 +6,13 @@ import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
 import { CiFilter } from "react-icons/ci";
 import { FaRoute } from "react-icons/fa";
-import { IoIosTimer, IoMdRefresh } from 'react-icons/io';
+import { IoIosTimer, IoMdAdd, IoMdRefresh } from 'react-icons/io';
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
-import { ErrorToast } from '../components/toast/toast';
+import { ErrorToast, SuccessToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
-import { getAllVehiclesList, getLogsById } from '../hooks/vehicleMasterHooks';
+import { addRemark, getAllVehiclesList, getLogsById } from '../hooks/vehicleMasterHooks';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
@@ -27,6 +27,7 @@ import '../assets/styles/track-dash.css';
 import VehicleRoute from './tracking/vehicleRoute';
 import HistoryModal from './tracking/historyModal';
 import { getAllPolygonAreas } from '../hooks/polygonHooks';
+import { DisabledButton } from '../components/Button/Button';
 
 const VehicleTrackDash = () => {
 
@@ -54,6 +55,11 @@ const VehicleTrackDash = () => {
     const [selectedVehicle, setSelectedVehicle] = useState({});
     const [hovered, setHovered] = useState(false);
     const [distanceHovered, setDistanceHovered] = useState(false);
+    const [showRemarkForm, setShowRemarkForm] = useState(false);
+    const [remark, setRemark] = useState('');
+    const [selectedRemark, setSelectedRemark] = useState('');
+    const [remarkHovered, setRemarkHovered] = useState(false);
+    const [remarkBtnDisabled, setRemarkBtnDisabled] = useState(false);
     const [selectedParty, setSelectedParty] = useState('');
     const [selectedOrigin, setSelectedOrigin] = useState('');
     const [selectedDestination, setSelectedDestination] = useState('');
@@ -118,6 +124,7 @@ const VehicleTrackDash = () => {
         { label: 'Exit From', value: 'exitFrom', hidden: false },
         { label: 'Trip Status', value: 'tripStatus', hidden: false },
         { label: 'Distance KMs', value: 'distanceKMs', hidden: false },
+        { label: 'Remark', value: 'remark', hidden: false },
         { label: 'Force Complete', value: 'forcecomplete', hidden: false }
     ];
 
@@ -975,6 +982,7 @@ const VehicleTrackDash = () => {
         !hovered && setShowFilters(false);
         !hovered && setShowLocationOption(false);
         !hovered && setShowDistanceKMs(false);
+        (!hovered && !remarkBtnDisabled) && setShowRemarkForm(false);
         isOpenParty && setIsOpenParty(false);
         isOpenOffice && setIsOpenOffice(false);
         isOpenVehicle && setIsOpenVehicle(false);
@@ -1313,19 +1321,32 @@ const VehicleTrackDash = () => {
         setShowLocationOption(true);
     };
 
+    const handleAddRemark = (e) => {
+        e.preventDefault();
+
+        if (!remarkBtnDisabled) {
+            setRemarkBtnDisabled(true);
+            const form = {
+                tripNo: selectedRemark,
+                remark
+            };
+
+            addRemark(form).then(response => {
+                if (response.status === 200) {
+                    setRemarkBtnDisabled(true);
+                    SuccessToast("Remark added successfully");
+                } else {
+                    setRemarkBtnDisabled(true);
+                    ErrorToast("Unable to add remark");
+                };
+            }).catch(err => {
+                setRemarkBtnDisabled(true);
+                console.log("err", err);
+            });
+        };
+    }
+
     const [allLogs, setAllLogs] = useState([]);
-
-    const handleFormatLogsDate = (dateString) => {
-        const date = dateString.getDate();
-        const month = dateString.getMonth() + 1;
-        const year = dateString.getFullYear();
-        const hours = dateString.getHours();
-        const minutes = dateString.getMinutes();
-        const seconds = dateString.getSeconds();
-
-        const formattedDate = `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
-        return formattedDate;
-    };
 
     useEffect(() => {
 
@@ -1589,9 +1610,7 @@ const VehicleTrackDash = () => {
             </td>
         } else if (column?.label === 'Vehicle No.') {
             return <td key={colIndex} className='fw-bold'>{value}</td>;
-        }
-
-        else if (column?.label === 'Distance KMs') {
+        } else if (column?.label === 'Distance KMs') {
             return <td key={colIndex} className='text-center vehicle-location position-relative cursor-pointer'
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
@@ -1603,7 +1622,7 @@ const VehicleTrackDash = () => {
                         <Row className='thm-dark position-absolute bg-white p-2 pt-1 mt-3 rounded vehicle-details-popup'
                             onMouseOver={() => setDistanceHovered(true)}
                             onMouseOut={() => setDistanceHovered(false)}
-                            style={{ width: "100%", minWidth: "20rem", left: "-50%" }}>
+                            style={{ width: "100%", minWidth: "20rem", left: "-50%", zIndex: 2 }}>
                             <p className='fw-bold text-start m-0 p-0 mb-2'>Distance Covered in hours</p>
                             <hr />
                             {
@@ -1623,6 +1642,54 @@ const VehicleTrackDash = () => {
                                     </Col>
                                 ))
                             }
+                        </Row>
+                    )
+                }
+            </td>;
+        } else if (column?.label === 'Remark') {
+            return <td key={colIndex} className='text-center position-relative'
+                onMouseOver={() => setHovered(true)}
+                onMouseOut={() => setHovered(false)}
+            >
+
+                <p style={{ fontSize: "0.7rem" }}>{data?.remark}</p>
+                {
+                    (data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripLogNo !== " ") && (
+                        // <button className='px-2 border border-success text-success border-2 fw-bold bg-white rounded'>
+                        //     Add Reminder
+                        // </button>
+                        <HoveredButton className="px-3 cursor-pointer" style={{ fontSize: "0.7rem" }} onClick={() => {
+                            setSelectedRemark(data?.tripLogNo)
+                            setShowRemarkForm(true)
+                        }}>{data?.remark ? 'Update Remark' : 'Add Remark'}</HoveredButton>
+                    )
+                }
+                {
+                    (showRemarkForm && (selectedRemark === data?.tripLogNo)) && (
+                        <Row className='thm-dark position-absolute bg-white p-2 pt-1 mt-3 rounded vehicle-details-popup'
+                            onMouseOver={() => setRemarkHovered(true)}
+                            onMouseOut={() => setRemarkHovered(false)}
+                            style={{ width: "100%", minWidth: "20rem", left: "-50%", zIndex: 2 }}>
+                            {
+                                data?.remark && (
+                                    <>
+                                        <p className='text-start m-0 p-0 mb-2' style={{ fontSize: "0.7rem" }}>{data?.remark}</p>
+                                        <hr />
+                                    </>
+                                )
+                            }
+                            <Form onSubmit={handleAddRemark}>
+                                <Input type="text" name="remark" placeholder="Enter Remark" onChange={(e) => setRemark(e.target.value)} required autocomplete="off" />
+                                <div className='d-flex justify-content-center align-items-center'>
+                                    {
+                                        remarkBtnDisabled ? (
+                                            <DisabledButton type="button" disabled className="py-1 px-3 me-2">Adding</DisabledButton>
+                                        ) : (
+                                            <Button className={`px-3 w-25`} type="submit">{data?.remark ? 'Update' : 'Add'}</Button>
+                                        )
+                                    }
+                                </div>
+                            </Form>
                         </Row>
                     )
                 }
@@ -1871,7 +1938,7 @@ const VehicleTrackDash = () => {
                                                             className={`text-nowrap 
                                                             ${(data?.label === 'S.No.') && 'width-50'} ${(data?.label === 'Vehicle No.') && 'width-100'} ${(data?.label === 'Status') && 'width-50'} ${(data?.label === 'Trip No.') && 'width-60'} ${(data?.label === 'Trip Status') && 'width-120'} ${(data?.label === 'Exit From') && 'width-120'} ${(data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location') && 'width-200'} ${(data?.label === 'Consignor Name') && 'width-140'}
                                                             ${(data?.label === 'KM Covered') && 'width-90'} ${(data?.label === 'Final Status') && 'width-50'} ${(data?.label === 'Driver Name') && 'width-100'}
-                                                            `}
+                                                            ${(data?.label === 'Remark') && 'width-150'}`}
                                                             key={index}
                                                             style={{
                                                                 borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px"

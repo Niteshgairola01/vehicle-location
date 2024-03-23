@@ -653,7 +653,7 @@ table thead {
     height: 100%;
     width: 100%;
     background: #f7f7f7a9;
-    z-index: 2
+    z-index: 999
 }
 
 .dot-spinner {

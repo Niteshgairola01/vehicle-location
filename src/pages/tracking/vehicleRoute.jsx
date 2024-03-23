@@ -52,7 +52,7 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
 
     const mapContainerStyle = {
         width: '100%',
-        height: '95%',
+        height: '100%',
     };
 
     const vehicleNo = localStorage.getItem("vehicle");
@@ -469,10 +469,13 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
         localStorage.removeItem('lng');
         arrayLocation.current = 0
         setShow(false);
+        setPause(true);
+        setPlayBackSpeed(1000);
+        setRouteData([]);
     }
 
     return (
-        <Modal show={show} className='w-100 p-5' fullscreen centered onHide={() => handleCloseModal()} size='xl'>
+        <Modal show={show} className='w-100 p-3' fullscreen centered onHide={() => handleCloseModal()} size='xl'>
             <Modal.Header closeButton>
                 <div className='m-0 w-100 px-5 d-flex justify-content-between align-items-center'>
                     <h4>Vehicle Route</h4>
@@ -493,10 +496,10 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
                 </div>
             </Modal.Header>
 
-            <Modal.Body>
+            <Modal.Body style={{overflow: 'hidden'}}>
                 <div className='thm-dark mx-5'>
                     <Card>
-                        <div className=' side-map-container' style={{ minHeight: "95%" }}>
+                        <div className=' side-map-container' style={{ minHeight: "60vh" }}>
                             {
                                 isLoaded ? (
                                     <GoogleMap
@@ -634,26 +637,27 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
                             }
                         </div>
 
-                        <div className='w-100'>
-                            <input type="range"
-                                min={0} max={coordinates.length - 1}
-                                value={arrayLocation?.current}
-                                onChange={handleChange}
-                                className='w-100' />
-                        </div>
-
-                        <div className='w-100 mt-2 py-2 bg-thm-dark rounded d-flex justify-content-around align-items-center'>
-                            <div>
-                                {
-                                    pause ? (
-                                        <FaPlay className='text-white fs-4 cursor-pointer' onClick={() => setPause(false)} />
-                                    ) : (
-                                        <IoMdPause className='text-white fs-4 cursor-pointer' onClick={() => setPause(true)} />
-                                    )
-                                }
+                        <div className='mt-2'>
+                            <div className='w-100'>
+                                <input type="range"
+                                    min={0} max={coordinates.length - 1}
+                                    value={arrayLocation?.current}
+                                    onChange={handleChange}
+                                    className='w-100' />
                             </div>
 
-                            {/* {
+                            <div className='w-100 mt-2 py-2 bg-thm-dark rounded d-flex justify-content-around align-items-center'>
+                                <div>
+                                    {
+                                        pause ? (
+                                            <FaPlay className='text-white fs-4 cursor-pointer' onClick={() => setPause(false)} />
+                                        ) : (
+                                            <IoMdPause className='text-white fs-4 cursor-pointer' onClick={() => setPause(true)} />
+                                        )
+                                    }
+                                </div>
+
+                                {/* {
                         currentPosition.map((data, index) => (
                             <div className='text-center text-white' key={index}>
                                 <p className='m-0 p-0'>{data?.value}</p>
@@ -662,39 +666,40 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
                         ))
                     } */}
 
-                            <div className='text-center text-white'>
-                                <p className='m-0 p-0'>{convertCurrentDateTime(currentCoordDetails?.date)}</p>
-                                <p className='m-0 p-0 fw-bold text-uppercase'>Date/Time</p>
-                            </div>
+                                <div className='text-center text-white'>
+                                    <p className='m-0 p-0'>{convertCurrentDateTime(currentCoordDetails?.date)}</p>
+                                    <p className='m-0 p-0 fw-bold text-uppercase'>Date/Time</p>
+                                </div>
 
-                            <div className='text-center text-white'>
-                                <p className='m-0 p-0'>{handleGetCoveredDistance()}</p>
-                                <p className='m-0 p-0 fw-bold text-uppercase'>Km Run</p>
-                            </div>
+                                <div className='text-center text-white'>
+                                    <p className='m-0 p-0'>{handleGetCoveredDistance()}</p>
+                                    <p className='m-0 p-0 fw-bold text-uppercase'>Km Run</p>
+                                </div>
 
-                            <div className='text-center text-white'>
-                                <p className='m-0 p-0'>{currentCoordDetails?.speed}</p>
-                                <p className='m-0 p-0 fw-bold text-uppercase'>Speed</p>
-                            </div>
+                                <div className='text-center text-white'>
+                                    <p className='m-0 p-0'>{currentCoordDetails?.speed}</p>
+                                    <p className='m-0 p-0 fw-bold text-uppercase'>Speed</p>
+                                </div>
 
-                            <div className='text-center text-white'>
-                                <p className='m-0 p-0'>{currentCoordDetails?.lat}</p>
-                                <p className='m-0 p-0 fw-bold text-uppercase'>Latitude</p>
-                            </div>
+                                <div className='text-center text-white'>
+                                    <p className='m-0 p-0'>{currentCoordDetails?.lat}</p>
+                                    <p className='m-0 p-0 fw-bold text-uppercase'>Latitude</p>
+                                </div>
 
-                            <div className='text-center text-white'>
-                                <p className='m-0 p-0'>{currentCoordDetails?.long}</p>
-                                <p className='m-0 p-0 fw-bold text-uppercase'>Longitude</p>
-                            </div>
+                                <div className='text-center text-white'>
+                                    <p className='m-0 p-0'>{currentCoordDetails?.long}</p>
+                                    <p className='m-0 p-0 fw-bold text-uppercase'>Longitude</p>
+                                </div>
 
-                            <div className='text-center text-white'>
-                                <select className='bg-white py-2 px-3' onChange={(e) => setPlayBackSpeed(e.target.value)}>
-                                    <option className='bg-white p-2' value={500}>1x</option>
-                                    <option className='bg-white p-2' value={1000}>0.5x</option>
-                                    <option className='bg-white p-2' value={250}>2x</option>
-                                    <option className='bg-white p-2' value={125}>3x</option>
-                                    <option className='bg-white p-2' value={100}>4x</option>
-                                </select>
+                                <div className='text-center text-white'>
+                                    <select className='bg-white py-2 px-3' onChange={(e) => setPlayBackSpeed(e.target.value)}>
+                                        <option className='bg-white p-2' value={500}>1x</option>
+                                        <option className='bg-white p-2' value={1000}>0.5x</option>
+                                        <option className='bg-white p-2' value={250}>2x</option>
+                                        <option className='bg-white p-2' value={125}>3x</option>
+                                        <option className='bg-white p-2' value={100}>4x</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </Card>

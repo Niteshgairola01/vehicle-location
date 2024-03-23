@@ -1,4 +1,4 @@
-import { APIPort2 } from "../backend";
+import { APIPort2, port9065 } from "../backend";
 import axios from "axios";
 
 export const getAllVehiclesList = async () => {
@@ -33,6 +33,21 @@ export const getLogsById = async (form) => {
         method: 'POST',
         data: form,
         headers: { "Content-Type": "application/json" },
+    };
+
+    const response = await axios(config);
+    return response;
+};
+
+export const addRemark = async (form) => {
+    const url = `${port9065}/addRemark`;
+    const config = {
+        url,
+        method: "POST",
+        data: form,
+        headers: {
+            "Content-Type": "application/json"
+        }
     };
 
     const response = await axios(config);
