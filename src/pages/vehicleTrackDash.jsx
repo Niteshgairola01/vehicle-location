@@ -43,6 +43,9 @@ const VehicleTrackDash = () => {
     const [dealers, setDealers] = useState([]);
     const [selectedTripDealer, setSelectedTripDealer] = useState('');
     const [dealerCoordinates, setDealerCoordinates] = useState([]);
+    const [plants, setPlants] = useState([]);
+    const [selectedPlant, setSelectedPlant] = useState('');
+    const [plantCoordinates, setplantCoordinates] = useState([]);
     const [allTrips, setAllTrips] = useState([]);
     const [filteredTrips, setFilteredTrips] = useState([]);
     const [selectedFilter, setSelectedFilter] = useState([]);
@@ -227,16 +230,21 @@ const VehicleTrackDash = () => {
     useEffect(() => {
         getAllPolygonAreas().then((response) => {
             if (response.status === 200) {
-                const filteredAreas = response?.data.filter(data => data?.geofenceType === 'Dealer');
-                setDealers(filteredAreas);
+                const filteredDealers = response?.data.filter(data => data?.geofenceType === 'Dealer');
+                const filteredPlants = response?.data.filter(data => data?.geofenceType === 'Plant');
+
+                setDealers(filteredDealers);
+                setPlants(filteredPlants);
             }
             else {
                 setDealers([]);
+                setPlants([]);
             }
         }).catch((err) => {
             setDealers([]);
+            setPlants([]);
             console.log(err);
-        })
+        });
     }, []);
 
     useEffect(() => {
@@ -259,7 +267,28 @@ const VehicleTrackDash = () => {
                 };
             }
         }
-    }, [selectedTripDealer]);
+
+        if (selectedPlant !== null) {
+            if (selectedPlant.length > 0) {
+                if (selectedPlant !== null || selectedPlant !== "" || selectedPlant !== " " || selectedPlant !== undefined) {
+                    const splittedPlant = selectedPlant.split('_');
+                    const filteredDealer = plants.filter(data => (data?.geoName.toLowerCase().includes(splittedPlant[0].toLowerCase())) && (data?.placeName.toLowerCase().includes(splittedPlant[1].toLowerCase())));
+                    const coords = filteredDealer[0]?.coordinates;
+
+                    let dealerCoords = [];
+                    coords.forEach(data => {
+                        const splittedCoords = data.split(', ');
+                        dealerCoords.push({
+                            lat: parseFloat(splittedCoords[0]),
+                            lng: parseFloat(splittedCoords[1])
+                        })
+                    });
+
+                    setplantCoordinates(dealerCoords);
+                };
+            }
+        }
+    }, [selectedTripDealer, selectedPlant]);
 
     const closed = localStorage.getItem('reload');
     const filtersArr = localStorage.getItem('filters');
@@ -1333,18 +1362,20 @@ const VehicleTrackDash = () => {
 
             addRemark(form).then(response => {
                 if (response.status === 200) {
-                    setRemarkBtnDisabled(true);
                     SuccessToast("Remark added successfully");
+                    realTimeDataFilter();
+                    setRemarkBtnDisabled(false);
+                    setShowRemarkForm(false);
                 } else {
-                    setRemarkBtnDisabled(true);
+                    setRemarkBtnDisabled(false);
                     ErrorToast("Unable to add remark");
                 };
             }).catch(err => {
-                setRemarkBtnDisabled(true);
-                console.log("err", err);
+                setRemarkBtnDisabled(false);
+                console.log(err);
             });
         };
-    }
+    };
 
     const [allLogs, setAllLogs] = useState([]);
 
@@ -1553,6 +1584,7 @@ const VehicleTrackDash = () => {
                                         onClick={() => {
                                             setShowRoute(true);
                                             setSelectedTripDealer(data?.dealerName);
+                                            (data?.exitFrom !== null && data?.exitFrom !== 'Manual Bind' && data?.exitFrom !== '' && data?.exitFrom !== ' ') && setSelectedPlant(data?.exitFrom)
                                             localStorage.setItem('filters', JSON.stringify(selectedFilter));
                                             localStorage.setItem("vehicle", data?.vehicleNo);
                                             localStorage.setItem("vehicleExitDbID", data?.vehicleExitDbID);
@@ -1930,32 +1962,24 @@ const VehicleTrackDash = () => {
                             <thead className='table-head text-white' style={{ zIndex: 2, position: "sticky", top: 0 }}>
                                 <tr style={{ borderRadius: "10px 0px 0px 10px" }}>
                                     {
-                                        tableColumns.map((data, index) => (
-                                            <>
-                                                {
-                                                    data?.hidden === false ? (
-                                                        <th
-                                                            className={`text-nowrap 
+                                        tableColumns.map((data, index) => {
+                                            return data?.hidden === false ? (
+                                                <th
+                                                    className={`text-nowrap 
                                                             ${(data?.label === 'S.No.') && 'width-50'} ${(data?.label === 'Vehicle No.') && 'width-100'} ${(data?.label === 'Status') && 'width-50'} ${(data?.label === 'Trip No.') && 'width-60'} ${(data?.label === 'Trip Status') && 'width-120'} ${(data?.label === 'Exit From') && 'width-120'} ${(data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location') && 'width-200'} ${(data?.label === 'Consignor Name') && 'width-140'}
                                                             ${(data?.label === 'KM Covered') && 'width-90'} ${(data?.label === 'Final Status') && 'width-50'} ${(data?.label === 'Driver Name') && 'width-100'}
                                                             ${(data?.label === 'Remark') && 'width-150'}`}
-                                                            key={index}
-                                                            style={{
-                                                                borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px"
-                                                            }}>
-                                                            <div className='d-flex justify-content-between align-items-center cursor-pointer' onClick={() => handleSortData(data?.value)}>
-                                                                <span className='pe-3' style={{ width: data?.label === 'Vehicle No.' ? '70px' : (data?.label === 'Route (KM)' || data?.label === 'KM Covered') ? '70px' : data?.label === 'Driver Name' && '50px' }}>{data?.label}</span>
-                                                                {
-                                                                    (data?.value !== "") && (
-                                                                        <FaSort />
-                                                                    )
-                                                                }
-                                                            </div>
-                                                        </th>
-                                                    ) : null
-                                                }
-                                            </>
-                                        ))
+                                                    key={data?.label}
+                                                    style={{
+                                                        borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px"
+                                                    }}>
+                                                    <div className='d-flex justify-content-between align-items-center cursor-pointer' onClick={() => handleSortData(data?.value)}>
+                                                        <span className='pe-3' style={{ width: data?.label === 'Vehicle No.' ? '70px' : (data?.label === 'Route (KM)' || data?.label === 'KM Covered') ? '70px' : data?.label === 'Driver Name' && '50px' }}>{data?.label}</span>
+                                                        {(data?.value !== "") && <FaSort />}
+                                                    </div>
+                                                </th>
+                                            ) : null
+                                        })
                                     }
                                 </tr>
                             </thead>
@@ -2019,7 +2043,7 @@ const VehicleTrackDash = () => {
                         </Modal.Body>
                     </Modal>
 
-                    <VehicleRoute show={showRoute} setShow={setShowRoute} dealerCoords={dealerCoordinates} />
+                    <VehicleRoute show={showRoute} setShow={setShowRoute} dealerCoords={dealerCoordinates} plantCoordinates={plantCoordinates} />
                 </div>
             </div>
             <HistoryModal show={showMap} setShow={setShowMap} selectedRouteData={selectedRouteData} vehicleNo={distanceVehicle} />

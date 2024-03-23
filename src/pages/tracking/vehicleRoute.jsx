@@ -7,7 +7,7 @@ import { FaPlay } from 'react-icons/fa';
 import { IoMdPause } from 'react-icons/io';
 import { Modal } from 'react-bootstrap';
 
-const VehicleRoute = ({ show, setShow, dealerCoords }) => {
+const VehicleRoute = ({ show, setShow, dealerCoords, plantCoordinates }) => {
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
@@ -280,21 +280,21 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
             setNextCoordinate(arrayLocation.current);
         } else {
             timeoutIds.forEach(clearTimeout);
-            if (coordinates.length > 0 && currentCoordDetails.lat === undefined) {
+            if (coordinates.length > 0 && currentCoordDetails?.lat === undefined) {
                 if (arrayLocation.current < coordinates.length - 1) {
-                    setNextCoordinates({ lat: coordinates[arrayLocation.current + 1].lat, lng: coordinates[arrayLocation.current + 1].lng });
+                    setNextCoordinates({ lat: coordinates[arrayLocation.current + 1]?.lat, lng: coordinates[arrayLocation.current + 1]?.lng });
                 } else {
-                    setNextCoordinates({ lat: coordinates[0].lat, lng: coordinates[0].lng });
+                    setNextCoordinates({ lat: coordinates[0]?.lat, lng: coordinates[0]?.lng });
                 }
                 setCurrentCoordsDetails(routeData[arrayLocation.current]);
             }
 
-            if (coordinates.length > 0 && currentCoordDetails.lat !== undefined) {
+            if (coordinates.length > 0 && currentCoordDetails?.lat !== undefined) {
                 if (arrayLocation.current < coordinates.length - 1) {
-                    setNextCoordinates({ lat: coordinates[arrayLocation.current + 1].lat, lng: coordinates[arrayLocation.current + 1].lng });
+                    setNextCoordinates({ lat: coordinates[arrayLocation.current + 1]?.lat, lng: coordinates[arrayLocation.current + 1]?.lng });
                     setCurrentCoordinates(coordinates[arrayLocation.current]);
                 } else {
-                    setNextCoordinates({ lat: coordinates[0].lat, lng: coordinates[0].lng });
+                    setNextCoordinates({ lat: coordinates[0].lat, lng: coordinates[0]?.lng });
                 }
                 setCurrentCoordsDetails(routeData[arrayLocation.current]);
                 setCurrentCoordinates(coordinates[arrayLocation.current]);
@@ -304,7 +304,7 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
         return () => {
             timeoutIds.forEach(clearTimeout);
         };
-    }, [pause, playbackSpeed, rangeValue, routeData]);
+    }, [pause, playbackSpeed, rangeValue, routeData, currentCoordinates]);
 
     const convertDateTime = (originalDateTime) => {
         const [datePart, timePart] = routeData.length < 1 ? '' : originalDateTime.split(' ');
@@ -357,13 +357,13 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
                 return { lat: parseFloat(geofenceLat), lng: parseFloat(geofenceLng) }
             } else {
                 if (coordinates.length > 0) {
-                    if (currentCoordinates.lat === undefined) {
-                        return { lat: coordinates[0].lat, lng: coordinates[0].lng }
+                    if (currentCoordinates?.lat === undefined) {
+                        return { lat: coordinates[0]?.lat, lng: coordinates[0]?.lng }
                     } else {
-                        if (currentCoordinates.lat === coordinates[coordinates.length - 1].lat) {
-                            return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
+                        if (currentCoordinates?.lat === coordinates[coordinates.length - 1]?.lat) {
+                            return { lat: coordinates[coordinates.length - 1]?.lat, lng: coordinates[coordinates.length - 1]?.lng }
                         } else {
-                            return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
+                            return { lat: currentCoordinates?.lat, lng: currentCoordinates?.lng }
                         }
                     }
                 } else {
@@ -389,20 +389,20 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
         // }
 
         if (coordinates.length > 0) {
-            if (currentCoordinates.lat === undefined) {
-                return { lat: coordinates[0].lat, lng: coordinates[0].lng }
+            if (currentCoordinates?.lat === undefined) {
+                return { lat: coordinates[0]?.lat, lng: coordinates[0]?.lng }
             } else {
-                if (currentCoordinates.lat === coordinates[coordinates.length - 1].lat) {
-                    return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
+                if (currentCoordinates?.lat === coordinates[coordinates.length - 1]?.lat) {
+                    return { lat: coordinates[coordinates.length - 1]?.lat, lng: coordinates[coordinates.length - 1]?.lng }
                 } else {
-                    return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
+                    return { lat: currentCoordinates?.lat, lng: currentCoordinates?.lng }
                 }
             }
         } else {
             return { lat: 26.858192, lng: 75.669163 }
         }
     };
-
+    
     const handleShowGeofence = (event) => {
         setShowGeofenceOption(true);
         // const lat = 
@@ -420,7 +420,7 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
 
     const handleStartPosition = () => {
         if (coordinates.length > 0) {
-            return { lat: coordinates[0].lat, lng: coordinates[0].lng }
+            return { lat: coordinates[0]?.lat, lng: coordinates[0]?.lng }
         } else {
             return { lat: 26.858192, lng: 75.669163 }
         }
@@ -428,7 +428,7 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
 
     const handleEndPosition = () => {
         if (coordinates.length > 0) {
-            return { lat: coordinates[coordinates.length - 1].lat, lng: coordinates[coordinates.length - 1].lng }
+            return { lat: coordinates[coordinates.length - 1]?.lat, lng: coordinates[coordinates.length - 1]?.lng }
         } else {
             return { lat: 26.858192, lng: 75.669163 }
         }
@@ -471,7 +471,7 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
         setShow(false);
         setPause(true);
         setPlayBackSpeed(1000);
-        setRouteData([]);
+        // setRouteData([]);
     }
 
     return (
@@ -496,7 +496,7 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
                 </div>
             </Modal.Header>
 
-            <Modal.Body style={{overflow: 'hidden'}}>
+            <Modal.Body style={{ overflow: 'hidden' }}>
                 <div className='thm-dark mx-5'>
                     <Card>
                         <div className=' side-map-container' style={{ minHeight: "60vh" }}>
@@ -632,6 +632,41 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
                                                 />
                                             )
                                         }
+
+                                        {/* Plant */}
+                                        {
+                                            plantCoordinates.length > 0 ? (
+                                                <>
+                                                    {
+                                                        plantCoordinates.length === 1 ? (
+                                                            <>
+                                                                <CircleF
+                                                                    center={plantCoordinates[0]}
+                                                                    radius={3500}
+                                                                    options={{
+                                                                        fillColor: 'rgba(255, 0, 0, 0.2)',
+                                                                        strokeColor: 'red',
+                                                                        strokeOpacity: 0.8,
+                                                                        strokeWeight: 2,
+                                                                    }}
+                                                                />
+                                                                <MarkerF position={plantCoordinates[0]} />
+                                                            </>
+                                                        ) : (
+                                                            <PolygonF
+                                                                paths={plantCoordinates}
+                                                                options={{
+                                                                    fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
+                                                                    strokeColor: 'red',
+                                                                    strokeOpacity: 0.8,
+                                                                    strokeWeight: 2,
+                                                                }}
+                                                            />
+                                                        )
+                                                    }
+                                                </>
+                                            ) : <></>
+                                        }
                                     </GoogleMap>
                                 ) : <></>
                             }
@@ -704,9 +739,9 @@ const VehicleRoute = ({ show, setShow, dealerCoords }) => {
                         </div>
                     </Card>
                 </div>
-            </Modal.Body>
-        </Modal>
+            </Modal.Body >
+        </Modal >
     );
-}
+};
 
 export default VehicleRoute

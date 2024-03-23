@@ -218,6 +218,8 @@ const PolygonList = () => {
         }),
     };
 
+    // console.log("dealer", selectedPolygon);
+
 
     return (
         <div className='m-0 p-0 position-relative'>
