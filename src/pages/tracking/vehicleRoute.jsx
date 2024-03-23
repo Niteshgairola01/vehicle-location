@@ -402,7 +402,7 @@ const VehicleRoute = ({ show, setShow, dealerCoords, plantCoordinates }) => {
             return { lat: 26.858192, lng: 75.669163 }
         }
     };
-    
+
     const handleShowGeofence = (event) => {
         setShowGeofenceOption(true);
         // const lat = 
@@ -487,10 +487,10 @@ const VehicleRoute = ({ show, setShow, dealerCoords, plantCoordinates }) => {
 
                         <div className='ps-2' style={{ borderLeft: "2px solid #000" }}>
                             <span className='fw-bold me-1'>Date: </span>
-                            <span>{convertDateTime(routeData[routeData?.length - 1]?.date)}</span>
+                            <span className='m-0 p-0'>{convertCurrentDateTime(routeData[0]?.date)}</span>
 
                             <span className='fw-bold mx-1'>To </span>
-                            <span className='m-0 p-0'>{convertDateTime(routeData[0]?.date)}</span>
+                            <span>{convertCurrentDateTime(routeData[routeData?.length - 1]?.date)}</span>
                         </div>
                     </div>
                 </div>

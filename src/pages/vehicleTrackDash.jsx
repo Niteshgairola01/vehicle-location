@@ -41,7 +41,7 @@ const VehicleTrackDash = () => {
 
     const [form, setForm] = useState({});
     const [dealers, setDealers] = useState([]);
-    const [selectedTripDealer, setSelectedTripDealer] = useState('');
+    const [selectedTripDealer, setSelectedTripDealer] = useState({});
     const [dealerCoordinates, setDealerCoordinates] = useState([]);
     const [plants, setPlants] = useState([]);
     const [selectedPlant, setSelectedPlant] = useState('');
@@ -61,7 +61,6 @@ const VehicleTrackDash = () => {
     const [showRemarkForm, setShowRemarkForm] = useState(false);
     const [remark, setRemark] = useState('');
     const [selectedRemark, setSelectedRemark] = useState('');
-    const [remarkHovered, setRemarkHovered] = useState(false);
     const [remarkBtnDisabled, setRemarkBtnDisabled] = useState(false);
     const [selectedParty, setSelectedParty] = useState('');
     const [selectedOrigin, setSelectedOrigin] = useState('');
@@ -252,23 +251,25 @@ const VehicleTrackDash = () => {
     }, []);
 
     useEffect(() => {
-        if (selectedTripDealer !== null) {
-            if (selectedTripDealer.length > 0) {
-                if (selectedTripDealer !== null || selectedTripDealer !== "" || selectedTripDealer !== " " || selectedTripDealer !== undefined) {
-                    const filteredDealer = dealers.filter(data => selectedTripDealer === data?.geoName);
-                    const coords = filteredDealer[0]?.coordinates;
+        if (selectedTripDealer?.dealerName !== null) {
+            if (selectedTripDealer?.dealerName) {
+                if (selectedTripDealer?.dealerName?.length > 0) {
+                    if (selectedTripDealer?.dealerName !== null || selectedTripDealer?.dealerName !== "" || selectedTripDealer?.dealerName !== " " || selectedTripDealer?.dealerName !== undefined) {
+                        const filteredDealer = dealers.filter(data => (data?.geoName.toLowerCase().includes(selectedTripDealer?.dealerName.toLowerCase())) && (data?.placeName.toLowerCase().includes(selectedTripDealer?.destination.toLowerCase())));
+                        const coords = filteredDealer[0]?.coordinates;
 
-                    let dealerCoords = [];
-                    coords.forEach(data => {
-                        const splittedCoords = data.split(', ');
-                        dealerCoords.push({
-                            lat: parseFloat(splittedCoords[0]),
-                            lng: parseFloat(splittedCoords[1])
-                        })
-                    });
+                        let dealerCoords = [];
+                        coords.forEach(data => {
+                            const splittedCoords = data.split(', ');
+                            dealerCoords.push({
+                                lat: parseFloat(splittedCoords[0]),
+                                lng: parseFloat(splittedCoords[1])
+                            })
+                        });
 
-                    setDealerCoordinates(dealerCoords);
-                };
+                        setDealerCoordinates(dealerCoords);
+                    };
+                }
             }
         }
 
@@ -878,7 +879,6 @@ const VehicleTrackDash = () => {
                     }
                 }
             }
-
 
             setFilteredTrips(tripsFilteredByTripStatus);
         } else {
@@ -1560,6 +1560,8 @@ const VehicleTrackDash = () => {
             return <td key={colIndex}>{handleFormateISTDate(value)}</td>;
         } else if (column?.label === "Vehicle Exit Date" || column?.label === "GPS (Date / Time)" || column?.label === "Estimated Arrival Date") {
             return <td key={colIndex}>{handleFormatDate(value)}</td>;
+        } else if (column?.label === "Destination") {
+            return <td key={colIndex} className='' style={{ fontWeight: "500", color: "#1ac613" }}>{data?.destination}</td>;
         } else if (column?.label === "Static ETA") {
             return <td key={colIndex}>{(data?.staticETA === '' || data?.staticETA === null) ? ' ' : convertTo24HourFormat(data?.staticETA)}</td>;
         } else if (column?.label === "Report Unloading") {
@@ -1581,16 +1583,16 @@ const VehicleTrackDash = () => {
                 <>
                     {
                         (data?.location !== "" && data?.location !== null && showLocationOption && data?.vehicleNo === currentVehicle) ? (
-                            <div className='position-absolute bg-white p-3 rounded vehicle-details-popup'>
+                            <div className='position-absolute bg-white thm-dark p-3 rounded vehicle-details-popup'>
                                 <h5 className='thm-dark d-inline'>{data?.vehicleNo}</h5>
-                                <span className='ms-2 thm-dark'>2 Mins</span>
-                                <p className='thm-dark mt-2 mb-0'>{data?.location}</p>
-                                <p className='' style={{ fontSize: "0.8rem" }}>{handleFormatDate(data?.locationTime)}</p>
+                                {/* <span className='ms-2 thm-dark'>2 Mins</span> */}
+                                <p className='dark mt-2 mb-0'>{data?.location}</p>
+                                <p className='text-dark' style={{ fontSize: "0.8rem" }}>{handleFormatDate(data?.locationTime)}</p>
                                 <div className='d-flex justify-content-around align-items-center border-top border-dark pt-2'>
                                     <Link to={'#'} state={data}
                                         onClick={() => {
                                             setShowRoute(true);
-                                            setSelectedTripDealer(data?.dealerName);
+                                            setSelectedTripDealer(data);
                                             (data?.exitFrom !== null && data?.exitFrom !== 'Manual Bind' && data?.exitFrom !== '' && data?.exitFrom !== ' ') && setSelectedPlant(data?.exitFrom)
                                             localStorage.setItem('filters', JSON.stringify(selectedFilter));
                                             localStorage.setItem("vehicle", data?.vehicleNo);
@@ -1712,8 +1714,6 @@ const VehicleTrackDash = () => {
                 {
                     (showRemarkForm && (selectedRemark === data?.tripLogNo)) && (
                         <Row className='thm-dark position-absolute bg-white p-2 pt-1 mt-3 rounded vehicle-details-popup'
-                            onMouseOver={() => setRemarkHovered(true)}
-                            onMouseOut={() => setRemarkHovered(false)}
                             style={{ width: "100%", minWidth: "20rem", left: "-50%", zIndex: 2 }}>
                             {
                                 data?.remark && (
