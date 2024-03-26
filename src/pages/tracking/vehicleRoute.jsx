@@ -611,21 +611,32 @@ const VehicleRoute = ({ show, setShow, dealerCoords, plantCoordinates }) => {
                                                     <CircleF
                                                         center={dealerCoords[0]}
                                                         radius={3500}
+                                                        icon={{
+                                                            url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%231ac613"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
+                                                            scaledSize: new window.google.maps.Size(40, 40),
+                                                            fillOpacity: 1,
+                                                        }}
                                                         options={{
-                                                            fillColor: 'rgba(255, 0, 0, 0.2)',
-                                                            strokeColor: 'red',
+                                                            fillColor: 'rgba(26, 198, 19, 0.2)',
+                                                            strokeColor: '#1ac613',
                                                             strokeOpacity: 0.8,
                                                             strokeWeight: 2,
                                                         }}
                                                     />
-                                                    <MarkerF position={dealerCoords[0]} />
+                                                    <MarkerF
+                                                        icon={{
+                                                            url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2333cc33"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
+                                                            scaledSize: new window.google.maps.Size(40, 40),
+                                                            fillOpacity: 1,
+                                                        }}
+                                                        position={dealerCoords[0]} />
                                                 </>
                                             ) : (
                                                 <PolygonF
                                                     paths={dealerCoords}
                                                     options={{
-                                                        fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
-                                                        strokeColor: 'red',
+                                                        fillColor: 'rgba(26, 198, 19, 0.2)',
+                                                        strokeColor: '#1ac613',
                                                         strokeOpacity: 0.8,
                                                         strokeWeight: 2,
                                                     }}
@@ -644,20 +655,27 @@ const VehicleRoute = ({ show, setShow, dealerCoords, plantCoordinates }) => {
                                                                     center={plantCoordinates[0]}
                                                                     radius={3500}
                                                                     options={{
-                                                                        fillColor: 'rgba(255, 0, 0, 0.2)',
-                                                                        strokeColor: 'red',
+                                                                        fillColor: 'rgba(26, 198, 19, 0.2)',
+                                                                        strokeColor: '#1ac613',
                                                                         strokeOpacity: 0.8,
                                                                         strokeWeight: 2,
                                                                     }}
                                                                 />
-                                                                <MarkerF position={plantCoordinates[0]} />
+                                                                <MarkerF
+                                                                    icon={{
+                                                                        url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2333cc33"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
+                                                                        scaledSize: new window.google.maps.Size(40, 40),
+                                                                        fillOpacity: 1,
+                                                                    }}
+                                                                    position={plantCoordinates[0]}
+                                                                />
                                                             </>
                                                         ) : (
                                                             <PolygonF
                                                                 paths={plantCoordinates}
                                                                 options={{
-                                                                    fillColor: 'rgba(255, 0, 0, 0.2)', // Transparent red
-                                                                    strokeColor: 'red',
+                                                                    fillColor: 'rgba(26, 198, 19, 0.2)',
+                                                                    strokeColor: '#1ac613',
                                                                     strokeOpacity: 0.8,
                                                                     strokeWeight: 2,
                                                                 }}

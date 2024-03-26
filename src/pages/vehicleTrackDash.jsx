@@ -258,16 +258,18 @@ const VehicleTrackDash = () => {
                         const filteredDealer = dealers.filter(data => (data?.geoName.toLowerCase().includes(selectedTripDealer?.dealerName.toLowerCase())) && (data?.placeName.toLowerCase().includes(selectedTripDealer?.destination.toLowerCase())));
                         const coords = filteredDealer[0]?.coordinates;
 
-                        let dealerCoords = [];
-                        coords.forEach(data => {
-                            const splittedCoords = data.split(', ');
-                            dealerCoords.push({
-                                lat: parseFloat(splittedCoords[0]),
-                                lng: parseFloat(splittedCoords[1])
-                            })
-                        });
+                        if (filteredDealer[0]?.coordinates) {
+                            let dealerCoords = [];
+                            coords.forEach(data => {
+                                const splittedCoords = data.split(', ');
+                                dealerCoords.push({
+                                    lat: parseFloat(splittedCoords[0]),
+                                    lng: parseFloat(splittedCoords[1])
+                                })
+                            });
 
-                        setDealerCoordinates(dealerCoords);
+                            setDealerCoordinates(dealerCoords);
+                        } else setDealerCoordinates([]);
                     };
                 }
             }
@@ -280,16 +282,19 @@ const VehicleTrackDash = () => {
                     const filteredDealer = plants.filter(data => (data?.geoName.toLowerCase().includes(splittedPlant[0].toLowerCase())) && (data?.placeName.toLowerCase().includes(splittedPlant[1].toLowerCase())));
                     const coords = filteredDealer[0]?.coordinates;
 
-                    let dealerCoords = [];
-                    coords.forEach(data => {
-                        const splittedCoords = data.split(', ');
-                        dealerCoords.push({
-                            lat: parseFloat(splittedCoords[0]),
-                            lng: parseFloat(splittedCoords[1])
-                        })
-                    });
+                    if (filteredDealer[0]?.coordinates) {
+                        let dealerCoords = [];
 
-                    setplantCoordinates(dealerCoords);
+                        coords.forEach(data => {
+                            const splittedCoords = data.split(', ');
+                            dealerCoords.push({
+                                lat: parseFloat(splittedCoords[0]),
+                                lng: parseFloat(splittedCoords[1])
+                            })
+                        });
+
+                        setplantCoordinates(dealerCoords);
+                    } else setplantCoordinates([]);
                 };
             }
         }
@@ -382,8 +387,70 @@ const VehicleTrackDash = () => {
                 setGpsOffCounts(gpsOff.length);
                 setOnHoldCounts(onHold?.length);
 
-                setAllTrips(allData);
-                setFilteredTrips(allData);
+
+
+
+                const runningTrips = allData.filter(data => data?.tripStatus === 'Trip Running');
+                let lateTrips = [];
+                let delayedRunningTrips = [];
+                let nominalTrips = [];
+                let criticalTrips = [];
+
+                if (selectedFilter.includes('On Time & Early (As per OEM)' || selectedFilter.includes('Delayed (As per OEM)'))) {
+                    lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
+                } else {
+                    lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay) && data?.finalStatus === 'Delayed');
+                }
+
+                const getDelayedTrips = (type) => {
+                    if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
+                        const delayedTrips = runningTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.oemFinalStatus === 'Delayed')
+
+                        const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter)))
+                        const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
+
+                        let staticDelayeds = [];
+
+                        todayTrips.forEach(data => {
+                            const delayedHours = parseFloat(data?.oemDelayedHours);
+                            if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && staticDelayeds.push(data)
+                            else (delayedHours > 5) && staticDelayeds.push(data);
+                        });
+
+                        upcomingTrips.forEach(data => {
+                            const delayedHours = parseFloat(data?.oemDelayedHours);
+                            if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 18) && staticDelayeds.push(data);
+                            else (delayedHours > 18) && staticDelayeds.push(data)
+                        });
+
+                        staticDelayeds.forEach(data => delayedRunningTrips.push(data));
+                    } else {
+                        const delayedTrips = runningTrips.filter((data) => data?.finalStatus === 'Delayed')
+                        const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
+                        const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
+
+                        todayTrips.forEach(data => {
+                            const delayedHours = parseFloat(data?.delayedHours);
+                            if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && nominalTrips.push(data)
+                            else (delayedHours > 5) && criticalTrips.push(data);
+                        });
+
+                        upcomingTrips.forEach(data => {
+                            const delayedHours = parseFloat(data?.delayedHours);
+                            if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 18) && nominalTrips.push(data);
+                            else (delayedHours > 18) && criticalTrips.push(data)
+                        });
+                    }
+                };
+
+                getDelayedTrips('Nominal');
+                getDelayedTrips('Critical');
+
+                const allDelayeds = [...lateTrips, ...criticalTrips, ...nominalTrips];
+                const remainingTrips = allData.filter(filtered => !allDelayeds.some(trip => trip?.vehicleNo === filtered?.vehicleNo));
+
+                setAllTrips([...allDelayeds, ...remainingTrips]);
+                setFilteredTrips([...allDelayeds, ...remainingTrips]);
             } else {
                 setShowLoader(false);
                 setAllTrips([]);
@@ -880,9 +947,128 @@ const VehicleTrackDash = () => {
                 }
             }
 
-            setFilteredTrips(tripsFilteredByTripStatus);
+            const runningTrips = tripsFilteredByTripStatus.filter(data => data?.tripStatus === 'Trip Running');
+            let lateTrips = [];
+            let delayedRunningTrips = [];
+            let nominalTrips = [];
+            let criticalTrips = [];
+
+            if (selectedFilter.includes('On Time & Early (As per OEM)' || selectedFilter.includes('Delayed (As per OEM)'))) {
+                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
+            } else {
+                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay) && data?.finalStatus === 'Delayed');
+            }
+
+            const getDelayedTrips = (type) => {
+                console.log("getdealyed trips");
+                if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
+                    const delayedTrips = runningTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.oemFinalStatus === 'Delayed')
+
+                    const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter)))
+                    const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
+
+                    let staticDelayeds = [];
+
+                    todayTrips.forEach(data => {
+                        const delayedHours = parseFloat(data?.oemDelayedHours);
+                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && staticDelayeds.push(data)
+                        else (delayedHours > 5) && staticDelayeds.push(data);
+                    });
+
+                    upcomingTrips.forEach(data => {
+                        const delayedHours = parseFloat(data?.oemDelayedHours);
+                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 18) && staticDelayeds.push(data);
+                        else (delayedHours > 18) && staticDelayeds.push(data)
+                    });
+
+                    staticDelayeds.forEach(data => delayedRunningTrips.push(data));
+                } else {
+                    const delayedTrips = runningTrips.filter((data) => data?.finalStatus === 'Delayed')
+                    const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
+                    const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
+
+                    todayTrips.forEach(data => {
+                        const delayedHours = parseFloat(data?.delayedHours);
+                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && nominalTrips.push(data)
+                        else (delayedHours > 5) && criticalTrips.push(data);
+                    });
+
+                    upcomingTrips.forEach(data => {
+                        const delayedHours = parseFloat(data?.delayedHours);
+                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 18) && nominalTrips.push(data);
+                        else (delayedHours > 18) && criticalTrips.push(data)
+                    });
+                }
+            };
+
+            getDelayedTrips('Nominal');
+            getDelayedTrips('Critical');
+
+            const allDelayeds = [...lateTrips, ...criticalTrips, ...nominalTrips];
+            const remainingTrips = tripsFilteredByTripStatus.filter(filtered => !allDelayeds.some(trip => trip?.vehicleNo === filtered?.vehicleNo));
+
+            setFilteredTrips([...allDelayeds, ...remainingTrips]);
         } else {
-            setFilteredTrips(allFilteredTrip);
+            const runningTrips = allFilteredTrip.filter(data => data?.tripStatus === 'Trip Running');
+            let lateTrips = [];
+            let delayedRunningTrips = [];
+            let nominalTrips = [];
+            let criticalTrips = [];
+
+            if (selectedFilter.includes('On Time & Early (As per OEM)' || selectedFilter.includes('Delayed (As per OEM)'))) {
+                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
+            } else {
+                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay) && data?.finalStatus === 'Delayed');
+            }
+
+            const getDelayedTrips = (type) => {
+                if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
+                    const delayedTrips = runningTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.oemFinalStatus === 'Delayed')
+
+                    const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter)))
+                    const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
+
+                    let staticDelayeds = [];
+
+                    todayTrips.forEach(data => {
+                        const delayedHours = parseFloat(data?.oemDelayedHours);
+                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && staticDelayeds.push(data)
+                        else (delayedHours > 5) && staticDelayeds.push(data);
+                    });
+
+                    upcomingTrips.forEach(data => {
+                        const delayedHours = parseFloat(data?.oemDelayedHours);
+                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 18) && staticDelayeds.push(data);
+                        else (delayedHours > 18) && staticDelayeds.push(data)
+                    });
+
+                    staticDelayeds.forEach(data => delayedRunningTrips.push(data));
+                } else {
+                    const delayedTrips = runningTrips.filter((data) => data?.finalStatus === 'Delayed')
+                    const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
+                    const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
+
+                    todayTrips.forEach(data => {
+                        const delayedHours = parseFloat(data?.delayedHours);
+                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 5) && nominalTrips.push(data)
+                        else (delayedHours > 5) && criticalTrips.push(data);
+                    });
+
+                    upcomingTrips.forEach(data => {
+                        const delayedHours = parseFloat(data?.delayedHours);
+                        if (type === 'Nominal') (delayedHours >= 0 && delayedHours <= 18) && nominalTrips.push(data);
+                        else (delayedHours > 18) && criticalTrips.push(data)
+                    });
+                }
+            };
+
+            getDelayedTrips('Nominal');
+            getDelayedTrips('Critical');
+
+            const allDelayeds = [...lateTrips, ...criticalTrips, ...nominalTrips];
+            const remainingTrips = allFilteredTrip.filter(filtered => !allDelayeds.some(trip => trip?.vehicleNo === filtered?.vehicleNo));
+
+            setFilteredTrips([...allDelayeds, ...remainingTrips]);
         }
     };
 
@@ -1000,7 +1186,7 @@ const VehicleTrackDash = () => {
     }, [selectedFilter]);
 
     const handleShowForceComplete = (data) => {
-        if (data?.tripStatus === 'Trip Running' && data?.operationUniqueID.length > 0) {
+        if ((data?.tripStatus === 'Trip Running' || data?.tripStatus === 'Waiting for Unload') && data?.operationUniqueID.length > 0) {
             setSelectedVehicle(data);
             setShowForceCompleteModal(true);
             setShowForce(true);
@@ -1560,8 +1746,6 @@ const VehicleTrackDash = () => {
             return <td key={colIndex}>{handleFormateISTDate(value)}</td>;
         } else if (column?.label === "Vehicle Exit Date" || column?.label === "GPS (Date / Time)" || column?.label === "Estimated Arrival Date") {
             return <td key={colIndex}>{handleFormatDate(value)}</td>;
-        } else if (column?.label === "Destination") {
-            return <td key={colIndex} className='' style={{ fontWeight: "500", color: "#1ac613" }}>{data?.destination}</td>;
         } else if (column?.label === "Static ETA") {
             return <td key={colIndex}>{(data?.staticETA === '' || data?.staticETA === null) ? ' ' : convertTo24HourFormat(data?.staticETA)}</td>;
         } else if (column?.label === "Report Unloading") {
@@ -1637,7 +1821,7 @@ const VehicleTrackDash = () => {
         } else if (column?.label === 'Force Complete') {
             return <td key={colIndex} className='h-100'>
                 <div className='h-100 py-3 d-flex justify-content-center align-items-center'>
-                    <button className={`border border-none ${((data?.tripStatus === 'Trip Running') && (data?.operationUniqueID.length > 0)) ? 'force-complete-button' : 'force-complete-button-disabled'}`}
+                    <button className={`border border-none ${((data?.tripStatus === 'Trip Running' || data?.tripStatus === 'Waiting for Unload') && (data?.operationUniqueID.length > 0)) ? 'force-complete-button' : 'force-complete-button-disabled'}`}
                         onClick={() => handleShowForceComplete(data)}>Force Complete</button>
                 </div>
             </td>
@@ -1739,9 +1923,7 @@ const VehicleTrackDash = () => {
                     )
                 }
             </td>;
-        }
-
-        else {
+        } else {
             return <td key={colIndex}>{value}</td>;
         }
     };
