@@ -187,20 +187,20 @@ const RouteReport = () => {
             timeoutIds.forEach(clearTimeout);
             if (routeCoords.length > 0 && currentCoordDetails?.lat === undefined) {
                 if (arrayLocation.current < routeCoords.length - 1) {
-                    setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
+                    setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1]?.lat, lng: routeCoords[arrayLocation.current + 1]?.lng });
                 } else {
-                    setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
+                    setNextCoordinates({ lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng });
                 }
 
                 setCurrentCoordsDetails(routeData[arrayLocation.current]);
                 setCurrentCoordinates(routeCoords[arrayLocation.current]);
             }
 
-            if (routeCoords.length > 0 && currentCoordDetails.lat !== undefined) {
+            if (routeCoords.length > 0 && currentCoordDetails?.lat !== undefined) {
                 if (arrayLocation.current < routeCoords.length - 1) {
-                    setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1].lat, lng: routeCoords[arrayLocation.current + 1].lng });
+                    setNextCoordinates({ lat: routeCoords[arrayLocation.current + 1]?.lat, lng: routeCoords[arrayLocation.current + 1]?.lng });
                 } else {
-                    setNextCoordinates({ lat: routeCoords[0].lat, lng: routeCoords[0].lng });
+                    setNextCoordinates({ lat: routeCoords[0]?.lat, lng: routeCoords[0].lng });
                 }
                 setCurrentCoordsDetails(routeData[arrayLocation.current]);
                 setCurrentCoordinates(routeCoords[arrayLocation.current]);
@@ -449,13 +449,13 @@ const RouteReport = () => {
     const handleCenter = () => {
         if (!boundCenter) {
             if (routeCoords.length > 0) {
-                if (currentCoordinates.lat === undefined) {
-                    return { lat: routeCoords[0].lat, lng: routeCoords[0].lng }
+                if (currentCoordinates?.lat === undefined) {
+                    return { lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng }
                 } else {
-                    if (currentCoordinates.lat === routeCoords[routeCoords.length - 1].lat) {
-                        return { lat: routeCoords[routeCoords.length - 1].lat, lng: routeCoords[routeCoords.length - 1].lng }
+                    if (currentCoordinates?.lat === routeCoords[routeCoords.length - 1]?.lat) {
+                        return { lat: routeCoords[routeCoords.length - 1]?.lat, lng: routeCoords[routeCoords.length - 1]?.lng }
                     } else {
-                        return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
+                        return { lat: currentCoordinates?.lat, lng: currentCoordinates?.lng }
                     }
                 }
             } else {
@@ -466,13 +466,13 @@ const RouteReport = () => {
 
     const vehicleCenter = () => {
         if (routeCoords.length > 0) {
-            if (currentCoordinates.lat === undefined) {
-                return { lat: routeCoords[0].lat, lng: routeCoords[0].lng }
+            if (currentCoordinates?.lat === undefined) {
+                return { lat: routeCoords[0]?.lat, lng: routeCoords[0]?.lng }
             } else {
-                if (currentCoordinates.lat === routeCoords[routeCoords.length - 1].lat) {
-                    return { lat: routeCoords[routeCoords.length - 1].lat, lng: routeCoords[routeCoords.length - 1].lng }
+                if (currentCoordinates?.lat === routeCoords[routeCoords.length - 1]?.lat) {
+                    return { lat: routeCoords[routeCoords.length - 1]?.lat, lng: routeCoords[routeCoords.length - 1]?.lng }
                 } else {
-                    return { lat: currentCoordinates.lat, lng: currentCoordinates.lng }
+                    return { lat: currentCoordinates?.lat, lng: currentCoordinates?.lng }
                 }
             }
         } else {

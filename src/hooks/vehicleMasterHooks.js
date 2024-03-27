@@ -53,3 +53,16 @@ export const addRemark = async (form) => {
     const response = await axios(config);
     return response;
 };
+
+export const updateRemark = async (form) => {
+    const url = `${port9065}/editRemark`;
+    const config = {
+        url,
+        method: "PUT",
+        data: form,
+        headers: { "Content-Type": "application/json" }
+    };
+
+    const response = await axios(config);
+    return response;
+};

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { memo, useEffect, useRef, useState } from 'react'
 import { CircleF, GoogleMap, LoadScript, MarkerF, PolygonF, PolylineF, useJsApiLoader } from '@react-google-maps/api';
 import Button from '../../components/Button/hoveredButton'
 import ColoredButton from '../../components/Button/coloredButton'
@@ -48,7 +48,8 @@ const UpdatePolygon = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const polygonData = location?.state;
+    // const polygonData = location?.state;
+    const polygonData = JSON.parse(localStorage.getItem("polygonData"));
     let editData;
 
     const { isLoaded } = useJsApiLoader({
@@ -574,7 +575,10 @@ const UpdatePolygon = () => {
     }
 
     return (
-        <Modal show={true} fullscreen centered onHide={() => navigate('/polygon')} size='xl'
+        <Modal show={true} fullscreen centered onHide={() => {
+            localStorage.removeItem('polygonData');
+            navigate('/polygon');
+        }} size='xl'
             className='w-100 p-5'>
             <Modal.Header closeButton>
                 <Modal.Title className='thm-dark w-100 text-center'>{'Update Polygon'}</Modal.Title>
@@ -694,75 +698,73 @@ const UpdatePolygon = () => {
 
                                     {
                                         isLoaded ? (
-                                            <LoadScript googleMapsApiKey={key}>
-                                                <GoogleMap
-                                                    mapContainerStyle={mapContainerStyle}
-                                                    center={handleMapCenter()}
-                                                    // onZoomChanged={}
-                                                    zoom={11}
-                                                    onLoad={handleLoad}
-                                                    onClick={handleMapClick}
-                                                    options={{ gestureHandling: 'greedy' }}
-                                                    style={{ cursor: isDrawing ? 'grab' : 'grab' }}
-                                                >
-                                                    {
-                                                        (selectedPolygonType === 'Polygon' && selectedCoordinates.length > 0) ? (
-                                                            <>
-                                                                {selectedCoordinates.length > 1 && (
-                                                                    <PolylineF
-                                                                        path={selectedCoordinates}
-                                                                        options={{
-                                                                            strokeColor: 'red',
-                                                                            strokeOpacity: 0.8,
-                                                                            strokeWeight: 2,
-                                                                        }}
-                                                                    />
-                                                                )}
-
-                                                                {isPolygonClosed && (
-                                                                    <PolygonF
-                                                                        paths={selectedCoordinates}
-                                                                        options={{
-                                                                            fillColor: 'rgba(255, 0, 0, 0.2)',
-                                                                            strokeColor: 'red',
-                                                                            strokeOpacity: 0.8,
-                                                                            strokeWeight: 2,
-                                                                        }}
-                                                                    />
-                                                                )}
-
-                                                                {selectedCoordinates.length > 0 && selectedCoordinates.map((coord, index) => (
-                                                                    <MarkerF icon={{
-                                                                        url: Circle,
-                                                                        // scaledSize: new window.google.maps.Size(20, 20),
-                                                                        // anchor: new window.google.maps.Point(10, 10), // Adjust the values to add margin from the top
-                                                                    }} key={index} position={coord} onClick={() => {
-                                                                        index === 0 && setSelectedCoordinates([...selectedCoordinates, coord]);
-                                                                        setIsPolygonClosed(true);
+                                            <GoogleMap
+                                                mapContainerStyle={mapContainerStyle}
+                                                center={handleMapCenter()}
+                                                // onZoomChanged={}
+                                                zoom={11}
+                                                onLoad={handleLoad}
+                                                onClick={handleMapClick}
+                                                options={{ gestureHandling: 'greedy' }}
+                                                style={{ cursor: isDrawing ? 'grab' : 'grab' }}
+                                            >
+                                                {
+                                                    (selectedPolygonType === 'Polygon' && selectedCoordinates.length > 0) ? (
+                                                        <>
+                                                            {selectedCoordinates.length > 1 && (
+                                                                <PolylineF
+                                                                    path={selectedCoordinates}
+                                                                    options={{
+                                                                        strokeColor: 'red',
+                                                                        strokeOpacity: 0.8,
+                                                                        strokeWeight: 2,
                                                                     }}
-                                                                        draggable={true}
-                                                                        onDragEnd={(e) => handleMarkerDragEnd(index, e)}
-                                                                    />
-                                                                ))}
-                                                            </>
-                                                        ) : (selectedPolygonType === 'Circle' && selectedCoordinates.length > 0) ? (
-                                                            <>
-                                                                <CircleF options={{
-                                                                    center: selectedCoordinates[0],
-                                                                    radius: 3500,
-                                                                    fillColor: 'rgba(255, 0, 0, 0.2)',
-                                                                    strokeColor: 'red',
-                                                                    strokeOpacity: 0.8,
-                                                                    strokeWeight: 2,
-                                                                }} />
-                                                                <MarkerF position={selectedCoordinates[0]} />
-                                                            </>
-                                                        ) : selectedCoordinates.length === 0 ? (
-                                                            <MarkerF position={handleMapCenter()} />
-                                                        ) : null
-                                                    }
-                                                </GoogleMap>
-                                            </LoadScript>
+                                                                />
+                                                            )}
+
+                                                            {isPolygonClosed && (
+                                                                <PolygonF
+                                                                    paths={selectedCoordinates}
+                                                                    options={{
+                                                                        fillColor: 'rgba(255, 0, 0, 0.2)',
+                                                                        strokeColor: 'red',
+                                                                        strokeOpacity: 0.8,
+                                                                        strokeWeight: 2,
+                                                                    }}
+                                                                />
+                                                            )}
+
+                                                            {selectedCoordinates.length > 0 && selectedCoordinates.map((coord, index) => (
+                                                                <MarkerF icon={{
+                                                                    url: Circle,
+                                                                    // scaledSize: new window.google.maps.Size(20, 20),
+                                                                    // anchor: new window.google.maps.Point(10, 10), // Adjust the values to add margin from the top
+                                                                }} key={index} position={coord} onClick={() => {
+                                                                    index === 0 && setSelectedCoordinates([...selectedCoordinates, coord]);
+                                                                    setIsPolygonClosed(true);
+                                                                }}
+                                                                    draggable={true}
+                                                                    onDragEnd={(e) => handleMarkerDragEnd(index, e)}
+                                                                />
+                                                            ))}
+                                                        </>
+                                                    ) : (selectedPolygonType === 'Circle' && selectedCoordinates.length > 0) ? (
+                                                        <>
+                                                            <CircleF options={{
+                                                                center: selectedCoordinates[0],
+                                                                radius: 3500,
+                                                                fillColor: 'rgba(255, 0, 0, 0.2)',
+                                                                strokeColor: 'red',
+                                                                strokeOpacity: 0.8,
+                                                                strokeWeight: 2,
+                                                            }} />
+                                                            <MarkerF position={selectedCoordinates[0]} />
+                                                        </>
+                                                    ) : selectedCoordinates.length === 0 ? (
+                                                        <MarkerF position={handleMapCenter()} />
+                                                    ) : null
+                                                }
+                                            </GoogleMap>
                                         ) : <></>
                                     }
                                 </div>
@@ -773,6 +775,6 @@ const UpdatePolygon = () => {
             </Modal.Body>
         </Modal >
     )
-}
+};
 
 export default UpdatePolygon

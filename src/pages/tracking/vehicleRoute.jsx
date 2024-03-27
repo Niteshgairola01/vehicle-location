@@ -63,7 +63,6 @@ const VehicleRoute = ({ show, setShow, dealerCoords, plantCoordinates }) => {
     const geofenceLat = localStorage.getItem('lat');
     const geofenceLng = localStorage.getItem('lng');
 
-
     useEffect(() => {
         if (!loggedInUser) {
             localStorage.clear();

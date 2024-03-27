@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import Select from 'react-select';
 import '../../assets/styles/polygon.css';
 import { Col, Row } from 'react-bootstrap';
@@ -35,19 +35,11 @@ const PolygonList = () => {
 
     const key = "AIzaSyD1gPg5Dt7z6LGz2OFUhAcKahh_1O9Cy4Y";
     // const key = "ABC";
+
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: key
     });
-
-
-    const [mapLoaded, setMapLoaded] = useState(true);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setMapLoaded(false); // Clean up when component unmounts
-        }, 1000);
-    }, []);
 
     useEffect(() => {
         if (!loggedInUser) {
@@ -298,11 +290,9 @@ const PolygonList = () => {
                                                     <p className="m-0 p-0 py-2 ps-2 pe-5" onClick={() => handleSelectPolygon(data)}>
                                                         {data?.geoName === null || data?.geoName === '' ? '' : `${data?.geoName}, `}{data?.placeName}
                                                     </p>
-                                                    <Tooltip title="Edit" key="edit">
-                                                        <Link to="/editPolygon" className='text-decoration-none' state={data}>
-                                                            <CiEdit className={`me-2 fs-5 ${selectedPolygon === data ? 'thm-white' : 'thm-dark'}`} />
-                                                        </Link>
-                                                    </Tooltip>
+                                                    <a href='/editPolygon' onClick={() => localStorage.setItem("polygonData", JSON.stringify(data))}>
+                                                        <CiEdit className={`me-2 fs-5 ${selectedPolygon === data ? 'thm-white' : 'thm-dark'}`} />
+                                                    </a>
                                                 </div>
                                             ))
                                         }
@@ -367,6 +357,6 @@ const PolygonList = () => {
             </div>
         </div>
     )
-}
+};
 
 export default PolygonList

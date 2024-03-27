@@ -136,7 +136,8 @@ const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
         <Modal show={show} centered onHide={() => {
             setShow(false);
             setShowLoader(false);
-            setUnloadingReachDate('')
+            setUnloadingReachDate('');
+            setSelectedDate('custom');
         }} size='lg'>
             <Form className='position-relative' onSubmit={handleSubmit}>
                 <Modal.Header closeButton>
@@ -178,6 +179,7 @@ const ForceCompleteForm = ({ handleFilterTrips, show, setShow, data }) => {
                                     onChange={(e) => setUnloadingReachDate(e.target.value)}
                                     required={true} placeholder="DD/MM/YYYY HH:MM:SS"
                                     value={unloadingReachDate}
+                                    disabled={selectedDate === 'current'}
                                 />
                                 {/* {
                                     !reachDateFormat ? (

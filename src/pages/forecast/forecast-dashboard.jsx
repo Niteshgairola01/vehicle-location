@@ -5,7 +5,9 @@ import { Col, Form, Row } from 'react-bootstrap';
 import { getRunningTrips } from '../../hooks/tripsHooks';
 import { getAllOfficesList } from '../../hooks/officeMasterHooks';
 import '../../assets/styles/forecast.css';
-
+import { CiEdit } from 'react-icons/ci';
+import { Link } from 'react-router-dom';
+import { Tooltip } from '@mui/material';
 
 // Zone Data Component
 const ZoneData = ({ zone, data, easternVehicles, westernVehicles, westernGujaratVehicles, northenVehicles, southernVehicles,
@@ -46,7 +48,7 @@ const ZoneData = ({ zone, data, easternVehicles, westernVehicles, westernGujarat
             const finalFormattedDate = `${finalDay}/${finalMonth}/${finalYear} ${hours}:${minutes}:${seconds}`;
 
             return finalFormattedDate;
-        }
+        };
     };
 
     const selectStyles = {
@@ -77,7 +79,7 @@ const ZoneData = ({ zone, data, easternVehicles, westernVehicles, westernGujarat
                     />
                 </div>
 
-                <div className='w-100 table-responsive' style={{ overflowX: "hidden", overflowY: "scroll", maxHeight: "200px", minHeight: "200px" }}>
+                <div className='w-100 table-responsive' style={{ overflowX: "", overflowY: "scroll", maxHeight: "200px", minHeight: "200px" }}>
                     <table className='table w-100 position-relative table-striped table-hover' style={{ overflowX: "hidden", overflowY: "scroll", maxHeight: "1rem" }}>
                         <thead className={`${zone === 'East' ? 'bg-thm-dark' : zone === 'West' ? 'bg-success' : zone === 'West Gujarat' ? 'bg-thm-danger' : zone === 'North' ? 'bg-thm-warning' : zone === 'South' && 'bg-thm-primary'}`} style={{ zIndex: 1, position: "sticky", top: 0 }}>
                             <tr className='text-white'>
@@ -87,9 +89,9 @@ const ZoneData = ({ zone, data, easternVehicles, westernVehicles, westernGujarat
                                 <th className='text-nowrap'>Load (From-To)</th>
                                 <th className='text-nowrap'>Loading Date</th>
                                 <th className='text-nowrap'>Arrival Date</th>
-                                <th className='text-nowrap'>Location</th>
-
-                                {/* <th className='text-nowrap' style={{ minWidth: data?.length > 0 && "10rem" }}>Location</th> */}
+                                <th className='text-nowrap' style={{ minWidth: "8rem" }}>Location</th>
+                                <th className='text-nowrap' style={{ minWidth: "5rem" }}>To</th>
+                                <th className='text-nowrap'>Edit</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -114,17 +116,17 @@ const ZoneData = ({ zone, data, easternVehicles, westernVehicles, westernGujarat
                                                 <div className={`circle ${data?.currVehicleStatus === "On Hold" ? 'circle-yellow-blink' : data?.currVehicleStatus === 'Running' ? 'circle-green-blink' : data?.currVehicleStatus === 'GPS Off' ? 'circle-red-blink' : data?.currVehicleStatus === null && 'bg-white'}`}></div>
                                             </div>
                                         </td>
+                                        <td className='zone-table-row-data'>{data?.origin} - {data?.destination}</td>
+                                        <td className='zone-table-row-data'>{handleFormateISTDate(data?.loadingDate)}</td>
+                                        <td className='zone-table-row-data'>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
+                                        <td className='zone-table-row-data' style={{ width: "5rem" }}>{data?.location}</td>
+                                        <td className='zone-table-row-data'>Lorem ipsum dolor sit amet.</td>
                                         <td className='zone-table-row-data'>
-                                            {data?.origin} - {data?.destination}
-                                        </td>
-                                        <td className='zone-table-row-data'>
-                                            {handleFormateISTDate(data?.loadingDate)}
-                                        </td>
-                                        <td className='zone-table-row-data'>
-                                            {handleFormateISTDate(data?.estimatedArrivalDate)}
-                                        </td>
-                                        <td className='zone-table-row-data'>
-                                            {data?.location}
+                                            <Tooltip title="Edit" key="edit">
+                                                <Link to="#">
+                                                    <CiEdit className='text-success fs-5 cursor-pointer' />
+                                                </Link>
+                                            </Tooltip>
                                         </td>
                                     </tr>
                                 ))
@@ -332,7 +334,7 @@ const ForecastDashoard = () => {
                                         onMouseOut={() => setHoveredOffice('')}
                                         key={data?.officeName} style={{ borderBottom: "1px solid #000" }}>
                                         <span>{data?.officeName}</span>
-                                        <button className={`${hoveredOffice === data?.officeName ? 'bg-white thm-dark' : 'bg-thm-dark text-white'} px-4 rounded-pill`} style={{ fontSize: "0.8rem", fontWeight: "450" }}>BTN</button>
+                                        <button className={`${hoveredOffice === data?.officeName ? 'bg-white thm-dark' : 'bg-thm-dark text-white'} px-4 rounded-pill`} style={{ fontSize: "0.8rem", fontWeight: "450" }}>Add</button>
                                     </div>
 
                                 ))

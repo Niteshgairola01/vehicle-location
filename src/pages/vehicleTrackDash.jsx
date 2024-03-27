@@ -4,15 +4,15 @@ import Skeleton from '@mui/material/Skeleton';
 import { Col, Form, Modal, Row } from 'react-bootstrap';
 import Button from '../components/Button/coloredButton'
 import HoveredButton from '../components/Button/hoveredButton';
-import { CiFilter } from "react-icons/ci";
+import { CiEdit, CiFilter } from "react-icons/ci";
 import { FaRoute } from "react-icons/fa";
-import { IoIosTimer, IoMdAdd, IoMdRefresh } from 'react-icons/io';
+import { IoIosTimer, IoMdRefresh } from 'react-icons/io';
 import { MdSettingsBackupRestore } from "react-icons/md";
 import { getAllPartiesList } from '../hooks/clientMasterHooks';
 import { ErrorToast, SuccessToast } from '../components/toast/toast';
 import { Input } from '../components/form/Input';
 import { getRunningTrips } from '../hooks/tripsHooks';
-import { addRemark, getAllVehiclesList, getLogsById } from '../hooks/vehicleMasterHooks';
+import { addRemark, getAllVehiclesList, getLogsById, updateRemark } from '../hooks/vehicleMasterHooks';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
 import Pagination from '../components/pagination';
@@ -28,6 +28,7 @@ import VehicleRoute from './tracking/vehicleRoute';
 import HistoryModal from './tracking/historyModal';
 import { getAllPolygonAreas } from '../hooks/polygonHooks';
 import { DisabledButton } from '../components/Button/Button';
+import { RxCross2 } from 'react-icons/rx';
 
 const VehicleTrackDash = () => {
 
@@ -397,17 +398,17 @@ const VehicleTrackDash = () => {
                 let criticalTrips = [];
 
                 if (selectedFilter.includes('On Time & Early (As per OEM)' || selectedFilter.includes('Delayed (As per OEM)'))) {
-                    lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
+                    lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
                 } else {
-                    lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay) && data?.finalStatus === 'Delayed');
+                    lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && new Date(formatStaticETADate(data?.staticETA)) < currentDay) && data?.finalStatus === 'Delayed');
                 }
 
                 const getDelayedTrips = (type) => {
                     if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
                         const delayedTrips = runningTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.oemFinalStatus === 'Delayed')
 
-                        const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter)))
-                        const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
+                        const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && ((new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter))))
+                        const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
 
                         let staticDelayeds = [];
 
@@ -426,8 +427,8 @@ const VehicleTrackDash = () => {
                         staticDelayeds.forEach(data => delayedRunningTrips.push(data));
                     } else {
                         const delayedTrips = runningTrips.filter((data) => data?.finalStatus === 'Delayed')
-                        const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
-                        const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
+                        const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
+                        const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
 
                         todayTrips.forEach(data => {
                             const delayedHours = parseFloat(data?.delayedHours);
@@ -644,18 +645,18 @@ const VehicleTrackDash = () => {
     const getCounts = () => {
         const getLateCounts = (allTrips) => {
             const delayedTrips = allTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.finalStatus === 'Delayed');
-            const lateTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay));
+            const lateTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && new Date(formatStaticETADate(data?.staticETA)) < currentDay));
 
             return lateTrips.length;
         };
 
         const getDelayedCounts = (allTrips, type, oem) => {
             const delayedTrips = allTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.finalStatus === 'Delayed');
-            const todayTrips = oem ? delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter)))
-                : delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)));
+            const todayTrips = oem ? delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && ((new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter))))
+                : delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.oemReachTime !== " ") && ((new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))));
 
-            const upcomingTrips = oem ? delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
-                : delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)));
+            const upcomingTrips = oem ? delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
+                : delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.oemReachTime !== " ") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)));
 
             let staticDelayeds = [];
 
@@ -748,7 +749,7 @@ const VehicleTrackDash = () => {
                                     (status === 'included') ? delayedTrips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed')
                                         : delayedTrips = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
 
-                                    const lateTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay));
+                                    const lateTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && new Date(formatStaticETADate(data?.staticETA)) < currentDay));
 
                                     lateTrips.forEach(data => finalStatusTrips.push(data));
                                 }
@@ -767,8 +768,8 @@ const VehicleTrackDash = () => {
                                     (status === 'included') ? delayedTrips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.finalStatus === 'Delayed')
                                         : delayedTrips = allFilteredTrip.filter((data) => data?.finalStatus === 'Delayed');
 
-                                    const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
-                                    const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
+                                    const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && ((new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))))
+                                    const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
 
                                     let staticDelayeds = [];
 
@@ -882,7 +883,7 @@ const VehicleTrackDash = () => {
                                         (status === 'included') ? delayedTrips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed')
                                             : delayedTrips = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
 
-                                        const lateTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay));
+                                        const lateTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay));
                                         lateTrips.forEach(data => finalStatusTrips.push(data));
                                     }
 
@@ -900,9 +901,9 @@ const VehicleTrackDash = () => {
                                         (status === 'included') ? delayedTrips = allFilteredTrip.filter((data) => selectedFilter.includes(data?.tripStatus) && data?.oemFinalStatus === 'Delayed')
                                             : delayedTrips = allFilteredTrip.filter((data) => data?.oemFinalStatus === 'Delayed');
 
-                                        const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter)))
+                                        const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && ((new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter))))
 
-                                        const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
+                                        const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
 
                                         let staticDelayeds = [];
 
@@ -954,13 +955,12 @@ const VehicleTrackDash = () => {
             let criticalTrips = [];
 
             if (selectedFilter.includes('On Time & Early (As per OEM)' || selectedFilter.includes('Delayed (As per OEM)'))) {
-                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
+                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
             } else {
                 lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay) && data?.finalStatus === 'Delayed');
             }
 
             const getDelayedTrips = (type) => {
-                console.log("getdealyed trips");
                 if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
                     const delayedTrips = runningTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.oemFinalStatus === 'Delayed')
 
@@ -984,8 +984,8 @@ const VehicleTrackDash = () => {
                     staticDelayeds.forEach(data => delayedRunningTrips.push(data));
                 } else {
                     const delayedTrips = runningTrips.filter((data) => data?.finalStatus === 'Delayed')
-                    const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
-                    const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
+                    const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && ((new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))))
+                    const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
 
                     todayTrips.forEach(data => {
                         const delayedHours = parseFloat(data?.delayedHours);
@@ -1016,17 +1016,17 @@ const VehicleTrackDash = () => {
             let criticalTrips = [];
 
             if (selectedFilter.includes('On Time & Early (As per OEM)' || selectedFilter.includes('Delayed (As per OEM)'))) {
-                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
+                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay) && data?.oemFinalStatus === 'Delayed');
             } else {
-                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay) && data?.finalStatus === 'Delayed');
+                lateTrips = runningTrips.filter(data => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && new Date(formatStaticETADate(data?.staticETA)) < currentDay) && data?.finalStatus === 'Delayed');
             }
 
             const getDelayedTrips = (type) => {
                 if (selectedFilter.includes('On Time & Early (As per OEM)') || selectedFilter.includes('Delayed (As per OEM)')) {
                     const delayedTrips = runningTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.oemFinalStatus === 'Delayed')
 
-                    const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter)))
-                    const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
+                    const todayTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && ((new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter))))
+                    const upcomingTrips = delayedTrips.filter((data) => ((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter)))
 
                     let staticDelayeds = [];
 
@@ -1045,8 +1045,8 @@ const VehicleTrackDash = () => {
                     staticDelayeds.forEach(data => delayedRunningTrips.push(data));
                 } else {
                     const delayedTrips = runningTrips.filter((data) => data?.finalStatus === 'Delayed')
-                    const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))
-                    const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
+                    const todayTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && ((new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))))
+                    const upcomingTrips = delayedTrips.filter((data) => ((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter)))
 
                     todayTrips.forEach(data => {
                         const delayedHours = parseFloat(data?.delayedHours);
@@ -1191,7 +1191,7 @@ const VehicleTrackDash = () => {
             setShowForceCompleteModal(true);
             setShowForce(true);
         } else if (data?.tripStatus.length === 0 || data?.operationUniqueID.length === 0) {
-            ErrorToast("Not Trip found");
+            ErrorToast("No Trip found");
         } else if ((data?.tripStatus === 'Trip Completed') || (data?.tripStatus === 'Waiting for Unload')) {
             ErrorToast("Trip already completed");
         }
@@ -1201,7 +1201,7 @@ const VehicleTrackDash = () => {
         !hovered && setShowFilters(false);
         !hovered && setShowLocationOption(false);
         !hovered && setShowDistanceKMs(false);
-        (!hovered && !remarkBtnDisabled) && setShowRemarkForm(false);
+        (!hovered && !remarkBtnDisabled && showRemarkForm) && setShowRemarkForm(false);
         isOpenParty && setIsOpenParty(false);
         isOpenOffice && setIsOpenOffice(false);
         isOpenVehicle && setIsOpenVehicle(false);
@@ -1213,7 +1213,7 @@ const VehicleTrackDash = () => {
                 if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
                     const delayedHours = parseInt(data?.oemDelayedHours);
 
-                    if (((data?.oemReachTime !== null && data?.oemReachTime !== "") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay)) {
+                    if (((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && new Date(formatStaticETADate(data?.oemReachTime)) < currentDay)) {
                         return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
                             id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                             key={`${index}-${colIndex}-${animationKey}`}
@@ -1221,7 +1221,7 @@ const VehicleTrackDash = () => {
 
                     }
 
-                    if (((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter))) {
+                    if (((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && ((new Date(formatStaticETADate(data?.oemReachTime)) > currentDay) && (new Date(formatStaticETADate(data?.oemReachTime)) < twoDaysAfter)))) {
                         if ((delayedHours >= 0 && delayedHours <= 5)) {
                             return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
                                 id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
@@ -1235,7 +1235,7 @@ const VehicleTrackDash = () => {
                         }
                     }
 
-                    if (((data?.oemReachTime !== null && data?.oemReachTime !== "") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter))) {
+                    if (((data?.oemReachTime !== null && data?.oemReachTime !== "" && data?.oemReachTime !== " ") && (new Date(formatStaticETADate(data?.oemReachTime)) > twoDaysAfter))) {
                         if ((delayedHours >= 0 && delayedHours <= 18)) {
                             return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
                                 id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
@@ -1261,14 +1261,14 @@ const VehicleTrackDash = () => {
                 if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
                     const delayedHours = parseInt(data?.delayedHours);
 
-                    if (((data?.staticETA !== null && data?.staticETA !== "") && new Date(formatStaticETADate(data?.staticETA)) < currentDay)) {
+                    if (((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && new Date(formatStaticETADate(data?.staticETA)) < currentDay)) {
                         return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-secondary text-white' : 'text-dark'} rounded text-center`}
                             id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
                             key={`${index}-${colIndex}-${animationKey}`}
                             style={{ minWidth: "100%" }}>Late</span>
                     }
 
-                    if (((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter))) {
+                    if (((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && ((new Date(formatStaticETADate(data?.staticETA)) > currentDay) && (new Date(formatStaticETADate(data?.staticETA)) < twoDaysAfter)))) {
                         if ((delayedHours >= 0 && delayedHours <= 5)) {
                             return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
                                 id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
@@ -1282,7 +1282,7 @@ const VehicleTrackDash = () => {
                         }
                     }
 
-                    if (((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter))) {
+                    if (((data?.staticETA !== null && data?.staticETA !== "" && data?.staticETA !== " ") && (new Date(formatStaticETADate(data?.staticETA)) > twoDaysAfter))) {
                         if ((delayedHours >= 0 && delayedHours <= 18)) {
                             return <span className={`py-1 px-2 ${data?.tripStatus === 'Trip Running' ? 'warn-icon bg-warning text-dark' : 'text-dark'} rounded text-center`}
                                 id={`${data?.tripStatus === 'Trip Running' ? 'warn-icon' : ''}`}
@@ -1540,30 +1540,88 @@ const VehicleTrackDash = () => {
         setShowLocationOption(true);
     };
 
+    const [tripRemarks, setTripRemarks] = useState([]);
+    const [remarkToBeUpdated, setRemarkToBeUpdated] = useState('');
+
+    const handleSelectRemarks = (log, remarks) => {
+        setSelectedRemark(log);
+        setShowRemarkForm(true);
+
+        if (remarks === null || remarks === "" || remarks === " ") {
+            setTripRemarks([]);
+        } else {
+            const splittedRemark = remarks.split(', ');
+            setTripRemarks(splittedRemark);
+        };
+    }
+
+    const handleRemark = (remarks) => {
+        if (remarks === null || remarks === "" || remarks === " ") {
+            return [];
+        } else {
+            const splittedRemark = remarks.split(', ');
+            return splittedRemark;
+            // return splittedRemark[splittedRemark.length - 1];
+        };
+    };
+
+
     const handleAddRemark = (e) => {
         e.preventDefault();
 
         if (!remarkBtnDisabled) {
             setRemarkBtnDisabled(true);
-            const form = {
-                tripNo: selectedRemark,
-                remark
-            };
 
-            addRemark(form).then(response => {
-                if (response.status === 200) {
-                    SuccessToast("Remark added successfully");
-                    realTimeDataFilter();
-                    setRemarkBtnDisabled(false);
-                    setShowRemarkForm(false);
-                } else {
-                    setRemarkBtnDisabled(false);
-                    ErrorToast("Unable to add remark");
+            if (remarkToBeUpdated.length > 0) {
+                const form = {
+                    tripNo: selectedRemark,
+                    oldRemark: remarkToBeUpdated,
+                    newRemark: remark
                 };
-            }).catch(err => {
-                setRemarkBtnDisabled(false);
-                console.log(err);
-            });
+
+                updateRemark(form).then(response => {
+                    if (response.status === 200) {
+                        SuccessToast("Remark updated successfully");
+                        realTimeDataFilter();
+                        setRemarkBtnDisabled(false);
+                        setShowRemarkForm(false);
+                        setRemark('');
+                        setRemarkToBeUpdated('');
+                    } else if (response?.data.includes("Another")) {
+                        ErrorToast("Please wait! Another program is executing");
+                    } else {
+                        setRemarkBtnDisabled(false);
+                        ErrorToast("Unable to add remark");
+                    };
+                }).catch(err => {
+                    setRemarkBtnDisabled(false);
+                    console.log(err);
+                });
+            } else {
+                const form = {
+                    tripNo: selectedRemark,
+                    remark
+                };
+
+                addRemark(form).then(response => {
+                    if (response.status === 200) {
+                        SuccessToast("Remark added successfully");
+                        realTimeDataFilter();
+                        setRemarkBtnDisabled(false);
+                        setShowRemarkForm(false);
+                        setRemark('');
+                        setRemarkToBeUpdated('');
+                    } else if (response?.data.includes("Another")) {
+                        ErrorToast("Please wait! Another program is executing");
+                    } else {
+                        setRemarkBtnDisabled(false);
+                        ErrorToast("Unable to add remark");
+                    };
+                }).catch(err => {
+                    setRemarkBtnDisabled(false);
+                    console.log(err);
+                });
+            };
         };
     };
 
@@ -1820,9 +1878,13 @@ const VehicleTrackDash = () => {
             return <td key={colIndex}>{(selectedFilter.includes('Delayed (As per OEM)') || selectedFilter.includes('On Time & Early (As per OEM)')) ? getDelayedHours(data?.oemDelayedHours) : getDelayedHours(value)}</td>
         } else if (column?.label === 'Force Complete') {
             return <td key={colIndex} className='h-100'>
-                <div className='h-100 py-3 d-flex justify-content-center align-items-center'>
+                <div className='h-100 py-1 d-flex justify-content-center align-items-center flex-column'>
                     <button className={`border border-none ${((data?.tripStatus === 'Trip Running' || data?.tripStatus === 'Waiting for Unload') && (data?.operationUniqueID.length > 0)) ? 'force-complete-button' : 'force-complete-button-disabled'}`}
-                        onClick={() => handleShowForceComplete(data)}>Force Complete</button>
+                        onClick={() => handleShowForceComplete(data)} style={{ minWidth: "150px" }}>Force Complete</button>
+
+                    <Button className="px-3 cursor-pointer mt-2" style={{ minWidth: "150px", fontSize: "0.7rem" }} onClick={() => {
+                        handleSelectRemarks(data?.tripLogNo, data?.remarks)
+                    }}>{(data?.remarks !== null && data?.remarks !== "" && data?.remarks !== " ") ? 'Add / Update Remark' : 'Add Remark'}</Button>
                 </div>
             </td>
         } else if (column?.label === 'S.No.') {
@@ -1878,22 +1940,16 @@ const VehicleTrackDash = () => {
                 }
             </td>;
         } else if (column?.label === 'Remark') {
-            return <td key={colIndex} className='text-center position-relative'
+            return <td key={colIndex} className='text-start position-relative'
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
             >
-
-                <p style={{ fontSize: "0.7rem" }}>{data?.remark}</p>
                 {
-                    (data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripLogNo !== " ") && (
-                        // <button className='px-2 border border-success text-success border-2 fw-bold bg-white rounded'>
-                        //     Add Reminder
-                        // </button>
-                        <HoveredButton className="px-3 cursor-pointer" style={{ fontSize: "0.7rem" }} onClick={() => {
-                            setSelectedRemark(data?.tripLogNo)
-                            setShowRemarkForm(true)
-                        }}>{data?.remark ? 'Update Remark' : 'Add Remark'}</HoveredButton>
-                    )
+                    (data?.remarks !== null || data?.remarks !== "" || data?.remarks !== " ") && <>
+                        {
+                            handleRemark(data?.remarks)?.map((remark, val) => <span className='me-1' style={{ fontSize: "0.7rem" }} key={val}>{remark} {remark !== handleRemark(data?.remarks)[handleRemark(data?.remarks).length - 1] && ','} </span>)
+                        }
+                    </>
                 }
                 {
                     (showRemarkForm && (selectedRemark === data?.tripLogNo)) && (
@@ -1908,25 +1964,59 @@ const VehicleTrackDash = () => {
                                 )
                             }
                             <Form onSubmit={handleAddRemark}>
-                                <Input type="text" name="remark" placeholder="Enter Remark" onChange={(e) => setRemark(e.target.value)} required autocomplete="off" />
-                                <div className='d-flex justify-content-center align-items-center'>
+                                <Input type="text" name="remark" placeholder="Enter Remark" value={remark} onChange={(e) => setRemark(e.target.value)} required autocomplete="off" />
+                                <div className='d-flex justify-content-end align-items-center'>
                                     {
                                         remarkBtnDisabled ? (
-                                            <DisabledButton type="button" disabled className="py-1 px-3 me-2">Adding</DisabledButton>
+                                            <DisabledButton type="button" disabled className="py-1 px-3 me-2">{remarkToBeUpdated.length > 0 ? 'Updating' : 'Adding'}</DisabledButton>
                                         ) : (
-                                            <Button className={`px-3 w-25`} type="submit">{data?.remark ? 'Update' : 'Add'}</Button>
+                                            <Button className={`px-3 w-35`} type="submit">{remarkToBeUpdated.length > 0 ? 'Update' : 'Add'}</Button>
                                         )
+                                    }
+                                </div>
+
+                                <hr />
+                                <div style={{ maxHeight: "300px", overflowX: "hidden", overflowY: "scroll", scrollBehavior: "smooth" }}>
+                                    {
+                                        tripRemarks.map((remark, i) => (
+                                            <div className='d-flex justify-content-between align-items-center py-1' key={i}>
+                                                <span>{remark}</span>
+                                                {
+                                                    ((remarkToBeUpdated.length > 0) && (remarkToBeUpdated === remark)) ? (
+                                                        <Link to="#" onClick={() => {
+                                                            setRemark('');
+                                                            setRemarkToBeUpdated('');
+                                                        }}>
+                                                            <Tooltip title="Edit" key="editRemark">
+                                                                <RxCross2 className='fs-5 text-danger cursor-pointer' onClick={() => setRemarkToBeUpdated('')} />
+                                                            </Tooltip>
+                                                        </Link>
+                                                    ) : (
+                                                        <Link to="#" onClick={() => {
+                                                            setRemark(remark);
+                                                            setRemarkToBeUpdated(remark);
+                                                        }}>
+                                                            <Tooltip title="Edit" key="editRemark">
+                                                                <CiEdit className='fs-5 text-success cursor-pointer' />
+                                                            </Tooltip>
+                                                        </Link>
+                                                    )
+                                                }
+                                            </div>
+                                        ))
                                     }
                                 </div>
                             </Form>
                         </Row>
                     )
                 }
-            </td>;
+            </td >;
         } else {
             return <td key={colIndex}>{value}</td>;
         }
     };
+
+    console.log("remark to be updated", remarkToBeUpdated);
 
     const handleHideOptions = () => {
         !isHovered && setShowHideToggle(false);
@@ -2163,7 +2253,7 @@ const VehicleTrackDash = () => {
                                                     className={`text-nowrap 
                                                             ${(data?.label === 'S.No.') && 'width-50'} ${(data?.label === 'Vehicle No.') && 'width-100'} ${(data?.label === 'Status') && 'width-50'} ${(data?.label === 'Trip No.') && 'width-60'} ${(data?.label === 'Trip Status') && 'width-120'} ${(data?.label === 'Exit From') && 'width-120'} ${(data?.label === 'Final Status') && 'width-150'} ${(data?.label === 'Driver Name' || data?.label === 'Static ETA') && 'width-200'} ${(data?.label === 'Location') && 'width-200'} ${(data?.label === 'Consignor Name') && 'width-140'}
                                                             ${(data?.label === 'KM Covered') && 'width-90'} ${(data?.label === 'Final Status') && 'width-50'} ${(data?.label === 'Driver Name') && 'width-100'}
-                                                            ${(data?.label === 'Remark') && 'width-150'}`}
+                                                            ${(data?.label === 'Remark') && 'width-150'} ${(data?.label === 'Force Complete') && 'width-200'}`}
                                                     key={data?.label}
                                                     style={{
                                                         borderRadius: index === 0 ? "10px 0px 0px 0px" : index === tableColumns.length - 1 && "0px 10px 0px 0px"
