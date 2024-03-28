@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { BsFileEarmarkPdfFill } from 'react-icons/bs';
 import { Tooltip } from '@mui/material';
 import { FaFileExcel } from 'react-icons/fa6';
+import TextLoader from '../../components/loader/TextLoader';
 
 const GPSReport = () => {
 
@@ -100,7 +101,7 @@ const GPSReport = () => {
 
             const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
             return formattedDate;
-        }
+        };
     };
 
     const getDelayedHours = (hours) => {
@@ -188,17 +189,17 @@ const GPSReport = () => {
                 if (attr === 'currVehicleStatus' || attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'oemReachTime'
                     || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'oemDelayedHours' || attr === 'oemFinalStatus' || attr === 'locationTime' || attr === 'unloadingReachDate') {
 
-                    if (attr === 'loadingDate' || attr === 'oemReachTime') formattedItem[attr] = handleFormateISTDate(item[attr]);
-                    if (attr === 'vehicleExitDate') formattedItem[attr] = handleFormatDate(item[attr]);
-                    if (attr === 'delayedHours') formattedItem[attr] = getDelayedHours(item[attr]);
-                    if (attr === 'oemDelayedHours') formattedItem[attr] = getDelayedHours(item[attr]);
-                    if (attr === 'staticETA' || attr === 'estimatedArrivalDate') formattedItem[attr] = convertTo24HourFormat(item[attr]);
-                    if (attr === 'finalStatus') formattedItem[attr] = getDelayedType(item[attr], item['delayedHours'], item['staticETA']);
-                    if (attr === 'oemFinalStatus') formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours'], item['oemReachTime']);
-                    if (attr === 'locationTime') formattedItem[attr] = getGPSTime(item[attr], item['locationTime']);
-                    if (attr === 'reachPointEntryTime') formattedItem[attr] = getGPSTime(item[attr], item['reachPointEntryTime']);
-                    if (attr === 'unloadingReachDate') formattedItem[attr] = item[attr] === "" || item[attr] === null ? '' : handleFormatDate(item[attr]);
-                    if (attr === 'currVehicleStatus') formattedItem[attr] = '';
+                    (attr === 'loadingDate' || attr === 'oemReachTime') ? (formattedItem[attr] = handleFormateISTDate(item[attr]))
+                        : (attr === 'vehicleExitDate') ? (formattedItem[attr] = handleFormatDate(item[attr]))
+                            : (attr === 'delayedHours') ? (formattedItem[attr] = getDelayedHours(item[attr]))
+                                : (attr === 'oemDelayedHours') ? (formattedItem[attr] = getDelayedHours(item[attr]))
+                                    : (attr === 'staticETA' || attr === 'estimatedArrivalDate') ? (formattedItem[attr] = convertTo24HourFormat(item[attr]))
+                                        : (attr === 'finalStatus') ? (formattedItem[attr] = getDelayedType(item[attr], item['delayedHours'], item['staticETA']))
+                                            : (attr === 'oemFinalStatus') ? (formattedItem[attr] = getDelayedType(item[attr], item['oemDelayedHours'], item['oemReachTime']))
+                                                : (attr === 'locationTime') ? (formattedItem[attr] = getGPSTime(item[attr], item['locationTime']))
+                                                    : (attr === 'reachPointEntryTime') ? (formattedItem[attr] = getGPSTime(item[attr], item['reachPointEntryTime']))
+                                                        : (attr === 'unloadingReachDate') ? (formattedItem[attr] = item[attr] === "" || item[attr] === null ? '' : handleFormatDate(item[attr]))
+                                                            : (attr === 'currVehicleStatus') && (formattedItem[attr] = '');
 
                 } else formattedItem[attr] = item[attr];
             });
@@ -333,32 +334,33 @@ const GPSReport = () => {
         (allTrips.length === 0) ? ErrorToast('No data found') : doc.save('Trips-report.pdf');
     };
 
+    const exportBtn = [
+        {
+            title: "Export As Excel",
+            key: "excelExport",
+            icon: <FaFileExcel className='cursor-pointer fs-3 text-success' onClick={() => exportToExcel()} />,
+        },
+        {
+            title: "Export As PDF",
+            key: "pdfExport",
+            icon: <BsFileEarmarkPdfFill className='ms-2 cursor-pointer fs-3' style={{ color: "#ed031b" }} onClick={exportToPDF} />
+        },
+    ];
+
     return (
         <>
             <Col sm={8} className='ps-5'>
                 <h6 className='mb-3'>GPS Off Report</h6>
                 {
-                    loadingTrips ? (
-                        <p className='fw-bold text-secondary'>Please Wait while fetching the data
-                            <span className='ms-2 dot-one'>.</span>
-                            <span className='ms-2 dot-two'>.</span>
-                            <span className='ms-2 dot-three'>.</span>
-                            <span className='ms-2 dot-four'>.</span>
-                            <span className='ms-2 dot-five'>.</span>
-                            <span className='ms-2 dot-six'>.</span>
-                        </p>
-                    ) : (
+                    loadingTrips ? <TextLoader /> : (
                         <div className='p-0 d-flex justify-content-start align-items-center w-100'>
-                            <Tooltip title="Export As Excel" key="excelExport">
-                                <Link>
-                                    <FaFileExcel className='ms-2 cursor-pointer fs-3 text-success' onClick={() => exportToExcel()} />
-                                </Link>
-                            </Tooltip>
-                            <Tooltip title="Export As PDF" key="pdfExport">
-                                <Link>
-                                    <BsFileEarmarkPdfFill className='ms-2 cursor-pointer fs-3' style={{ color: "#ed031b" }} onClick={exportToPDF} />
-                                </Link>
-                            </Tooltip>
+                            {
+                                exportBtn.map(data => (
+                                    <Tooltip title={data?.title} key={data?.key}>
+                                        <Link to="#">{data?.icon}</Link>
+                                    </Tooltip>
+                                ))
+                            }
                         </div>
                     )
                 }

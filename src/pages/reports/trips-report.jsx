@@ -14,7 +14,7 @@ import { ErrorToast } from '../../components/toast/toast';
 import { RxCross2 } from "react-icons/rx";
 import '../../assets/styles/reports.css';
 
-const TripsReport = ({ reportType, setReportType, selectedReportType, setSelectedReportType }) => {
+const TripsReport = ({ reportType, selectedReportType }) => {
 
     const [selectedFilters, setSelectedFilters] = useState([]);
 
@@ -32,12 +32,9 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     const [selectedOrigin, setSelectedOrigin] = useState('');
     const [selectedOrigins, setSelectedOrigins] = useState([]);
 
-    const [sharedPdf, setsharedPdf] = useState(null);
-
     const today = new Date();
 
     let currentDay = new Date(today.setHours(0, 0, 0, 0));
-    // let nextDay = new Date(today.set)
 
     let date = new Date(today);
     date.setDate(date.getDate(23, 59, 59, 0));
@@ -57,21 +54,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         const originLowerCase = item.origin.toLowerCase();
         return selectedOrigins.some(consignor => consignor.toLowerCase() === originLowerCase) && item;
     })) : [];
-
-    const reportTypes = [
-        {
-            label: "Trips Report",
-            value: "Trips Report"
-        },
-        {
-            label: "10 Hrs Report",
-            value: "10 Hrs Report"
-        },
-        {
-            label: "Unloading Report",
-            value: "Unloading Report"
-        },
-    ];
 
     useEffect(() => {
         if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
@@ -105,100 +87,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
     const allFilters = ['Early', 'On Time', 'Late', 'Nominal Delayed', 'Critical Delayed', 'On Time & Early (As per OEM)', 'Delayed (As per OEM)'];
 
-    const sharePDFViaTelegram = async () => {
-        const doc = new jsPDF('landscape');
-
-        const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
-
-        doc.setFontSize(16);
-        doc.text('Trips Report', 130, 10);
-
-        const formattedData = formatData(filteredOEMTrips);
-
-        formattedData.forEach((row, index) => {
-            row['S.No.'] = index + 1
-        });
-
-        const columns = attributes.map((attr, index) => ({
-            header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' },
-        }));
-
-        doc.autoTable({
-            columns,
-            body: formattedData,
-            margin: firstPageMargin,
-            styles: {
-                fontSize: 8
-            },
-            columnStyles: {
-                13: { cellWidth: 35 },
-            }
-        });
-
-        const pdfBlob = doc.output('blob');
-        setsharedPdf(doc.output());
-        const formData = new FormData();
-        formData.append('chat_id', '6559524169'); // Replace 'RECIPIENT_CHAT_ID' with the chat ID of the recipient
-        formData.append('document', pdfBlob, 'document.pdf');
-
-        sendDocumentToTelegram(formData);
-    };
-
-    const sendDocumentToTelegram = async (formData) => {
-        const telegramBotToken = '6919568815:AAFjrQ0vFPKGpOmdOHklBf2pDreyMeCb7Os';
-        // const chatId = '6559524169';
-
-        // const documentData = { /* Your document data */ };
-
-        try {
-            const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    chat_id: '6559524169',
-                    text: 'hi' // Assuming documentData contains the file data
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to send document');
-            }
-
-            const responseData = await response.json();
-        } catch (error) {
-            console.error('Error sending document:', error);
-        }
-    }
-
-    const sortByDate = (data) => {
-        data.sort((a, b) => {
-            const dateA = new Date(a.loadingDate.split(' ')[0]);
-            const timeA = a.loadingDate.split(' ')[1];
-            const [hoursA, minutesA, secondsA] = timeA.split(':');
-
-            const dateB = new Date(b.loadingDate.split(' ')[0]);
-            const timeB = b.loadingDate.split(' ')[1];
-            const [hoursB, minutesB, secondsB] = timeB.split(':');
-
-            if (dateA > dateB) return -1;
-            if (dateA < dateB) return 1;
-
-            if (hoursA > hoursB) return -1;
-            if (hoursA < hoursB) return 1;
-            if (minutesA > minutesB) return -1;
-            if (minutesA < minutesB) return 1;
-            if (secondsA > secondsB) return -1;
-            if (secondsA < secondsB) return 1;
-            return 0;
-        });
-
-        return data;
-    };
-
     const sortByValue = (data) => {
-        // console.log("data", data);
         data.sort((a, b) => {
             const valueA = parseInt(a?.delayedHours);
             const valueB = parseInt(b?.delayedHours);
@@ -210,7 +99,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
     };
 
     const sortByOEMValue = (data) => {
-        // console.log("data", data);
         data.sort((a, b) => {
             const valueA = parseInt(a?.oemDelayedHours);
             const valueB = parseInt(b?.oemDelayedHours);
@@ -246,310 +134,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
             getOEMList();
         }
     }, [selectedReportType]);
-
-    // useEffect(() => {
-    //     if (selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed') || selectedFilters.includes('Delayed (As per OEM)')) {
-    //         if ((selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed')) &&
-    //             (!selectedFilters.includes('Delayed (As per OEM)'))
-    //         ) {
-    //             let critical = filteredTrips.filter(data => parseInt(data?.delayedHours) >= 36);
-    //             let moderate = filteredTrips.filter(data => (parseInt(data?.delayedHours) >= 19 && parseInt(data?.delayedHours) <= 35));
-    //             let mild = filteredTrips.filter(data => parseInt(data?.delayedHours) <= 18);
-
-    //             let staticMild = [];
-    //             let staticModerate = [];
-    //             let staticCritical = [];
-
-    //             let mildVehicles = [];
-    //             let moderateVehicles = [];
-    //             let criticalVehicles = [];
-
-    //             filteredTrips.map(data => {
-    //                 if ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter))) {
-
-    //                     const delayedHours = parseInt(data?.delayedHours);
-
-    //                     if (delayedHours > 5) {
-    //                         staticMild.push(data);
-    //                     } else if (delayedHours <= 5 && delayedHours >= 18) {
-    //                         staticModerate.push(data);
-    //                     } else if (delayedHours < 19) {
-    //                         staticCritical.push(data);
-    //                     }
-    //                 }
-    //             });
-
-    //             const allMilds = [...mild, ...staticMild];
-    //             const allModerates = [...moderate, ...staticModerate];
-    //             const allCriticals = [...critical, staticCritical];
-
-    //             staticMild.forEach(data => mildVehicles.push(data?.vehicleNo));
-    //             staticModerate.forEach(data => moderateVehicles.push(data?.vehicleNo));
-    //             staticCritical.forEach(data => criticalVehicles.push(data?.vehicleNo));
-
-    //             const filteredMilds = allMilds.filter(data => !mildVehicles.includes(data?.vehicleNo));
-    //             const filteredModerates = allModerates.filter(data => !moderateVehicles.includes(data?.vehicleNo));
-    //             const filteredCriticals = allCriticals.filter(data => !criticalVehicles.includes(data?.vehicleNo));
-
-    //             let sortedMild = sortByValue(filteredMilds);
-    //             let sortedModerate = sortByValue(filteredModerates);
-    //             let sortedCritical = sortByValue(filteredCriticals);
-
-    //             let nonDelayed = filteredTrips.filter(data => data?.finalStatus !== 'Delayed');
-    //             const filtered = [...sortedCritical, ...sortedModerate, ...sortedMild, ...nonDelayed];
-
-    //             console.log("mild", staticMild);
-    //             console.log("moderate", staticModerate);
-    //             console.log("critical", staticCritical);
-
-    //             setFinalTrips([...sortedCritical, ...sortedModerate, ...sortedMild, ...nonDelayed]);
-    //         }
-
-    //         if (selectedFilters.includes('Delayed (As per OEM)')) {
-
-    //             let critical = filteredTrips.filter(data => parseInt(data?.oemDelayedHours) >= 36);
-    //             let moderate = filteredTrips.filter(data => (parseInt(data?.oemDelayedHours) >= 19 && parseInt(data?.oemDelayedHours) <= 35));
-    //             let mild = filteredTrips.filter(data => parseInt(data?.oemDelayedHours) <= 18);
-
-    //             let staticMild = [];
-    //             let staticModerate = [];
-    //             let staticCritical = [];
-
-    //             filteredTrips.map(data => {
-    //                 if ((data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter))) {
-
-    //                     const delayedHours = parseInt(data?.oemDelayedHours);
-
-    //                     if (delayedHours >= 0 && delayedHours <= 5) {
-    //                         staticMild.push(data);
-    //                     } else if (delayedHours >= 6 && delayedHours <= 18) {
-    //                         staticModerate(data);
-    //                     } else if (delayedHours >= 19) {
-    //                         staticCritical(data);
-    //                     }
-    //                 }
-    //             });
-
-    //             const allMilds = [...mild, ...staticMild];
-    //             const allModerates = [...moderate, ...staticModerate];
-    //             const allCriticals = [...critical, staticCritical];
-
-    //             let sortedCritical = sortByOEMValue(allCriticals);
-    //             let sortedModerate = sortByOEMValue(allModerates);
-    //             let sortedMild = sortByOEMValue(allMilds);
-
-    //             let nonDelayed = filteredTrips.filter(data => data?.oemFinalStatus !== 'Delayed');
-
-    //             setFinalTrips([...sortedCritical, ...sortedModerate, ...sortedMild, ...nonDelayed]);
-    //         }
-    //     } else {
-    //         setFinalTrips(filteredTrips);
-    //     }
-    // }, [filteredTrips, selectedFilters]);
-
-    // useEffect(() => {
-    //     if (selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed') || selectedFilters.includes('Delayed (As per OEM)')) {
-    //         if ((selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed')) &&
-    //             (!selectedFilters.includes('Delayed (As per OEM)'))
-    //         ) {
-    //             const getDelayeds = (type) => {
-    //                 const delayedArr1 = filteredTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.finalStatus === 'Delayed');
-    //                 const staticETA = delayedArr1.filter(data => (data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)));
-
-    //                 let moderateDelayeds = [];
-    //                 let staticDelayeds = [];
-    //                 let staticETAVechicles = [];
-    //                 let allDelayeds = [];
-
-    //                 delayedArr1.forEach(data => {
-    //                     if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-    //                         const delayedHours = parseInt(data?.delayedHours);
-    //                         if (type == 'mild') {
-    //                             if (delayedHours >= 0 && delayedHours <= 18) {
-    //                                 moderateDelayeds.push(data);
-    //                             }
-    //                         } else if (type === 'moderate') {
-    //                             if (delayedHours >= 19 && delayedHours <= 35) {
-    //                                 moderateDelayeds.push(data);
-    //                             }
-    //                         } else if (type === 'critical') {
-    //                             if (delayedHours >= 36) {
-    //                                 moderateDelayeds.push(data);
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-
-    //                 staticETA.forEach(data => {
-    //                     if (data?.delayedHours !== null && (data?.delayedHours !== undefined || data?.delayedHours.length > 0)) {
-    //                         const delayedHours = parseInt(data?.delayedHours);
-    //                         if (type === 'mild') {
-    //                             if (delayedHours >= 0 || delayedHours <= 5) {
-    //                                 staticDelayeds.push(data);
-    //                             }
-    //                         } else if (type === 'moderate') {
-    //                             if (delayedHours <= 5 || delayedHours >= 18) {
-    //                                 staticDelayeds.push(data);
-    //                             }
-    //                         } else if (type === 'critical') {
-    //                             if (delayedHours < 19) {
-    //                                 staticDelayeds.push(data);
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-    //                 if (type === 'mild') {
-    //                     allDelayeds = [...moderateDelayeds, ...staticDelayeds];
-    //                 } else {
-    //                     allDelayeds = [...moderateDelayeds, ...staticETA];
-    //                 }
-
-    //                 staticDelayeds.forEach(data => staticETAVechicles.push(data?.vehicleNo));
-
-    //                 const uniqueVehiclesArr = [];
-    //                 const seen = {};
-
-    //                 allDelayeds.forEach(item => {
-    //                     const vehicle = item.vehicleNo;
-    //                     if (seen[vehicle]) {
-    //                         uniqueVehiclesArr[seen[vehicle] - 1] = item;
-    //                     } else {
-    //                         uniqueVehiclesArr.push(item);
-    //                         seen[vehicle] = uniqueVehiclesArr.length;
-    //                     }
-    //                 });
-
-
-    //                 if (type === 'mild') {
-    //                     const filtered = uniqueVehiclesArr.filter(data => (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)) && (parseInt(data?.delayedHours) > 5));
-    //                     let filteredVehicles = [];
-    //                     filtered.forEach(data => filteredVehicles.push(data?.vehicleNo));
-
-    //                     const finalTripsList = uniqueVehiclesArr.filter(data => !filteredVehicles.includes(data?.vehicleNo))
-    //                     return finalTripsList
-    //                 } else {
-    //                     const filtered = allDelayeds.filter(data => !staticETAVechicles.includes(data?.vehicleNo));
-    //                     return filtered;
-    //                 }
-    //             };
-
-    //             const filteredMilds = getDelayeds('mild');
-    //             const filteredModerates = getDelayeds('moderate');
-    //             const filteredCriticals = getDelayeds('critical');
-
-    //             let sortedMild = sortByOEMValue(filteredMilds);
-    //             let sortedModerate = sortByOEMValue(filteredModerates);
-    //             let sortedCritical = sortByOEMValue(filteredCriticals);
-
-    //             let nonDelayed = filteredTrips.filter(data => data?.finalStatus === 'On Time' || data?.finalStatus === 'Early');
-    //             // let nonDelayed = [];
-
-    //             // console.log("sorted mild", sortedMild);
-    //             // console.log("sorted critical", sortedCritical);
-    //             // console.log("sorted moderate", sortedModerate);
-    //             // console.log("mon delayed", nonDelayed);
-
-    //             setFinalTrips([...sortedCritical, ...sortedModerate, ...sortedMild, ...nonDelayed]);
-    //         } else if ((selectedFilters.includes('Mild Delayed') || selectedFilters.includes('Moderate Delayed') || selectedFilters.includes('Critical Delayed')) &&
-    //             (selectedFilters.includes('Delayed (As per OEM)'))
-    //         ) {
-    //             const getDelayeds = (type) => {
-    //                 const delayedArr1 = filteredTrips.filter((data) => data?.tripStatus === 'Trip Running' && data?.finalStatus === 'Delayed');
-    //                 const staticETA = delayedArr1.filter(data => (data?.staticETA !== null && data?.staticETA !== "") && (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)));
-
-    //                 let moderateDelayeds = [];
-    //                 let staticDelayeds = [];
-    //                 let staticETAVechicles = [];
-    //                 let allDelayeds = [];
-
-    //                 delayedArr1.forEach(data => {
-    //                     if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-    //                         const oemDelayedHours = parseInt(data?.oemDelayedHours);
-    //                         if (type == 'mild') {
-    //                             if (oemDelayedHours >= 0 && oemDelayedHours <= 18) {
-    //                                 moderateDelayeds.push(data);
-    //                             }
-    //                         } else if (type === 'moderate') {
-    //                             if (oemDelayedHours >= 19 && oemDelayedHours <= 35) {
-    //                                 moderateDelayeds.push(data);
-    //                             }
-    //                         } else if (type === 'critical') {
-    //                             if (oemDelayedHours >= 36) {
-    //                                 moderateDelayeds.push(data);
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-
-    //                 staticETA.forEach(data => {
-    //                     if (data?.oemDelayedHours !== null && (data?.oemDelayedHours !== undefined || data?.oemDelayedHours.length > 0)) {
-    //                         const oemDelayedHours = parseInt(data?.oemDelayedHours);
-    //                         if (type === 'mild') {
-    //                             if (oemDelayedHours >= 0 || oemDelayedHours <= 5) {
-    //                                 staticDelayeds.push(data);
-    //                             }
-    //                         } else if (type === 'moderate') {
-    //                             if (oemDelayedHours <= 5 || oemDelayedHours >= 18) {
-    //                                 staticDelayeds.push(data);
-    //                             }
-    //                         } else if (type === 'critical') {
-    //                             if (oemDelayedHours < 19) {
-    //                                 staticDelayeds.push(data);
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-    //                 if (type === 'mild') {
-    //                     allDelayeds = [...moderateDelayeds, ...staticDelayeds];
-    //                 } else {
-    //                     allDelayeds = [...moderateDelayeds, ...staticETA];
-    //                 }
-
-    //                 staticDelayeds.forEach(data => staticETAVechicles.push(data?.vehicleNo));
-
-    //                 const uniqueVehiclesArr = [];
-    //                 const seen = {};
-
-    //                 allDelayeds.forEach(item => {
-    //                     const vehicle = item.vehicleNo;
-    //                     if (seen[vehicle]) {
-    //                         uniqueVehiclesArr[seen[vehicle] - 1] = item;
-    //                     } else {
-    //                         uniqueVehiclesArr.push(item);
-    //                         seen[vehicle] = uniqueVehiclesArr.length;
-    //                     }
-    //                 });
-
-
-    //                 if (type === 'mild') {
-    //                     const filtered = uniqueVehiclesArr.filter(data => (new Date(formatStaticETADate(data?.staticETA)) > (twoDaysAfter)) && (parseInt(data?.delayedHours) > 5));
-    //                     let filteredVehicles = [];
-    //                     filtered.forEach(data => filteredVehicles.push(data?.vehicleNo));
-
-    //                     const finalTripsList = uniqueVehiclesArr.filter(data => !filteredVehicles.includes(data?.vehicleNo))
-    //                     return finalTripsList
-    //                 } else {
-    //                     const filtered = allDelayeds.filter(data => !staticETAVechicles.includes(data?.vehicleNo));
-    //                     return filtered;
-    //                 }
-    //             };
-
-    //             const filteredMilds = getDelayeds('mild');
-    //             const filteredModerates = getDelayeds('moderate');
-    //             const filteredCriticals = getDelayeds('critical');
-
-    //             let sortedMild = sortByOEMValue(filteredMilds);
-    //             let sortedModerate = sortByOEMValue(filteredModerates);
-    //             let sortedCritical = sortByOEMValue(filteredCriticals);
-
-    //             let nonDelayed = filteredTrips.filter(data => data?.finalStatus === 'On Time' || data?.finalStatus === 'Early');
-
-    //             setFinalTrips([...sortedCritical, ...sortedModerate, ...sortedMild, ...nonDelayed]);
-    //         }
-    //     } else {
-    //         setFinalTrips(filteredTrips);
-    //     }
-    // }, [filteredTrips, selectedFilters]);
 
     useEffect(() => {
         const getLateCounts = (allTrips, oem) => {
@@ -597,7 +181,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
             let nonDelayed = filteredTrips.filter(data => data?.finalStatus === 'On Time' || data?.finalStatus === 'Early');
 
-            setFinalTrips([...sortedCriticalTrips, ...sortedNominalTrips, ...sortedLateTrips, ...nonDelayed]);
+            setFinalTrips([...sortedLateTrips, ...sortedCriticalTrips, ...sortedNominalTrips, ...nonDelayed]);
         } else {
             const lateTrips = getLateCounts(filteredTrips, false);
             const nominalTrips = getDelayedCounts(filteredTrips, 'Nominal', false);
@@ -609,19 +193,9 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
             let nonDelayed = filteredTrips.filter(data => data?.finalStatus === 'On Time' || data?.finalStatus === 'Early');
 
-            setFinalTrips([...sortedCriticalTrips, ...sortedNominalTrips, ...sortedLateTrips, ...nonDelayed]);
+            setFinalTrips([...sortedLateTrips, ...sortedCriticalTrips, ...sortedNominalTrips, ...nonDelayed]);
         }
     }, [filteredTrips, selectedFilters]);
-
-    const handleChangeReportType = (report) => {
-        const searchValue = report?.value;
-        const filteredTypes = reportTypes.filter(data =>
-            ((data?.value && data?.value.toLowerCase().includes(searchValue?.toLowerCase())))
-        );
-
-        setSelectedReportType(filteredTypes);
-        setReportType(searchValue);
-    };
 
     const handleSelectOEM = (oem) => {
         setSelectedOEM(oem);
@@ -629,7 +203,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         if (oem?.value !== undefined && !selectedOEMs.includes(oem?.value)) {
             oem?.value !== undefined && setSelectedOEMs([...selectedOEMs, oem?.value])
         } else if (selectedOEMs.includes(oem?.value)) {
-            // ErrorToast("OEM is selected already");
             const filtered = selectedOEMs.filter(data => data !== oem?.value);
             setSelectedOEMs(filtered);
             setSelectedOEM('');
@@ -928,15 +501,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                                             selectedFilters.includes('Critical Delayed') && getDelayedTrips('excluded', 'Critical', true);
                                         }
                                     }
-
-                                    // else {
-                                    //     allTrips.forEach(data => {
-                                    //         const testData = (data?.oemFinalStatus === 'Delayed');
-                                    //         if (testData === true) {
-                                    //             finalStatusTrips.push(data)
-                                    //         }
-                                    //     })
-                                    // }
                                 }
                             }
 
@@ -1207,12 +771,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         return formattedData;
     };
 
-    const [pdfData, setPdfData] = useState('');
-
-    // useEffect(() => {
-    //     fetchContacts();
-    // }, []);
-
     const exportToPDF = async () => {
         const doc = new jsPDF('landscape');
         const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
@@ -1244,11 +802,11 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
 
                 if (data.column.dataKey === 'currVehicleStatus' && data.row.raw['S.No.'] !== 'S.No.') {
 
-                    const cellWidth = data.cell.width; // Get cell width
-                    const cellHeight = data.cell.height; // Get cell height
-                    const cellX = data.cell.x + (cellWidth / 2); // Center circle horizontally
-                    const cellY = data.cell.y + (cellHeight / 3); // Center circle vertically
-                    const radius = 1.5; // Adjust radius based on cell size
+                    const cellWidth = data.cell.width;
+                    const cellHeight = data.cell.height;
+                    const cellX = data.cell.x + (cellWidth / 2);
+                    const cellY = data.cell.y + (cellHeight / 3);
+                    const radius = 1.5;
 
                     const test = filteredOEMTrips.filter(filters => filters?.vehicleNo === data.row.raw.vehicleNo);
 
@@ -1274,100 +832,7 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         } else {
             doc.save('Trips-report.pdf');
         }
-
-        const pdfBlob = await doc.output('blob');
-        setPdfData(pdfBlob);
     };
-
-    const formatDate = (dateTimeString) => {
-        const dateTime = new Date(dateTimeString);
-        // Format the date-time string consistently for Excel
-        return `${dateTime.toLocaleDateString()} ${dateTime.toLocaleTimeString()}`;
-    };
-
-    // const exportToExcel = () => {
-    //     let formattedData = []
-    //     if (selectedFilters.includes('On Time & Early (As per OEM)') || selectedFilters.includes('Delayed (As per OEM)')) {
-    //         formattedData = filteredOEMTrips.map(item => ({
-    //             'Vehicle No': item.vehicleNo,
-    //             'Status': item?.currVehicleStatus,
-    //             'Loading (Date / Time)': new Date(handleFormateISTDate(item.loadingDate)),
-    //             'Vehicle Exit (Date / Time)': new Date(handleFormatDate(item.vehicleExitDate)),
-    //             'Consignor Name': item?.consignorName,
-    //             'Origin': item.origin,
-    //             'Destination': item.destination,
-    //             'Static ETA(OEM)': new Date(handleFormateISTDate(item?.oemReachTime)),
-    //             'GPS (Date / Time)': new Date(getGPSTime(item?.locationTime)),
-    //             'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : new Date(handleFormatDate(item?.unloadingReachDate)),
-    //             'Route (KM)': item?.routeKM,
-    //             'KM Covered': item?.runningKMs,
-    //             'Difference (Km)': item?.kmDifference,
-    //             'Location': item?.location,
-    //             'Estimated Arrival Date': new Date(convertTo24HourFormat(item?.estimatedArrivalDate)),
-    //             'OEM Final Status': getDelayedType(item?.oemFinalStatus, item?.oemDelayedHours),
-    //             'OEM Delayed Hours': getDelayedHours(item?.oemDelayedHours),
-    //         }));
-    //     } else {
-    //         formattedData = filteredOEMTrips.map(item => ({
-    //             'Vehicle No': item.vehicleNo,
-    //             'Status': item.currVehicleStatus,
-    //             'Loading (Date / Time)': new Date(handleFormateISTDate(item.loadingDate)),
-    //             'Vehicle Exit (Date / Time)': new Date(handleFormatDate(item.vehicleExitDate)),
-    //             'Consignor Name': item?.consignorName,
-    //             'Origin': item.origin,
-    //             'Destination': item.destination,
-    //             'Static ETA': new Date(convertTo24HourFormat(item?.staticETA)),
-    //             'Static ETA(OEM)': new Date(handleFormateISTDate(item?.oemReachTime)),
-    //             'GPS (Date / Time)': new Date(getGPSTime(item?.locationTime)),
-    //             'Reach Date': item?.unloadingReachDate === "" || item?.unloadingReachDate === null ? '' : new Date(handleFormatDate(item?.unloadingReachDate)),
-    //             'Route (KM)': item?.routeKM,
-    //             'KM Covered': item?.runningKMs,
-    //             'Difference (Km)': item?.kmDifference,
-    //             'Location': item?.location,
-    //             'Estimated Arrival Date': new Date(convertTo24HourFormat(item?.estimatedArrivalDate)),
-    //             'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours),
-    //             'Delayed Hours': getDelayedHours(item?.delayedHours),
-    //         }));
-    //     }
-
-    //     console.log("formatted data", formattedData);
-
-    //     if (formattedData.length > 0) {
-    //         const wb = XLSX.utils.book_new();
-    //         const ws = XLSX.utils.json_to_sheet(formattedData);
-
-    //         const dateColumns = ['C', 'D', 'H', 'I', 'J', 'K', 'P']; // Columns corresponding to 'Loading Date', 'Creation Date', and 'Vehicle Exit Date'
-    //         dateColumns.forEach(column => {
-    //             for (let i = 1; i <= formattedData.length; i++) {
-    //                 const cellAddress = column + i;
-    //                 const cell = ws[cellAddress];
-    //                 if (cell && cell.t === 'd') {
-    //                     cell.z = 'dd/mm/yyyy hh:mm:ss'; // Specify the desired date/time format
-    //                 }
-    //             }
-    //         });
-
-    //         const headerCellStyle = {
-    //             font: { bold: true }
-    //         };
-
-    //         // Apply style to the header row (first row)
-    //         const headerRange = XLSX.utils.decode_range(ws['!ref']);
-    //         for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
-    //             const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-    //             if (!ws[cellAddress]) continue;
-    //             ws[cellAddress].s = headerCellStyle;
-    //         }
-
-    //         XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-
-    //         XLSX.writeFile(wb, 'trips_report.xlsx');
-    //     } else {
-    //         ErrorToast("No data found")
-    //     }
-
-
-    // };
 
     const formatDataKey = (data) => {
         return data.map((item) => {
@@ -1511,110 +976,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
         formattedData.length <= 1 ? ErrorToast("No data found") : XLSX.writeFile(workbook, `trips_report.xlsx`);
     };
 
-    const constructWhatsAppLink = (pdfDataUri) => {
-        console.log("pdf", pdfDataUri.length);
-        // WhatsApp's maximum data URI length: 2048
-        const truncatedDataUri = pdfDataUri.length > 2048 ? pdfDataUri.substring(0, 2048) : pdfDataUri;
-        // return `https://wa.me/?text=${encodeURIComponent(pdfDataUri)}`;
-        window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(pdfDataUri)}`)
-        // return `https://wa.me/?text=${encodeURIComponent(truncatedDataUri)}`;
-    };
-
-    const openWhatsAppChat = (pdfDataUri) => {
-        window.open(`whatsapp://send?text=${encodeURIComponent(pdfDataUri)}`, '_blank');
-        // window.open(`whatsapp://send?text=${encodeURIComponent(`OEM Name:- ${selectedOEM?.value}`)}`, '_blank');
-    };
-
-    const sharePDFViaWhatsApp = async () => {
-        const doc = new jsPDF('landscape');
-
-        const firstPageMargin = { top: 15, right: 2, bottom: 0, left: 2 };
-
-        doc.setFontSize(16);
-        doc.text('Trips Report', 130, 10);
-
-        const formattedData = formatData(filteredOEMTrips);
-
-        formattedData.forEach((row, index) => {
-            row['S.No.'] = index + 1
-        });
-
-        const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
-
-        doc.autoTable({
-            columns,
-            body: formattedData,
-            margin: firstPageMargin,
-            styles: {
-                fontSize: 8
-            },
-            columnStyles: {
-                11: { cellWidth: 40 },
-            }
-        });
-
-        // Stack Overflow
-        // const byteString = window.atob(dataURI);
-        // const arrayBuffer = new ArrayBuffer(byteString.length);
-        // const int8Array = new Uint8Array(arrayBuffer);
-        // for (let i = 0; i < byteString.length; i++) {
-        //     int8Array[i] = byteString.charCodeAt(i);
-        // }
-        // const blob = new Blob([int8Array], { type: 'application/pdf' });
-        // return blob;
-
-        // const buffer = await doc.output("arraybuffer");
-        // const dataUri = `data:application/pdf;base64,${btoa(buffer)}`;
-        // const pdfDataUri = doc.output('dataurlstring')
-        // const base64PDF = pdfDataUri.split(',')[1];
-
-        const blob = doc.output('blob');
-        const blobPDF = new Blob([doc.output('blob')], { type: 'application/pdf' });
-        // const blob = dataURItoBlob(doc.output('bloburl'));
-        const url = URL.createObjectURL(blobPDF);
-
-        console.log("blobPDF", blobPDF);
-        console.log("url", url);
-
-        // dataURItoBlob(doc.output());
-        // console.log("url", doc.output('bloburl'));
-        // const url = URL.createObjectURL(blob);
-        window.open(`whatsapp://send?text=${url}`)
-        // window.location.href = `https://wa.me/${8503879951}?text=Document%20shared%20via%20your%20app`;
-
-        // console.log("uri", pdfDataUri);
-        // const whatsappLink = constructWhatsAppLink(dataUri);
-        // window.open(url, '_blank');
-        // openWhatsAppChat(pdfDataUri);
-    };
-
-    function dataURItoBlob(dataURI) {
-        // console.log("url", dataURI);
-        // console.log("url length", dataURI.length);
-
-        // window.open(dataURI, '_blank');
-        // window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(dataURI)}`)
-
-        // window.open(`whatsapp://send?text=${encodeURIComponent(dataURI)}`)
-
-        // const byteString = window.atob(dataURI)
-        const byteString = btoa(dataURI);
-        const arrayBuffer = new ArrayBuffer(byteString.length);
-        const int8Array = new Uint8Array(arrayBuffer);
-        for (let i = 0; i < byteString.length; i++) {
-            int8Array[i] = byteString.charCodeAt(i);
-        }
-        const blob = new Blob([int8Array], { type: 'application/pdf' });
-        return blob;
-    }
-
-    // data should be your response data in base64 format
-
-    // const blob = dataURItoBlob(data);
-    // const url = URL.createObjectURL(blob);
-
-    // to open the PDF in a new 
-
     const selectStyles = {
         control: (provided) => ({
             ...provided,
@@ -1687,7 +1048,6 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
                     ) : null
                 }
             </Col>
-
 
             <Col sm={2}>
                 {

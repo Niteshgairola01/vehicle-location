@@ -4,10 +4,10 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { Col } from 'react-bootstrap';
 import Button from '../../components/Button/coloredButton';
-import HoverButton from '../../components/Button/hoveredButton';
 import { getRunningTrips } from '../../hooks/tripsHooks';
 import { ErrorToast } from '../../components/toast/toast';
 import { getHoursReports } from '../../hooks/reportHooks';
+import TextLoader from '../../components/loader/TextLoader';
 
 const HoursReport = () => {
 
@@ -461,19 +461,9 @@ const HoursReport = () => {
         <>
             <Col sm={8} className='ps-5'>
                 {
-                    fetchingData ? (
-                        <p className='fw-bold text-secondary'>Please Wait while fetching the data
-                            <span className='ms-2 dot-one'>.</span>
-                            <span className='ms-2 dot-two'>.</span>
-                            <span className='ms-2 dot-three'>.</span>
-                            <span className='ms-2 dot-four'>.</span>
-                            <span className='ms-2 dot-five'>.</span>
-                            <span className='ms-2 dot-six'>.</span>
-                        </p>
-                    ) : (
+                    fetchingData ? <TextLoader /> : (
                         <div className='d-flex justify-content-start align-items-center w-100'>
                             <Button className="px-5" onClick={() => exportToPDF(vehiclesOnHold)}>Download Last 10 Hours Report</Button>
-                            {/* <HoverButton className="px-5 ms-5" onClick={() => exportToPDF(drivenLessThan30KMs)}>Download 30 KM Report</HoverButton> */}
                         </div>
                     )
                 }
