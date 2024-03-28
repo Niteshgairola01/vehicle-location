@@ -82,15 +82,15 @@ const ZoneData = ({ zone, data, easternVehicles, westernVehicles, westernGujarat
                 <div className='w-100 table-responsive' style={{ overflowX: "", overflowY: "scroll", maxHeight: "200px", minHeight: "200px" }}>
                     <table className='table w-100 position-relative table-striped table-hover' style={{ overflowX: "hidden", overflowY: "scroll", maxHeight: "1rem" }}>
                         <thead className={`${zone === 'East' ? 'bg-thm-dark' : zone === 'West' ? 'bg-success' : zone === 'West Gujarat' ? 'bg-thm-danger' : zone === 'North' ? 'bg-thm-warning' : zone === 'South' && 'bg-thm-primary'}`} style={{ zIndex: 1, position: "sticky", top: 0 }}>
-                            <tr className='text-white'>
+                            <tr className='text-white zone-table-row-head'>
                                 <th className=''></th>
                                 <th className='text-nowrap'>Vehicle</th>
                                 <th className='text-nowrap text-center'>Status</th>
                                 <th className='text-nowrap'>Load (From-To)</th>
                                 <th className='text-nowrap'>Loading Date</th>
                                 <th className='text-nowrap'>Arrival Date</th>
-                                <th className='text-nowrap' style={{ minWidth: "8rem" }}>Location</th>
-                                <th className='text-nowrap' style={{ minWidth: "5rem" }}>To</th>
+                                <th className='text-nowrap' style={{ minWidth: "6rem" }}>Location</th>
+                                <th className='text-nowrap' style={{ minWidth: "3rem" }}>To</th>
                                 <th className='text-nowrap'>Edit</th>
                             </tr>
                         </thead>
@@ -120,7 +120,7 @@ const ZoneData = ({ zone, data, easternVehicles, westernVehicles, westernGujarat
                                         <td className='zone-table-row-data'>{handleFormateISTDate(data?.loadingDate)}</td>
                                         <td className='zone-table-row-data'>{handleFormateISTDate(data?.estimatedArrivalDate)}</td>
                                         <td className='zone-table-row-data' style={{ width: "5rem" }}>{data?.location}</td>
-                                        <td className='zone-table-row-data'>Lorem ipsum dolor sit amet.</td>
+                                        <td className='zone-table-row-data'>{data?.destination}</td>
                                         <td className='zone-table-row-data'>
                                             <Tooltip title="Edit" key="edit">
                                                 <Link to="#">

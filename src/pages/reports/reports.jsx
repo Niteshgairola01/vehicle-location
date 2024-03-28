@@ -6,6 +6,7 @@ import TripsReport from './trips-report';
 import HoursReport from './hoursReport';
 import { useNavigate } from 'react-router-dom';
 import UnloadingReport from './unloadingReport';
+import GPSReport from './gpsReport';
 
 const Reports = () => {
 
@@ -31,6 +32,10 @@ const Reports = () => {
         {
             label: "Report Unloading Report",
             value: "Report Unloading Report"
+        },
+        {
+            label: "GPS Off Report",
+            value: "GPS Off Report"
         },
     ];
 
@@ -88,7 +93,8 @@ const Reports = () => {
                     {
                         selectedReportType[0]?.value === 'Trips Report' ? (
                             <TripsReport reportType={reportType} setReportType={setReportType} selectedReportType={selectedReportType} setSelectedReportType={setSelectedReportType} />
-                        ) : selectedReportType[0]?.value === '10 Hrs Report' ? (<HoursReport />) : (selectedReportType[0]?.value === 'Unloading Date Report' || selectedReportType[0]?.value === 'Report Unloading Report') && <UnloadingReport reportType={reportType} />
+                        ) : selectedReportType[0]?.value === '10 Hrs Report' ? (<HoursReport />) : (selectedReportType[0]?.value === 'Unloading Date Report' || selectedReportType[0]?.value === 'Report Unloading Report') ? <UnloadingReport reportType={reportType} />
+                            : selectedReportType[0]?.value === 'GPS Off Report' && <GPSReport />
                     }
                 </Row>
             </Card>

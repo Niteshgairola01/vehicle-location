@@ -22,6 +22,13 @@ const HoursReport = () => {
     const [fetchingData, setFetchingData] = useState(true);
     const [holdVehicle, setHoldVehicle] = useState(false);
 
+    const today = new Date();
+
+    let currentDay = new Date(today.setHours(0, 0, 0, 0));
+
+    const twoDaysAfter = new Date(today);
+    twoDaysAfter.setDate(twoDaysAfter.getDate() + 2);
+
     const attributes = ['S.No.', 'vehicleNo', 'currVehicleStatus', 'loadingDate', 'vehicleExitDate', 'origin', 'destination', 'staticETA', 'locationTime', 'routeKM', 'runningKMs',
         'kmDifference', 'last10HoursKms', 'location', 'estimatedArrivalDate', 'finalStatus'
     ];
@@ -44,12 +51,16 @@ const HoursReport = () => {
                 });
 
                 setRunningVehicles(runningVehicles);
+            } else {
+                setRunningVehicles([]);
+                setFetchingData(false);
             }
         }).catch(err => {
-            err?.response?.data && ErrorToast(err?.response?.data)
+            console.log(err);
+            setRunningVehicles([]);
+            setFetchingData(false);
         })
     }, []);
-
 
     useEffect(() => {
         if (runningVehicles.length > 0) {
@@ -65,11 +76,8 @@ const HoursReport = () => {
 
                     response?.data.forEach((item) => {
                         const { vehicleNo, latLongDistance } = item;
-                        if (!distanceMap[vehicleNo]) {
-                            distanceMap[vehicleNo] = parseFloat(latLongDistance);
-                        } else {
-                            distanceMap[vehicleNo] += parseFloat(latLongDistance);
-                        }
+                        if (!distanceMap[vehicleNo]) distanceMap[vehicleNo] = parseFloat(latLongDistance);
+                        else distanceMap[vehicleNo] += parseFloat(latLongDistance);
                     });
 
                     for (const vehicleNo in distanceMap) {
@@ -87,10 +95,12 @@ const HoursReport = () => {
                     setTripsReport(vehiclesOnHold);
                     setKms30(vehiclesDrivenLessThan30KMs);
                 } else {
+                    setFetchingData(false);
                     setTripsReport([]);
                     setKms30([]);
                 }
             }).catch(err => {
+                setFetchingData(false);
                 setTripsReport([]);
                 setKms30([]);
                 console.log(err);
@@ -122,7 +132,7 @@ const HoursReport = () => {
         if (runningTrips.length > 0) {
 
             const vehicleData = {};
-            const locationIndexes = {}; // To keep track of the index where location is assigned for each vehicleNo
+            const locationIndexes = {};
 
             lastRecord.forEach((record, index) => {
                 const { vehicleNo, date, location, latLongDistance } = record;
@@ -279,16 +289,34 @@ const HoursReport = () => {
         }
     };
 
-    const getDelayedType = (attr, hours) => {
-        if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
-            return attr;
-        } else if (attr === 'Delayed') {
-            if (parseInt(hours) <= 18) {
-                return 'Mild Delayed';
-            } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
-                return 'Moderate Delayed';
-            } else if (parseInt(hours) >= 36) {
-                return 'Critical Delayed';
+    const formatStaticETADate = (givenDate) => {
+        if (givenDate !== null && givenDate !== "" && givenDate !== " ") {
+            const [datePart, timePart, AM] = givenDate.split(' ');
+            const [day, month, year] = datePart.split('/');
+            const time = timePart.split(':');
+
+            const hour = parseInt(time) % 12 + (AM === 'PM' ? 12 : 0);
+            const minutes = parseInt(time[1]);
+            const seconds = parseInt(time[2]);
+
+            const formattedDate = `${year}-${month}-${day} ${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            return formattedDate;
+        }
+    };
+
+    const getDelayedType = (attr, hours, eta) => {
+        if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") return attr;
+        else if (attr === 'Delayed') {
+            if (((eta !== null && eta !== "") && new Date(formatStaticETADate(eta)) < currentDay)) return 'Late';
+            else {
+                if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > currentDay) && (new Date(formatStaticETADate(eta)) < twoDaysAfter))) {
+                    if (parseInt(hours) >= 0 && parseInt(hours) <= 5) return 'Nominal Delayed';
+                    else if (parseInt(hours) >= 6) return 'Critical Delayed';
+
+                } else if (((eta !== null && eta !== "") && (new Date(formatStaticETADate(eta)) > twoDaysAfter))) {
+                    if (parseInt(hours) >= 0 && parseInt(hours) <= 18) return 'Nominal Delayed';
+                    else if (parseInt(hours) >= 19) return 'Critical Delayed';
+                }
             }
         }
     };
@@ -299,26 +327,13 @@ const HoursReport = () => {
             attributes.forEach(attr => {
                 if (attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'oemReachTime'
                     || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'currVehicleStatus') {
-                    if (attr === 'loadingDate' || attr === 'oemReachTime') {
-                        formattedItem[attr] = handleFormateISTDate(item[attr]);
-                    }
-                    if (attr === 'vehicleExitDate') {
-                        formattedItem[attr] = handleFormatDate(item[attr]);
-                    }
-                    if (attr === 'delayedHours') {
-                        formattedItem[attr] = getDelayedHours(item[attr]);
-                    }
-                    if (attr === 'staticETA' || attr === 'estimatedArrivalDate') {
-                        formattedItem[attr] = convertTo24HourFormat(item[attr]);
-                    }
+                    if (attr === 'loadingDate' || attr === 'oemReachTime') formattedItem[attr] = handleFormateISTDate(item[attr]);
+                    if (attr === 'vehicleExitDate') formattedItem[attr] = handleFormatDate(item[attr]);
+                    if (attr === 'delayedHours') formattedItem[attr] = getDelayedHours(item[attr]);
+                    if (attr === 'staticETA' || attr === 'estimatedArrivalDate') formattedItem[attr] = convertTo24HourFormat(item[attr]);
+                    if (attr === 'finalStatus') formattedItem[attr] = getDelayedType(item[attr], item['delayedHours'], item['staticETA']);
+                    if (attr === 'currVehicleStatus') formattedItem[attr] = '';
 
-                    if (attr === 'finalStatus') {
-                        formattedItem[attr] = getDelayedType(item[attr], item['delayedHours']);
-                    }
-
-                    if (attr === 'currVehicleStatus') {
-                        formattedItem[attr] = '';
-                    }
                 } else {
                     formattedItem[attr] = item[attr];
                 }
@@ -363,11 +378,11 @@ const HoursReport = () => {
 
                         if (data.column.dataKey === 'currVehicleStatus' && data.row.raw['S.No.'] !== 'S.No.') {
 
-                            const cellWidth = data.cell.width; // Get cell width
-                            const cellHeight = data.cell.height; // Get cell height
-                            const cellX = data.cell.x + (cellWidth / 2); // Center circle horizontally
-                            const cellY = data.cell.y + (cellHeight / 3); // Center circle vertically
-                            const radius = 1.5; // Adjust radius based on cell size
+                            const cellWidth = data.cell.width;
+                            const cellHeight = data.cell.height;
+                            const cellX = data.cell.x + (cellWidth / 2);
+                            const cellY = data.cell.y + (cellHeight / 3);
+                            const radius = 1.5;
 
                             const test = vehiclesOnHold.filter(filters => filters?.vehicleNo === data.row.raw.vehicleNo);
 
@@ -380,8 +395,7 @@ const HoursReport = () => {
                                 color = '#00ff00'
                             }
 
-                            doc.setFillColor(color); // Set fill to transparent (if supported)
-
+                            doc.setFillColor(color);
                             doc.circle(cellX, cellY, radius, 'F', color);
                         }
                     },
@@ -413,7 +427,7 @@ const HoursReport = () => {
             'Last 10 Hrs KM': item?.last10HoursKms,
             'Location': item?.location,
             'Estimated Arrival Date': convertTo24HourFormat(item?.estimatedArrivalDate),
-            'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours),
+            'Final Status': getDelayedType(item?.finalStatus, item?.delayedHours, item?.staticETA),
             'KM Covered': item?.kmCovered,
         }));
 

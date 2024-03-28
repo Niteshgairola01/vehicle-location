@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
-import { Col, Form, Row } from 'react-bootstrap';
+import { Col, Form } from 'react-bootstrap';
 import Select from 'react-select';
 import { getRunningTrips } from '../../hooks/tripsHooks';
 import { Tooltip } from '@mui/material';
@@ -1730,13 +1730,18 @@ const TripsReport = ({ reportType, setReportType, selectedReportType, setSelecte
             <Col sm={1} className='d-flex justify-content-end align-items-start'>
                 {
                     selectedFilters.length > 0 ? (
-                        <Tooltip title="Export As PDF">
-                            <Link>
-                                <FaFileExcel className='ms-2 cursor-pointer fs-3 text-success' onClick={() => exportToExcel()} />
-                                <BsFileEarmarkPdfFill className='ms-2 cursor-pointer fs-3' style={{ color: "#ed031b" }} onClick={exportToPDF} />
-                                {/* <button onClick={() => exportToExcel()}>Excel</button> */}
-                            </Link>
-                        </Tooltip>
+                        <>
+                            <Tooltip title="Export As Excel" key="excelExport">
+                                <Link>
+                                    <FaFileExcel className='ms-2 cursor-pointer fs-3 text-success' onClick={() => exportToExcel()} />
+                                </Link>
+                            </Tooltip>
+                            <Tooltip title="Export As PDF" key="pdfExport">
+                                <Link>
+                                    <BsFileEarmarkPdfFill className='ms-2 cursor-pointer fs-3' style={{ color: "#ed031b" }} onClick={exportToPDF} />
+                                </Link>
+                            </Tooltip>
+                        </>
                     ) : null
                 }
             </Col>

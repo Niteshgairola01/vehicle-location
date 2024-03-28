@@ -33,11 +33,9 @@ const UnloadingReport = ({ reportType }) => {
     const today = new Date();
 
     let currentDay = new Date(today.setHours(0, 0, 0, 0));
-    // let nextDay = new Date(today.set)
 
     const twoDaysAfter = new Date(today);
     twoDaysAfter.setDate(twoDaysAfter.getDate() + 2);
-
 
     const finalTrips = reportType === "Unloading Date Report" ? unloadingTrips : reportUnloadingTrips;
 
@@ -50,6 +48,34 @@ const UnloadingReport = ({ reportType }) => {
         const originLowerCase = item.origin.toLowerCase();
         return selectedOrigins.some(consignor => consignor.toLowerCase() === originLowerCase) && item;
     })) : [];
+
+    let excelData = [];
+
+    const getHaltDuration = (date) => {
+        console.log("date", date);
+        const splittedDate = date.split('T');
+        const datePart = splittedDate[0];
+        const timePart = splittedDate[1];
+
+        const finalDate = `${datePart} ${timePart}`;
+
+        const startDate = new Date(finalDate);
+        const endDate = new Date();
+        const difference = endDate - startDate;
+
+        const haltDuration = difference / (1000 * 60 * 60);
+        return parseInt(haltDuration);
+    };
+
+    filteredOEMTrips.forEach(trip => {
+        const duration = getHaltDuration(trip?.unloadingReachDate);
+        excelData.push({
+            ...trip,
+            haltDuration: duration
+        })
+    });
+
+    console.log("excel", excelData);
 
     useEffect(() => {
         getUnloadingReport().then(response => {
@@ -69,7 +95,7 @@ const UnloadingReport = ({ reportType }) => {
                 };
 
                 const unloadingTrips = allData.filter(data => isTodayOrYesterday(data?.unloadingDate) && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Trip Completed');
-                const reportUnloadingTrips = allData.filter(data => data?.unloadingReachDate && data?.unloadingDate === "" && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Trip Running');
+                const reportUnloadingTrips = allData.filter(data => data?.unloadingReachDate && data?.unloadingDate === "" && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Waiting for Unload');
 
                 setUnloadingTrips(unloadingTrips);
                 setReportUnloadingTrips(reportUnloadingTrips);
@@ -145,13 +171,13 @@ const UnloadingReport = ({ reportType }) => {
             ]);
         } else {
             setAttributes(['S.No.', 'vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'origin', 'destination', 'staticETA', 'unloadingReachDate', 'routeKM', 'runningKMs',
-                'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+                'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'haltDuration', 'delayedHours'
             ]);
 
             setColumnNames(['S.No.', 'Vehicle No.', 'Loading (Date / Time)', 'Vehicle Exit (Date / Time)', 'Consignor Name', 'Origin', 'Destination', 'Static ETA',
-                'Report Unloading', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Estimated Arrival Date', 'Final Status', 'Delayed Hours'
+                'Report Unloading', 'Route (KM)', 'KM Covered', 'Difference (Km)', 'Estimated Arrival Date', 'Final Status', 'Halt Duration', 'Delayed Hours'
             ]);
-        }
+        };
     }, [reportType]);
 
     useEffect(() => {
@@ -161,9 +187,9 @@ const UnloadingReport = ({ reportType }) => {
             ]);
         } else {
             setExcelAttributes(['vehicleNo', 'loadingDate', 'vehicleExitDate', 'consignorName', 'dealerName', 'origin', 'destination', 'staticETA', 'oemReachTime', 'unloadingReachDate', 'routeKM', 'runningKMs',
-                'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'delayedHours'
+                'kmDifference', 'estimatedArrivalDate', 'finalStatus', 'haltDuration', 'delayedHours'
             ]);
-        }
+        };
     }, [reportType]);
 
 
@@ -318,18 +344,6 @@ const UnloadingReport = ({ reportType }) => {
     };
 
     const getDelayedType = (attr, hours, eta) => {
-        // if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
-        //     return attr;
-        // } else if (attr === 'Delayed') {
-        //     if (parseInt(hours) <= 18) {
-        //         return 'Mild Delayed';
-        //     } else if (parseInt(hours) >= 19 && parseInt(hours) <= 35) {
-        //         return 'Moderate Delayed';
-        //     } else if (parseInt(hours) >= 36) {
-        //         return 'Critical Delayed';
-        //     }
-        // }
-
         if (attr === 'On Time' || attr === "Early" || attr === "" || attr === " ") {
             return attr;
         } else if (attr === 'Delayed') {
@@ -378,7 +392,7 @@ const UnloadingReport = ({ reportType }) => {
             const formattedItem = {};
             attributes.forEach(attr => {
                 if (attr === 'currVehicleStatus' || attr === 'loadingDate' || attr === 'vehicleExitDate' || attr === 'delayedHours' || attr === 'staticETA' || attr === 'oemReachTime'
-                    || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'oemDelayedHours' || attr === 'oemFinalStatus' || attr === 'locationTime' || attr === 'unloadingReachDate' || attr === 'unloadingDate') {
+                    || attr === 'estimatedArrivalDate' || attr === 'finalStatus' || attr === 'oemDelayedHours' || attr === 'oemFinalStatus' || attr === 'locationTime' || attr === 'unloadingReachDate' || attr === 'unloadingDate' || attr === 'haltDuration') {
                     if (attr === 'loadingDate' || attr === 'oemReachTime') {
                         formattedItem[attr] = handleFormateISTDate(item[attr]);
                     }
@@ -420,6 +434,10 @@ const UnloadingReport = ({ reportType }) => {
                     if (attr === 'currVehicleStatus') {
                         formattedItem[attr] = '';
                     }
+
+                    if (attr === 'haltDuration') {
+                        formattedItem[attr] = item['unloadingReachDate'] === "" || item['unloadingReachDate'] === null ? '' : getHaltDuration(item['unloadingReachDate']);
+                    }
                 } else {
                     formattedItem[attr] = item[attr];
                 }
@@ -454,7 +472,7 @@ const UnloadingReport = ({ reportType }) => {
             },
             columnStyles: {
                 5: { cellWidth: 19 },
-                13: { cellWidth: 30 },
+                // 13: { cellWidth: 30 },
             },
             didDrawCell: (data) => {
 
@@ -550,6 +568,10 @@ const UnloadingReport = ({ reportType }) => {
                 formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours, formattedItem?.staticETA);
             }
 
+            if (formattedItem.hasOwnProperty('haltDuration')) {
+                formattedItem.haltDuration = formattedItem?.haltDuration;
+            }
+
             if (formattedItem.hasOwnProperty('delayedHours')) {
                 formattedItem.delayedHours = getDelayedHours(formattedItem?.delayedHours);
             }
@@ -560,7 +582,7 @@ const UnloadingReport = ({ reportType }) => {
 
     const exportToExcel = () => {
         let formattedData = [];
-        formattedData = formatExcelData(formatDataKey(filteredOEMTrips.filter(item => excelAtrributes.includes(Object.keys(item)[0]))));
+        formattedData = formatExcelData(formatDataKey(excelData.filter(item => excelAtrributes.includes(Object.keys(item)[0]))));
         let headers = [];
 
         if (reportType === "Unloading Date Report") {
@@ -602,6 +624,7 @@ const UnloadingReport = ({ reportType }) => {
                     kmDifference: 'Difference (Km)',
                     estimatedArrivalDate: 'Estimated Arrival Date',
                     finalStatus: 'Final Status',
+                    haltDuration: 'Halt Duration',
                     delayedHours: 'Delayed Hours'
                 }
             ];

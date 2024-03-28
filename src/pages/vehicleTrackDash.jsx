@@ -1955,6 +1955,17 @@ const VehicleTrackDash = () => {
                     (showRemarkForm && (selectedRemark === data?.tripLogNo)) && (
                         <Row className='thm-dark position-absolute bg-white p-2 pt-1 mt-3 rounded vehicle-details-popup'
                             style={{ width: "100%", minWidth: "20rem", left: "-50%", zIndex: 2 }}>
+                            <div className='w-100 pt-2 px-1 text-end'>
+                                <Tooltip title="close" key="close">
+                                    <Link to="#">
+                                        <RxCross2 className='fs-4 cursor-pointer thm-dark' onClick={() => {
+                                            setShowRemarkForm(false);
+                                            setRemark('');
+                                            setRemarkToBeUpdated('');
+                                        }} />
+                                    </Link>
+                                </Tooltip>
+                            </div>
                             {
                                 data?.remark && (
                                     <>
