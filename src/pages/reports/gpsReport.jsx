@@ -56,11 +56,9 @@ const GPSReport = () => {
         })
     }, []);
 
-
     const handleFormateISTDate = (givenDate) => {
-        if (givenDate === null || givenDate === "" || givenDate === undefined) {
-            return givenDate;
-        } else {
+        if (givenDate === null || givenDate === "" || givenDate === undefined) return givenDate;
+        else {
             const [datePart, timePart] = givenDate.split(' ');
             const [day, month, year] = datePart.split('/');
             const [hour, minute, second] = timePart.split(':');
@@ -84,15 +82,13 @@ const GPSReport = () => {
             const finalFormattedDate = `${finalDay}/${finalMonth}/${finalYear} ${hours}:${minutes}:${seconds}`;
 
             return finalFormattedDate;
-        }
+        };
     };
 
     const handleFormatDate = (date) => {
-        if (date === null) {
-            return '';
-        } else if (date !== null && date?.length === 0) {
-            return '';
-        } else {
+        if (date === null) return '';
+        else if (date !== null && date?.length === 0) return '';
+        else {
             const originalDate = new Date(date);
 
             const day = originalDate.getDate() >= 10 ? originalDate.getDate() : `0${originalDate.getDate()}`;
@@ -182,7 +178,7 @@ const GPSReport = () => {
 
             const formattedDate = `${year}-${month}-${day} ${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             return formattedDate;
-        }
+        };
     };
 
     const formatData = (rowData) => {
@@ -216,11 +212,8 @@ const GPSReport = () => {
             const filteredItem = {};
             const desiredKeys = excelAtrributes.map(key => key);
 
-            for (const key of desiredKeys) {
-                if (item.hasOwnProperty(key)) {
-                    filteredItem[key] = item[key];
-                }
-            }
+            for (const key of desiredKeys)
+                if (item.hasOwnProperty(key)) filteredItem[key] = item[key];
 
             return filteredItem;
         });
@@ -230,50 +223,17 @@ const GPSReport = () => {
         return data.map((item) => {
             const formattedItem = { ...item };
 
-            if (formattedItem.hasOwnProperty('loadingDate')) {
-                formattedItem.loadingDate = handleFormateISTDate(formattedItem.loadingDate);
-            }
-
-            if (formattedItem.hasOwnProperty('vehicleExitDate')) {
-                formattedItem.vehicleExitDate = handleFormatDate(formattedItem.vehicleExitDate);
-            }
-
-            if (formattedItem.hasOwnProperty('staticETA')) {
-                formattedItem.staticETA = convertTo24HourFormat(formattedItem?.staticETA);
-            }
-
-            if (formattedItem.hasOwnProperty('oemReachTime')) {
-                formattedItem.oemReachTime = handleFormateISTDate(formattedItem?.oemReachTime);
-            }
-
-            if (formattedItem.hasOwnProperty('locationTime')) {
-                formattedItem.locationTime = getGPSTime(formattedItem?.locationTime);
-            }
-
-            if (formattedItem.hasOwnProperty('unloadingReachDate')) {
-                formattedItem.unloadingReachDate = formattedItem?.unloadingReachDate === "" || formattedItem?.unloadingReachDate === null ? '' : handleFormatDate(formattedItem?.unloadingReachDate);
-            }
-
-            if (formattedItem.hasOwnProperty('estimatedArrivalDate')) {
-                formattedItem.estimatedArrivalDate = convertTo24HourFormat(formattedItem?.estimatedArrivalDate);
-            }
-
-            if (formattedItem.hasOwnProperty('oemFinalStatus')) {
-                formattedItem.oemFinalStatus = getDelayedType(formattedItem?.oemFinalStatus, formattedItem?.oemDelayedHours, formattedItem?.oemReachTime);
-            }
-
-            if (formattedItem.hasOwnProperty('oemDelayedHours')) {
-                formattedItem.oemDelayedHours = getDelayedHours(formattedItem?.oemDelayedHours);
-            }
-
-            if (formattedItem.hasOwnProperty('finalStatus')) {
-                formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours, formattedItem?.staticETA);
-            }
-
-            if (formattedItem.hasOwnProperty('delayedHours')) {
-                formattedItem.delayedHours = getDelayedHours(formattedItem?.delayedHours);
-            }
-
+            (formattedItem.hasOwnProperty('loadingDate')) ? (formattedItem.loadingDate = handleFormateISTDate(formattedItem.loadingDate))
+                : ((formattedItem.hasOwnProperty('vehicleExitDate'))) ? (formattedItem.vehicleExitDate = handleFormatDate(formattedItem.vehicleExitDate))
+                    : (formattedItem.hasOwnProperty('staticETA')) ? (formattedItem.staticETA = convertTo24HourFormat(formattedItem?.staticETA))
+                        : (formattedItem.hasOwnProperty('oemReachTime')) ? (formattedItem.oemReachTime = handleFormateISTDate(formattedItem?.oemReachTime))
+                            : (formattedItem.hasOwnProperty('locationTime')) ? (formattedItem.locationTime = getGPSTime(formattedItem?.locationTime))
+                                : (formattedItem.hasOwnProperty('unloadingReachDate')) ? (formattedItem.unloadingReachDate = formattedItem?.unloadingReachDate === "" || formattedItem?.unloadingReachDate === null ? '' : handleFormatDate(formattedItem?.unloadingReachDate))
+                                    : (formattedItem.hasOwnProperty('estimatedArrivalDate')) ? (formattedItem.estimatedArrivalDate = convertTo24HourFormat(formattedItem?.estimatedArrivalDate))
+                                        : (formattedItem.hasOwnProperty('oemFinalStatus')) ? (formattedItem.oemFinalStatus = getDelayedType(formattedItem?.oemFinalStatus, formattedItem?.oemDelayedHours, formattedItem?.oemReachTime))
+                                            : (formattedItem.hasOwnProperty('oemDelayedHours')) ? (formattedItem.oemDelayedHours = getDelayedHours(formattedItem?.oemDelayedHours))
+                                                : (formattedItem.hasOwnProperty('finalStatus')) ? (formattedItem.finalStatus = getDelayedType(formattedItem?.finalStatus, formattedItem?.delayedHours, formattedItem?.staticETA))
+                                                    : (formattedItem.hasOwnProperty('delayedHours')) && (formattedItem.delayedHours = getDelayedHours(formattedItem?.delayedHours));
             return formattedItem;
         });
     };
@@ -282,7 +242,6 @@ const GPSReport = () => {
         let formattedData = [];
 
         formattedData = formatExcelData(formatDataKey(allTrips.filter(item => excelAtrributes.includes(Object.keys(item)[0]))));
-
         let headers = [];
 
         headers = [
@@ -313,9 +272,7 @@ const GPSReport = () => {
         formattedData.unshift(headers[0]);
 
         const numberFormatter = (value) => {
-            if (typeof value === 'string' && !isNaN(Number(value))) {
-                return value === "" || value === null ? "" : Number(value); // Convert number-like strings to numbers
-            }
+            if (typeof value === 'string' && !isNaN(Number(value))) return value === "" || value === null ? "" : Number(value);
 
             return value;
         };
@@ -335,7 +292,6 @@ const GPSReport = () => {
         doc.text('GPS Off Trips Report', 130, 10);
 
         const formattedData = formatData(allTrips);
-
         formattedData.forEach((row, index) => row['S.No.'] = index + 1);
 
         const columns = attributes.map((attr, index) => ({ header: columnNames[index], dataKey: attr, styles: { fontWeight: 'bold' } }));
@@ -403,7 +359,6 @@ const GPSReport = () => {
                                     <BsFileEarmarkPdfFill className='ms-2 cursor-pointer fs-3' style={{ color: "#ed031b" }} onClick={exportToPDF} />
                                 </Link>
                             </Tooltip>
-                            {/* <Button className="px-5" onClick={() => exportToPDF()}>Download GPS Off Report</Button> */}
                         </div>
                     )
                 }

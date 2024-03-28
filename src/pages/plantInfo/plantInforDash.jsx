@@ -287,7 +287,7 @@ const PlantInforDash = () => {
                         <table className='table w-100 position-relative table-striped' style={{ overflowX: "hidden", overflowY: "scroll", maxHeight: "1rem" }}>
                             <thead style={{ zIndex: 1, position: "sticky", top: 0 }}>
                                 <tr className='text-white'>
-                                    <th className=''>Test</th>
+                                    <th className=''></th>
                                     {plants.map(data => <th className='text-nowrap' key={data}>{data}</th>)}
                                 </tr>
                             </thead>

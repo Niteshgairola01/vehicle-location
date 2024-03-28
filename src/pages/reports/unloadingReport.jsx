@@ -52,7 +52,6 @@ const UnloadingReport = ({ reportType }) => {
     let excelData = [];
 
     const getHaltDuration = (date) => {
-        console.log("date", date);
         const splittedDate = date.split('T');
         const datePart = splittedDate[0];
         const timePart = splittedDate[1];
@@ -75,8 +74,6 @@ const UnloadingReport = ({ reportType }) => {
         })
     });
 
-    console.log("excel", excelData);
-
     useEffect(() => {
         getUnloadingReport().then(response => {
             if (response.status === 200) {
@@ -95,7 +92,7 @@ const UnloadingReport = ({ reportType }) => {
                 };
 
                 const unloadingTrips = allData.filter(data => isTodayOrYesterday(data?.unloadingDate) && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Trip Completed');
-                const reportUnloadingTrips = allData.filter(data => data?.unloadingReachDate && data?.unloadingDate === "" && data?.tripLogNo !== null && data?.tripLogNo !== "" && data?.tripStatus === 'Waiting for Unload');
+                const reportUnloadingTrips = allData.filter(data => data?.unloadingReachDate && data?.unloadingDate === "" && data?.tripLogNo !== null && data?.tripLogNo !== "" && (data?.tripStatus === 'Trip Running' || data?.tripStatus === 'Waiting for Unload'));
 
                 setUnloadingTrips(unloadingTrips);
                 setReportUnloadingTrips(reportUnloadingTrips);
